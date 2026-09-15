@@ -98,8 +98,6 @@ export type AccessorUser = {
 
 export type AccountNameGenerationPolicyEnum = 'project_slug';
 
-export type AccountScope = 'offering' | 'provider';
-
 export type ActionOnUsageLimitEnum = 'pause' | 'downscale';
 
 export type ActionTakenEnum = 'allow' | 'flag' | 'warn' | 'redact' | 'block';
@@ -222,26 +220,6 @@ export type AdministrativeAccess = {
     staff_count?: number;
     support_count?: number;
     users?: Array<AdminUser>;
-};
-
-export type AdoptProviderAccountsRequest = {
-    /**
-     * User UUID (hex) to the username that survives adoption. Only needed for users reported by the 'username_conflicts' action.
-     */
-    resolutions?: {
-        [key: string]: string;
-    };
-};
-
-export type AdoptProviderAccountsResponse = {
-    /**
-     * Provider accounts created.
-     */
-    adopted: number;
-    /**
-     * Offering accounts now reading through a provider account.
-     */
-    backed: number;
 };
 
 export type AffiliateEarnings = {
@@ -367,46 +345,6 @@ export type AgentConnectionInfo = {
      * When the agent was last restarted
      */
     readonly last_restarted: string;
-    /**
-     * UUID of the unified event consumer the agent drains, null while it still runs on legacy subscriptions
-     */
-    readonly event_consumer_uuid: string | null;
-    /**
-     * Consumer owner UUID
-     */
-    readonly user_uuid: string | null;
-    /**
-     * Consumer owner username
-     */
-    readonly user_username: string | null;
-    /**
-     * Consumer owner full name
-     */
-    readonly user_full_name: string | null;
-    /**
-     * Whether the consumer owner is a staff user, whose delivery scope is platform-wide
-     */
-    readonly user_is_staff: boolean | null;
-    /**
-     * How the agent authenticated when it registered the queue
-     */
-    auth_kind: AuthKindEnum | BlankEnum | NullEnum | null;
-    /**
-     * Prefix of the Personal Access Token backing the queue
-     */
-    readonly auth_token_prefix: string | null;
-    /**
-     * Name of the Personal Access Token backing the queue
-     */
-    readonly auth_token_name: string | null;
-    /**
-     * Permission branch that authorised the registration
-     */
-    authorized_via: AuthorizedViaEnum | BlankEnum | NullEnum | null;
-    /**
-     * Why no event can reach this consumer, null when delivery works
-     */
-    readonly delivery_blocked_reason: string | null;
     /**
      * Services running within this agent
      */
@@ -579,10 +517,6 @@ export type AgentQueueInfo = {
      * Parsed object type from queue name
      */
     readonly object_type: string | null;
-    /**
-     * Whether this is the agent's unified consumer queue or a legacy subscription queue
-     */
-    kind: QueueKindEnum;
 };
 
 export type AgentQueueRegistrationRequest = {
@@ -2274,8 +2208,6 @@ export type AttributeSourceDetail = {
 
 export type AttributeTypeEnum = 'boolean' | 'string' | 'text' | 'integer' | 'choice' | 'list';
 
-export type AuthKindEnum = 'session' | 'pat' | 'token' | 'oidc' | 'unknown';
-
 export type AuthMethodEnum = 'api_token' | 'personal_access_token' | 'basic';
 
 export type AuthResult = {
@@ -2345,8 +2277,6 @@ export type AuthTokenChallenge = {
 };
 
 export type AuthTypeEnum = 'password' | 'v3applicationcredential';
-
-export type AuthorizedViaEnum = 'staff' | 'support' | 'customer_owner' | 'offering_manager' | 'identity_manager' | 'scope_role' | 'self';
 
 export type AvailabilityZoneResponse = {
     name: string;
@@ -2680,6 +2610,351 @@ export type AwsVolumeRequest = {
     volume_type: VolumeTypeEnum;
 };
 
+export type AzureImage = {
+    readonly url: string;
+    readonly uuid: string;
+    publisher: string;
+    name: string;
+    sku: string;
+    version: string;
+};
+
+export type AzureLocation = {
+    readonly url: string;
+    readonly uuid: string;
+    name: string;
+    latitude?: number | null;
+    longitude?: number | null;
+};
+
+export type AzurePublicIp = {
+    readonly url: string;
+    readonly uuid: string;
+    name: string;
+    description?: string;
+    readonly service_name: string;
+    service_settings: string;
+    readonly service_settings_uuid: string;
+    readonly service_settings_state: string;
+    readonly service_settings_error_message: string;
+    project: string;
+    readonly project_name: string;
+    readonly project_uuid: string;
+    readonly customer: string;
+    readonly customer_uuid: string;
+    readonly customer_name: string;
+    readonly customer_native_name: string;
+    readonly customer_abbreviation: string;
+    readonly error_message: string;
+    readonly error_traceback: string;
+    readonly resource_type: string;
+    state: CoreStates;
+    readonly created: string;
+    readonly modified: string;
+    readonly backend_id: string;
+    access_url: Array<string> | string | null;
+    location: string;
+    resource_group: string;
+    readonly marketplace_offering_uuid: string | null;
+    readonly marketplace_offering_name: string | null;
+    readonly marketplace_offering_type: string | null;
+    readonly marketplace_offering_plugin_options: {
+        [key: string]: unknown;
+    } | null;
+    readonly marketplace_category_uuid: string | null;
+    readonly marketplace_category_name: string | null;
+    readonly marketplace_resource_uuid: string | null;
+    readonly marketplace_plan_uuid: string | null;
+    readonly marketplace_resource_state: string | null;
+    readonly is_usage_based: boolean | null;
+    readonly is_limit_based: boolean | null;
+};
+
+export type AzurePublicIpRequest = {
+    name: string;
+    description?: string;
+    service_settings: string;
+    project: string;
+    location: string;
+    resource_group: string;
+};
+
+export type AzureResourceGroup = {
+    readonly url: string;
+    readonly uuid: string;
+    name: string;
+    description?: string;
+    readonly service_name: string;
+    service_settings: string;
+    readonly service_settings_uuid: string;
+    readonly service_settings_state: string;
+    readonly service_settings_error_message: string;
+    project: string;
+    readonly project_name: string;
+    readonly project_uuid: string;
+    readonly customer: string;
+    readonly customer_uuid: string;
+    readonly customer_name: string;
+    readonly customer_native_name: string;
+    readonly customer_abbreviation: string;
+    readonly error_message: string;
+    readonly error_traceback: string;
+    readonly resource_type: string;
+    state: CoreStates;
+    readonly created: string;
+    readonly modified: string;
+    readonly backend_id: string;
+    access_url: Array<string> | string | null;
+    location: string;
+    readonly marketplace_offering_uuid: string | null;
+    readonly marketplace_offering_name: string | null;
+    readonly marketplace_offering_type: string | null;
+    readonly marketplace_offering_plugin_options: {
+        [key: string]: unknown;
+    } | null;
+    readonly marketplace_category_uuid: string | null;
+    readonly marketplace_category_name: string | null;
+    readonly marketplace_resource_uuid: string | null;
+    readonly marketplace_plan_uuid: string | null;
+    readonly marketplace_resource_state: string | null;
+    readonly is_usage_based: boolean | null;
+    readonly is_limit_based: boolean | null;
+};
+
+export type AzureSize = {
+    readonly url: string;
+    readonly uuid: string;
+    name: string;
+    max_data_disk_count: number;
+    memory_in_mb: number;
+    number_of_cores: number;
+    os_disk_size_in_mb: number;
+    resource_disk_size_in_mb: number;
+};
+
+export type AzureSqlDatabase = {
+    readonly url: string;
+    readonly uuid: string;
+    name: string;
+    description?: string;
+    readonly service_name: string;
+    service_settings: string;
+    readonly service_settings_uuid: string;
+    readonly service_settings_state: string;
+    readonly service_settings_error_message: string;
+    project: string;
+    readonly project_name: string;
+    readonly project_uuid: string;
+    readonly customer: string;
+    readonly customer_uuid: string;
+    readonly customer_name: string;
+    readonly customer_native_name: string;
+    readonly customer_abbreviation: string;
+    readonly error_message: string;
+    readonly error_traceback: string;
+    readonly resource_type: string;
+    state: CoreStates;
+    readonly created: string;
+    readonly modified: string;
+    readonly backend_id: string;
+    access_url: Array<string> | string | null;
+    server: string;
+    charset?: string | null;
+    collation?: string | null;
+    readonly resource_group_name: string;
+    readonly location_name: string;
+    readonly server_name: string;
+    readonly server_uuid: string;
+    readonly server_marketplace_uuid: string;
+    readonly marketplace_offering_uuid: string | null;
+    readonly marketplace_offering_name: string | null;
+    readonly marketplace_offering_type: string | null;
+    readonly marketplace_offering_plugin_options: {
+        [key: string]: unknown;
+    } | null;
+    readonly marketplace_category_uuid: string | null;
+    readonly marketplace_category_name: string | null;
+    readonly marketplace_resource_uuid: string | null;
+    readonly marketplace_plan_uuid: string | null;
+    readonly marketplace_resource_state: string | null;
+    readonly is_usage_based: boolean | null;
+    readonly is_limit_based: boolean | null;
+};
+
+export type AzureSqlDatabaseCreateRequest = {
+    name: string;
+    description?: string;
+};
+
+export type AzureSqlDatabaseCreateResponse = {
+    status: string;
+    database_uuid: string;
+};
+
+export type AzureSqlDatabaseRequest = {
+    name: string;
+    description?: string;
+    service_settings: string;
+    project: string;
+    server: string;
+    charset?: string | null;
+    collation?: string | null;
+};
+
+export type AzureSqlServer = {
+    readonly url: string;
+    readonly uuid: string;
+    name: string;
+    description?: string;
+    readonly service_name: string;
+    service_settings: string;
+    readonly service_settings_uuid: string;
+    readonly service_settings_state: string;
+    readonly service_settings_error_message: string;
+    project: string;
+    readonly project_name: string;
+    readonly project_uuid: string;
+    readonly customer: string;
+    readonly customer_uuid: string;
+    readonly customer_name: string;
+    readonly customer_native_name: string;
+    readonly customer_abbreviation: string;
+    readonly error_message: string;
+    readonly error_traceback: string;
+    readonly resource_type: string;
+    state: CoreStates;
+    readonly created: string;
+    readonly modified: string;
+    readonly backend_id: string;
+    access_url: Array<string> | string | null;
+    readonly resource_group: string;
+    readonly username: string;
+    readonly password: string;
+    storage_mb?: number | null;
+    readonly fqdn: string | null;
+    readonly resource_group_name: string;
+    readonly location_name: string;
+    readonly marketplace_offering_uuid: string | null;
+    readonly marketplace_offering_name: string | null;
+    readonly marketplace_offering_type: string | null;
+    readonly marketplace_offering_plugin_options: {
+        [key: string]: unknown;
+    } | null;
+    readonly marketplace_category_uuid: string | null;
+    readonly marketplace_category_name: string | null;
+    readonly marketplace_resource_uuid: string | null;
+    readonly marketplace_plan_uuid: string | null;
+    readonly marketplace_resource_state: string | null;
+    readonly is_usage_based: boolean | null;
+    readonly is_limit_based: boolean | null;
+};
+
+export type AzureSqlServerRequest = {
+    name: string;
+    description?: string;
+    service_settings: string;
+    project: string;
+    location: string;
+    storage_mb?: number | null;
+};
+
+export type AzureVirtualMachine = {
+    readonly url: string;
+    readonly uuid: string;
+    name: string;
+    description?: string;
+    readonly service_name: string;
+    service_settings: string;
+    readonly service_settings_uuid: string;
+    readonly service_settings_state: string;
+    readonly service_settings_error_message: string;
+    project: string;
+    readonly project_name: string;
+    readonly project_uuid: string;
+    readonly customer: string;
+    readonly customer_uuid: string;
+    readonly customer_name: string;
+    readonly customer_native_name: string;
+    readonly customer_abbreviation: string;
+    readonly error_message: string;
+    readonly error_traceback: string;
+    readonly resource_type: string;
+    state: CoreStates;
+    readonly created: string;
+    readonly modified: string;
+    readonly backend_id: string;
+    access_url: Array<string> | string | null;
+    readonly start_time: string | null;
+    /**
+     * Number of cores in a VM
+     */
+    readonly cores: number;
+    /**
+     * Memory size in MiB
+     */
+    readonly ram: number;
+    /**
+     * Disk size in MiB
+     */
+    readonly disk: number;
+    /**
+     * Minimum memory size in MiB
+     */
+    readonly min_ram: number;
+    /**
+     * Minimum disk size in MiB
+     */
+    readonly min_disk: number;
+    /**
+     * Additional data that will be added to instance on provisioning
+     */
+    user_data?: string;
+    readonly external_ips: Array<string>;
+    readonly internal_ips: Array<string>;
+    readonly latitude: number | null;
+    readonly longitude: number | null;
+    readonly key_name: string;
+    readonly key_fingerprint: string;
+    readonly image_name: string;
+    image: string;
+    size: string;
+    readonly runtime_state: string;
+    readonly resource_group: string;
+    readonly username: string;
+    readonly password: string;
+    readonly resource_group_name: string;
+    readonly location_name: string;
+    readonly size_name: string;
+    readonly marketplace_offering_uuid: string | null;
+    readonly marketplace_offering_name: string | null;
+    readonly marketplace_offering_type: string | null;
+    readonly marketplace_offering_plugin_options: {
+        [key: string]: unknown;
+    } | null;
+    readonly marketplace_category_uuid: string | null;
+    readonly marketplace_category_name: string | null;
+    readonly marketplace_resource_uuid: string | null;
+    readonly marketplace_plan_uuid: string | null;
+    readonly marketplace_resource_state: string | null;
+    readonly is_usage_based: boolean | null;
+    readonly is_limit_based: boolean | null;
+};
+
+export type AzureVirtualMachineRequest = {
+    name: string;
+    description?: string;
+    service_settings: string;
+    project: string;
+    ssh_public_key?: string | null;
+    /**
+     * Additional data that will be added to instance on provisioning
+     */
+    user_data?: string;
+    image: string;
+    size: string;
+    location: string;
+};
+
 export type BackendIdRequest = {
     backend_id?: string;
 };
@@ -2811,10 +3086,6 @@ export type BaseProviderPlan = {
      * Forbids creation of new resources.
      */
     archived?: boolean;
-    /**
-     * How the offering's builtin components are billed under this plan. Custom components keep their own accounting type.
-     */
-    billing_mode?: PlanBillingMode;
     readonly is_active: boolean;
     unit_price?: string;
     unit?: BillingUnit;
@@ -2849,10 +3120,6 @@ export type BaseProviderPlanRequest = {
      * Forbids creation of new resources.
      */
     archived?: boolean;
-    /**
-     * How the offering's builtin components are billed under this plan. Custom components keep their own accounting type.
-     */
-    billing_mode?: PlanBillingMode;
     unit_price?: string;
     unit?: BillingUnit;
     backend_id?: string;
@@ -2872,10 +3139,6 @@ export type BasePublicPlan = {
      * Forbids creation of new resources.
      */
     archived?: boolean;
-    /**
-     * How the offering's builtin components are billed under this plan. Custom components keep their own accounting type.
-     */
-    billing_mode?: PlanBillingMode;
     readonly is_active: boolean;
     unit_price?: string;
     unit?: BillingUnit;
@@ -2911,10 +3174,6 @@ export type BasePublicPlanRequest = {
      * Forbids creation of new resources.
      */
     archived?: boolean;
-    /**
-     * How the offering's builtin components are billed under this plan. Custom components keep their own accounting type.
-     */
-    billing_mode?: PlanBillingMode;
     unit_price?: string;
     unit?: BillingUnit;
     backend_id?: string;
@@ -2952,14 +3211,6 @@ export type BasicUser = {
 };
 
 export type BidEnum = 'eager' | 'willing' | 'not_willing' | 'conflict';
-
-export type BillingModeComponent = {
-    type: string;
-    billing_type: BillingTypeEnum;
-    measured_unit: string;
-    is_prepaid: boolean;
-    limit_period: LimitPeriodEnum;
-};
 
 export type BillingModeEnum = 'monthly' | 'prepaid' | 'usage';
 
@@ -3065,11 +3316,11 @@ export type BookingResource = {
     readonly parent_name: string;
     backend_metadata: BackendMetadata;
     /**
-     * Returns True if the resource bills any component by usage under its plan.
+     * Returns True if the resource has usage-based components that track variable consumption.
      */
     readonly is_usage_based: boolean;
     /**
-     * Returns True if the resource bills any component on user-adjustable limits under its plan.
+     * Returns True if the resource has limit-based components with user-adjustable quotas.
      */
     readonly is_limit_based: boolean;
     name: string;
@@ -5552,7 +5803,6 @@ export type ConstanceSettings = {
     WALDUR_SUPPORT_ENABLED?: boolean;
     WALDUR_SUPPORT_ACTIVE_BACKEND_TYPE?: WaldursupportactivebackendtypeEnum;
     WALDUR_SUPPORT_DISPLAY_REQUEST_TYPE?: boolean;
-    WALDUR_SUPPORT_ISSUE_KEY_PREFIX?: string;
     WALDUR_SUPPORT_PROVIDER_ROUTING_ENABLED?: boolean;
     WALDUR_SUPPORT_AUTO_ASSIGN?: boolean;
     WALDUR_SUPPORT_AUTO_ASSIGN_STRATEGY?: string;
@@ -5662,7 +5912,6 @@ export type ConstanceSettings = {
     OIDC_CLIENT_SECRET?: string;
     OIDC_USER_FIELD?: string;
     OIDC_CACHE_TIMEOUT?: number;
-    OIDC_REGISTRATION_METHOD?: string;
     OIDC_ACCESS_TOKEN_ENABLED?: boolean;
     OIDC_BLOCK_CREATION_OF_UNINVITED_USERS?: boolean;
     OIDC_BLOCK_CREATION_OF_UNINVITED_USERS_RESPONSE_MESSAGE?: string;
@@ -5886,7 +6135,6 @@ export type ConstanceSettingsRequest = {
     WALDUR_SUPPORT_ENABLED?: boolean;
     WALDUR_SUPPORT_ACTIVE_BACKEND_TYPE?: WaldursupportactivebackendtypeEnum;
     WALDUR_SUPPORT_DISPLAY_REQUEST_TYPE?: boolean;
-    WALDUR_SUPPORT_ISSUE_KEY_PREFIX?: string;
     WALDUR_SUPPORT_PROVIDER_ROUTING_ENABLED?: boolean;
     WALDUR_SUPPORT_AUTO_ASSIGN?: boolean;
     WALDUR_SUPPORT_AUTO_ASSIGN_STRATEGY?: string;
@@ -5996,7 +6244,6 @@ export type ConstanceSettingsRequest = {
     OIDC_CLIENT_SECRET?: string;
     OIDC_USER_FIELD?: string;
     OIDC_CACHE_TIMEOUT?: number;
-    OIDC_REGISTRATION_METHOD?: string;
     OIDC_ACCESS_TOKEN_ENABLED?: boolean;
     OIDC_BLOCK_CREATION_OF_UNINVITED_USERS?: boolean;
     OIDC_BLOCK_CREATION_OF_UNINVITED_USERS_RESPONSE_MESSAGE?: string;
@@ -6322,8 +6569,8 @@ export type CourseAccount = {
     readonly project_slug: string;
     readonly project_start_date: string | null;
     readonly project_end_date: string | null;
-    readonly user_uuid: string | null;
-    readonly username: string | null;
+    readonly user_uuid: string;
+    readonly username: string;
     readonly customer_uuid: string;
     readonly customer_name: string;
     state: CourseAccountStateEnum;
@@ -6717,10 +6964,6 @@ export type Customer = {
      * Affiliations offered to project creators of this organization.
      */
     readonly default_affiliations: Array<AffiliatedOrganization>;
-    /**
-     * True when the requesting user's only link to this organization is a role on its service provider. Such a row carries only identity fields.
-     */
-    readonly is_service_provider_manager_only: boolean;
     name: string;
     /**
      * URL-friendly identifier. Only editable by staff users.
@@ -7278,6 +7521,7 @@ export type CustomerUser = {
      * Email address
      */
     email?: string;
+    slug: string;
     readonly role_name: string | null;
     readonly projects: Array<NestedProjectPermission>;
     readonly expiration_time: string | null;
@@ -7454,14 +7698,6 @@ export type DashboardPendingAction = {
     readonly count: number | null;
     readonly target_uuid: string | null;
     readonly customer_uuid: string | null;
-    readonly uuid: string | null;
-    readonly urgency: string | null;
-    readonly route_name: string | null;
-    readonly route_params: {
-        [key: string]: unknown;
-    };
-    readonly can_silence: boolean;
-    readonly actions: Array<CorrectiveAction>;
 };
 
 export type DashboardReviewDeadline = {
@@ -8287,7 +8523,7 @@ export type DuplicateOfferingRemediation = {
     blockers: Array<string>;
 };
 
-export type EnabledreportingscreensEnum = 'resource-usage' | 'user-usage' | 'quotas' | 'usage-monitoring' | 'usage-trends' | 'organization-summary' | 'project-detail' | 'resources-geography' | 'project-classification' | 'usage-by-customer' | 'usage-by-org-type' | 'usage-by-creator' | 'projects-by-affiliated-organization' | 'call-performance' | 'review-progress' | 'resource-demand' | 'capacity' | 'provider-overview' | 'provider-revenue' | 'provider-orders' | 'provider-resources' | 'provider-customers' | 'provider-offerings' | 'openstack-instances' | 'offering-usage' | 'user-analytics' | 'user-demographics' | 'user-organizations' | 'user-affiliations' | 'user-roles' | 'growth' | 'revenue' | 'pricelist' | 'orders' | 'offering-costs' | 'maintenance-overview' | 'provisioning-stats';
+export type EnabledreportingscreensEnum = 'resource-usage' | 'user-usage' | 'quotas' | 'usage-monitoring' | 'usage-trends' | 'organization-summary' | 'project-detail' | 'resources-geography' | 'project-classification' | 'usage-by-customer' | 'usage-by-org-type' | 'usage-by-creator' | 'call-performance' | 'review-progress' | 'resource-demand' | 'capacity' | 'provider-overview' | 'provider-revenue' | 'provider-orders' | 'provider-resources' | 'provider-customers' | 'provider-offerings' | 'openstack-instances' | 'offering-usage' | 'user-analytics' | 'user-demographics' | 'user-organizations' | 'user-affiliations' | 'user-roles' | 'growth' | 'revenue' | 'pricelist' | 'orders' | 'offering-costs' | 'maintenance-overview' | 'provisioning-stats';
 
 export type EffectiveRoute = {
     destination: string;
@@ -8528,7 +8764,12 @@ export type Event = {
 
 export type EventConsumer = {
     readonly uuid: string;
-    readonly object_types: Array<string>;
+    /**
+     * List of observable object types this consumer receives. Empty list means all types.
+     */
+    readonly object_types: {
+        [key: string]: unknown;
+    };
     readonly scopes: Array<EventConsumerScopeOutput>;
     readonly is_global: boolean;
     /**
@@ -8536,29 +8777,6 @@ export type EventConsumer = {
      */
     readonly rmq_username: string;
     readonly queue_created: boolean;
-    readonly user_uuid: string;
-    /**
-     * Required. 128 characters or fewer. Lowercase letters, numbers and @/./+/-/_ characters
-     */
-    readonly user_username: string;
-    readonly user_full_name: string;
-    /**
-     * Staff status
-     *
-     * Designates whether the user can log into this admin site.
-     */
-    readonly user_is_staff: boolean;
-    auth_kind: AuthKindEnum | BlankEnum;
-    /**
-     * Prefix of the Personal Access Token used, when auth_kind is pat.
-     */
-    readonly auth_token_prefix: string;
-    /**
-     * Name of the Personal Access Token used, when auth_kind is pat.
-     */
-    readonly auth_token_name: string;
-    authorized_via: AuthorizedViaEnum | BlankEnum;
-    readonly delivery_blocked_reason: string | null;
     readonly created: string;
     readonly modified: string;
 };
@@ -8607,14 +8825,14 @@ export type EventCount = {
     count: number;
 };
 
-export type EventGroupsEnum = 'access_subnets' | 'auth' | 'call' | 'chat' | 'credits' | 'customers' | 'invoices' | 'offering_accounting' | 'onboarding' | 'openstack_floating_ip' | 'openstack_network' | 'openstack_port' | 'openstack_rbac' | 'openstack_resources' | 'openstack_router' | 'openstack_security_group' | 'openstack_subnet' | 'permissions' | 'projects' | 'proposal' | 'providers' | 'resources' | 'review' | 'ssh' | 'support' | 'users' | 'terms_of_service';
+export type EventGroupsEnum = 'access_subnets' | 'auth' | 'call' | 'chat' | 'credits' | 'customers' | 'invoices' | 'offering_accounting' | 'onboarding' | 'openstack_floating_ip' | 'openstack_network' | 'openstack_port' | 'openstack_rbac' | 'openstack_router' | 'openstack_security_group' | 'openstack_subnet' | 'permissions' | 'projects' | 'proposal' | 'providers' | 'resources' | 'review' | 'ssh' | 'support' | 'users' | 'terms_of_service';
 
 export type EventMetadataResponse = {
     /**
      * Map of event group keys to lists of event type enums from EventType
      */
     event_groups: {
-        [key: string]: Array<'access_subnet_creation_succeeded' | 'access_subnet_deletion_succeeded' | 'access_subnet_update_succeeded' | 'offering_access_subnet_creation_succeeded' | 'offering_access_subnet_deletion_succeeded' | 'offering_access_subnet_update_succeeded' | 'allowed_offerings_have_been_updated' | 'attachment_created' | 'attachment_deleted' | 'attachment_updated' | 'auth_logged_in_with_saml2' | 'auth_logged_in_with_username' | 'auth_logged_in_with_oauth' | 'auth_logged_out' | 'auth_logged_out_with_saml2' | 'auth_login_failed_with_username' | 'block_creation_of_new_resources' | 'block_modification_of_existing_resources' | 'call_document_added' | 'call_document_removed' | 'create_of_affiliate_by_staff' | 'create_of_credit_by_staff' | 'create_of_project_credit_by_staff' | 'custom_notification' | 'customer_creation_succeeded' | 'customer_deletion_succeeded' | 'customer_update_succeeded' | 'customer_permission_review_created' | 'customer_permission_review_closed' | 'droplet_resize_scheduled' | 'droplet_resize_succeeded' | 'freeipa_profile_created' | 'freeipa_profile_deleted' | 'freeipa_profile_disabled' | 'freeipa_profile_enabled' | 'invoice_canceled' | 'invoice_created' | 'invoice_item_created' | 'invoice_item_deleted' | 'invoice_item_updated' | 'invoice_paid' | 'issue_creation_succeeded' | 'issue_deletion_succeeded' | 'issue_update_succeeded' | 'marketplace_offering_component_created' | 'marketplace_offering_component_deleted' | 'marketplace_offering_component_updated' | 'marketplace_offering_created' | 'marketplace_offering_updated' | 'marketplace_offering_options_updated' | 'marketplace_offering_resource_options_updated' | 'marketplace_offering_user_created' | 'marketplace_offering_user_updated' | 'marketplace_offering_user_deleted' | 'marketplace_offering_user_restriction_updated' | 'marketplace_order_approved' | 'marketplace_order_completed' | 'marketplace_order_created' | 'marketplace_order_failed' | 'marketplace_order_rejected' | 'marketplace_order_terminated' | 'marketplace_order_unlinked' | 'marketplace_plan_archived' | 'marketplace_plan_component_current_price_updated' | 'marketplace_plan_component_future_price_updated' | 'marketplace_plan_component_quota_updated' | 'marketplace_plan_created' | 'marketplace_plan_updated' | 'marketplace_plan_deleted' | 'marketplace_resource_create_canceled' | 'marketplace_resource_create_failed' | 'marketplace_resource_create_requested' | 'marketplace_resource_create_succeeded' | 'marketplace_resource_downscaled' | 'marketplace_resource_erred_on_backend' | 'marketplace_resource_paused' | 'marketplace_resource_terminate_canceled' | 'marketplace_resource_terminate_failed' | 'marketplace_resource_terminate_requested' | 'marketplace_resource_terminate_succeeded' | 'marketplace_resource_unlinked' | 'marketplace_resource_update_canceled' | 'marketplace_resource_update_end_date_succeeded' | 'marketplace_resource_api_key_rotated' | 'marketplace_resource_api_key_revealed' | 'marketplace_resource_update_failed' | 'marketplace_resource_update_limits_failed' | 'marketplace_resource_update_limits_succeeded' | 'marketplace_resource_plan_switched' | 'marketplace_resource_project_created' | 'marketplace_resource_project_recovered' | 'marketplace_resource_project_removed' | 'marketplace_resource_update_requested' | 'marketplace_resource_update_succeeded' | 'marketplace_resource_limit_change_request_created' | 'marketplace_resource_limit_change_request_approved' | 'marketplace_resource_limit_change_request_rejected' | 'marketplace_resource_end_date_change_request_created' | 'marketplace_resource_end_date_change_request_approved' | 'marketplace_resource_end_date_change_request_rejected' | 'marketplace_resource_end_date_change_request_canceled' | 'maintenance_announcement_cancelled' | 'maintenance_announcement_completed' | 'maintenance_announcement_created' | 'maintenance_announcement_deleted' | 'maintenance_announcement_scheduled' | 'maintenance_announcement_started' | 'maintenance_announcement_unscheduled' | 'maintenance_announcement_updated' | 'notify_external_user' | 'notify_organization_owners' | 'notify_project_team' | 'openstack_floating_ip_attached' | 'openstack_floating_ip_connected' | 'openstack_floating_ip_description_updated' | 'openstack_floating_ip_detached' | 'openstack_floating_ip_disconnected' | 'openstack_instance_security_groups_changed' | 'openstack_network_cleaned' | 'openstack_network_created' | 'openstack_network_deleted' | 'openstack_network_imported' | 'openstack_network_pulled' | 'openstack_network_updated' | 'openstack_load_balancer_created' | 'openstack_load_balancer_updated' | 'openstack_load_balancer_deleted' | 'openstack_load_balancer_security_groups_changed' | 'openstack_listener_created' | 'openstack_listener_updated' | 'openstack_listener_deleted' | 'openstack_pool_created' | 'openstack_pool_updated' | 'openstack_pool_deleted' | 'openstack_pool_member_created' | 'openstack_pool_member_updated' | 'openstack_pool_member_deleted' | 'openstack_port_cleaned' | 'openstack_port_created' | 'openstack_port_deleted' | 'openstack_port_imported' | 'openstack_port_pulled' | 'openstack_port_updated' | 'openstack_port_security_enabled' | 'openstack_port_security_disabled' | 'openstack_port_allowed_address_pairs_changed' | 'openstack_port_security_groups_changed' | 'openstack_rbac_policy_created' | 'openstack_rbac_policy_deleted' | 'openstack_router_interface_added' | 'openstack_router_interface_removed' | 'openstack_router_updated' | 'openstack_subnet_host_routes_changed' | 'openstack_security_group_cleaned' | 'openstack_security_group_created' | 'openstack_security_group_deleted' | 'openstack_security_group_imported' | 'openstack_security_group_pulled' | 'openstack_security_group_rule_cleaned' | 'openstack_security_group_rule_created' | 'openstack_security_group_rule_deleted' | 'openstack_security_group_rule_imported' | 'openstack_security_group_rule_updated' | 'openstack_security_group_rules_changed' | 'openstack_security_group_updated' | 'openstack_security_group_added_remotely' | 'openstack_security_group_removed_remotely' | 'openstack_security_group_added_locally' | 'openstack_security_group_removed_locally' | 'openstack_server_group_cleaned' | 'openstack_server_group_created' | 'openstack_server_group_deleted' | 'openstack_server_group_imported' | 'openstack_server_group_pulled' | 'openstack_subnet_cleaned' | 'openstack_subnet_created' | 'openstack_subnet_deleted' | 'openstack_subnet_imported' | 'openstack_subnet_pulled' | 'openstack_subnet_updated' | 'openstack_tenant_quota_limit_updated' | 'payment_added' | 'payment_created' | 'payment_removed' | 'policy_notification' | 'project_creation_succeeded' | 'project_deletion_succeeded' | 'project_deletion_triggered' | 'project_update_request_approved' | 'project_update_request_created' | 'project_update_request_rejected' | 'project_end_date_change_request_approved' | 'project_end_date_change_request_created' | 'project_end_date_change_request_rejected' | 'project_update_succeeded' | 'project_permission_review_created' | 'project_permission_review_closed' | 'proposal_canceled' | 'proposal_document_added' | 'proposal_document_removed' | 'proposal_workflow_advanced' | 'query_executed' | 'increase_of_customer_credit_due_to_affiliate_fee' | 'reduction_of_customer_credit' | 'reduction_of_customer_credit_due_to_minimal_consumption' | 'reduction_of_customer_expected_consumption' | 'reduction_of_project_credit' | 'reduction_of_project_credit_due_to_minimal_consumption' | 'reduction_of_project_expected_consumption' | 'request_downscaling' | 'request_pausing' | 'request_slurm_resource_downscaling' | 'request_slurm_resource_pausing' | 'reset_downscaling' | 'reset_member_restriction' | 'reset_pausing' | 'resource_assign_floating_ip_failed' | 'resource_assign_floating_ip_scheduled' | 'resource_assign_floating_ip_succeeded' | 'resource_attach_failed' | 'resource_attach_scheduled' | 'resource_attach_succeeded' | 'resource_backup_creation_failed' | 'resource_backup_creation_scheduled' | 'resource_backup_creation_succeeded' | 'resource_backup_deletion_failed' | 'resource_backup_deletion_scheduled' | 'resource_backup_deletion_succeeded' | 'resource_backup_restoration_failed' | 'resource_backup_restoration_scheduled' | 'resource_backup_restoration_succeeded' | 'resource_change_flavor_failed' | 'resource_change_flavor_scheduled' | 'resource_change_flavor_succeeded' | 'resource_creation_failed' | 'resource_creation_scheduled' | 'resource_creation_succeeded' | 'resource_deletion_failed' | 'resource_deletion_scheduled' | 'resource_deletion_succeeded' | 'resource_detach_failed' | 'resource_detach_scheduled' | 'resource_detach_succeeded' | 'resource_extend_failed' | 'resource_extend_scheduled' | 'resource_extend_succeeded' | 'resource_extend_volume_failed' | 'resource_extend_volume_scheduled' | 'resource_extend_volume_succeeded' | 'resource_import_succeeded' | 'resource_pull_failed' | 'resource_pull_scheduled' | 'resource_pull_succeeded' | 'resource_rescue_failed' | 'resource_rescue_scheduled' | 'resource_rescue_succeeded' | 'resource_restart_failed' | 'resource_restart_scheduled' | 'resource_restart_succeeded' | 'resource_retype_failed' | 'resource_retype_scheduled' | 'resource_retype_succeeded' | 'resource_robot_account_created' | 'resource_robot_account_deleted' | 'resource_robot_account_state_changed' | 'resource_robot_account_updated' | 'resource_start_failed' | 'resource_start_scheduled' | 'resource_start_succeeded' | 'resource_stop_failed' | 'resource_stop_scheduled' | 'resource_stop_succeeded' | 'resource_unassign_floating_ip_failed' | 'resource_unassign_floating_ip_scheduled' | 'resource_unassign_floating_ip_succeeded' | 'resource_unrescue_failed' | 'resource_unrescue_scheduled' | 'resource_unrescue_succeeded' | 'resource_update_allowed_address_pairs_failed' | 'resource_update_allowed_address_pairs_scheduled' | 'resource_update_allowed_address_pairs_succeeded' | 'resource_update_floating_ips_failed' | 'resource_update_floating_ips_scheduled' | 'resource_update_floating_ips_succeeded' | 'resource_update_metadata_failed' | 'resource_update_metadata_scheduled' | 'resource_update_metadata_succeeded' | 'resource_update_ports_failed' | 'resource_update_ports_scheduled' | 'resource_update_ports_succeeded' | 'resource_update_security_groups_failed' | 'resource_update_security_groups_scheduled' | 'resource_update_security_groups_succeeded' | 'resource_update_succeeded' | 'restrict_members' | 'review_canceled' | 'role_granted' | 'role_revoked' | 'role_updated' | 'roll_back_customer_credit' | 'roll_back_project_credit' | 'service_account_created' | 'service_account_deleted' | 'service_account_updated' | 'set_to_zero_overdue_credit' | 'slurm_policy_evaluation' | 'ssh_key_creation_succeeded' | 'ssh_key_deletion_succeeded' | 'terminate_resources' | 'token_created' | 'token_lifetime_updated' | 'update_of_affiliate_by_staff' | 'update_of_credit_by_staff' | 'update_of_project_credit_by_staff' | 'automatic_credit_adjustment' | 'user_activated' | 'user_blocked' | 'user_creation_succeeded' | 'user_data_accessed' | 'user_deactivated' | 'user_deactivated_no_roles' | 'user_deletion_succeeded' | 'user_details_update_succeeded' | 'user_has_been_created_by_staff' | 'user_password_updated' | 'user_password_updated_by_staff' | 'user_password_removed_by_staff' | 'user_update_succeeded' | 'user_group_invitation_updated' | 'user_invitation_updated' | 'user_invitation_deleted' | 'terms_of_service_consent_granted' | 'terms_of_service_consent_revoked' | 'chat_session_accessed' | 'chat_thread_accessed' | 'chat_injection_detected' | 'chat_pii_detected' | 'chat_feedback_submitted' | 'onboarding_verification_deleted' | 'onboarding_verification_deleted_by_task' | 'pat_created' | 'pat_revoked' | 'pat_rotated' | 'pat_expired' | 'pat_used_from_new_ip' | 'pat_access_denied_from_ip' | 'pat_network_acl_updated' | 'pat_authentication_rejected' | 'passkey_registered' | 'passkey_renamed' | 'passkey_revoked' | 'passkey_revoked_by_staff' | 'passkey_authentication_succeeded' | 'passkey_authentication_failed' | 'event_consumer_registered_with_broad_credential'>;
+        [key: string]: Array<'access_subnet_creation_succeeded' | 'access_subnet_deletion_succeeded' | 'access_subnet_update_succeeded' | 'offering_access_subnet_creation_succeeded' | 'offering_access_subnet_deletion_succeeded' | 'offering_access_subnet_update_succeeded' | 'allowed_offerings_have_been_updated' | 'attachment_created' | 'attachment_deleted' | 'attachment_updated' | 'auth_logged_in_with_saml2' | 'auth_logged_in_with_username' | 'auth_logged_in_with_oauth' | 'auth_logged_out' | 'auth_logged_out_with_saml2' | 'auth_login_failed_with_username' | 'block_creation_of_new_resources' | 'block_modification_of_existing_resources' | 'call_document_added' | 'call_document_removed' | 'create_of_affiliate_by_staff' | 'create_of_credit_by_staff' | 'create_of_project_credit_by_staff' | 'custom_notification' | 'customer_creation_succeeded' | 'customer_deletion_succeeded' | 'customer_update_succeeded' | 'customer_permission_review_created' | 'customer_permission_review_closed' | 'droplet_resize_scheduled' | 'droplet_resize_succeeded' | 'freeipa_profile_created' | 'freeipa_profile_deleted' | 'freeipa_profile_disabled' | 'freeipa_profile_enabled' | 'invoice_canceled' | 'invoice_created' | 'invoice_item_created' | 'invoice_item_deleted' | 'invoice_item_updated' | 'invoice_paid' | 'issue_creation_succeeded' | 'issue_deletion_succeeded' | 'issue_update_succeeded' | 'marketplace_offering_component_created' | 'marketplace_offering_component_deleted' | 'marketplace_offering_component_updated' | 'marketplace_offering_created' | 'marketplace_offering_updated' | 'marketplace_offering_options_updated' | 'marketplace_offering_resource_options_updated' | 'marketplace_offering_user_created' | 'marketplace_offering_user_updated' | 'marketplace_offering_user_deleted' | 'marketplace_offering_user_restriction_updated' | 'marketplace_order_approved' | 'marketplace_order_completed' | 'marketplace_order_created' | 'marketplace_order_failed' | 'marketplace_order_rejected' | 'marketplace_order_terminated' | 'marketplace_order_unlinked' | 'marketplace_plan_archived' | 'marketplace_plan_component_current_price_updated' | 'marketplace_plan_component_future_price_updated' | 'marketplace_plan_component_quota_updated' | 'marketplace_plan_created' | 'marketplace_plan_updated' | 'marketplace_plan_deleted' | 'marketplace_resource_create_canceled' | 'marketplace_resource_create_failed' | 'marketplace_resource_create_requested' | 'marketplace_resource_create_succeeded' | 'marketplace_resource_downscaled' | 'marketplace_resource_erred_on_backend' | 'marketplace_resource_paused' | 'marketplace_resource_terminate_canceled' | 'marketplace_resource_terminate_failed' | 'marketplace_resource_terminate_requested' | 'marketplace_resource_terminate_succeeded' | 'marketplace_resource_unlinked' | 'marketplace_resource_update_canceled' | 'marketplace_resource_update_end_date_succeeded' | 'marketplace_resource_api_key_rotated' | 'marketplace_resource_api_key_revealed' | 'marketplace_resource_update_failed' | 'marketplace_resource_update_limits_failed' | 'marketplace_resource_update_limits_succeeded' | 'marketplace_resource_project_created' | 'marketplace_resource_project_recovered' | 'marketplace_resource_project_removed' | 'marketplace_resource_update_requested' | 'marketplace_resource_update_succeeded' | 'marketplace_resource_limit_change_request_created' | 'marketplace_resource_limit_change_request_approved' | 'marketplace_resource_limit_change_request_rejected' | 'marketplace_resource_end_date_change_request_created' | 'marketplace_resource_end_date_change_request_approved' | 'marketplace_resource_end_date_change_request_rejected' | 'marketplace_resource_end_date_change_request_canceled' | 'maintenance_announcement_cancelled' | 'maintenance_announcement_completed' | 'maintenance_announcement_created' | 'maintenance_announcement_deleted' | 'maintenance_announcement_scheduled' | 'maintenance_announcement_started' | 'maintenance_announcement_unscheduled' | 'maintenance_announcement_updated' | 'notify_external_user' | 'notify_organization_owners' | 'notify_project_team' | 'openstack_floating_ip_attached' | 'openstack_floating_ip_connected' | 'openstack_floating_ip_description_updated' | 'openstack_floating_ip_detached' | 'openstack_floating_ip_disconnected' | 'openstack_instance_security_groups_changed' | 'openstack_network_cleaned' | 'openstack_network_created' | 'openstack_network_deleted' | 'openstack_network_imported' | 'openstack_network_pulled' | 'openstack_network_updated' | 'openstack_load_balancer_created' | 'openstack_load_balancer_updated' | 'openstack_load_balancer_deleted' | 'openstack_load_balancer_security_groups_changed' | 'openstack_listener_created' | 'openstack_listener_updated' | 'openstack_listener_deleted' | 'openstack_pool_created' | 'openstack_pool_updated' | 'openstack_pool_deleted' | 'openstack_pool_member_created' | 'openstack_pool_member_updated' | 'openstack_pool_member_deleted' | 'openstack_port_cleaned' | 'openstack_port_created' | 'openstack_port_deleted' | 'openstack_port_imported' | 'openstack_port_pulled' | 'openstack_port_updated' | 'openstack_port_security_enabled' | 'openstack_port_security_disabled' | 'openstack_port_allowed_address_pairs_changed' | 'openstack_port_security_groups_changed' | 'openstack_rbac_policy_created' | 'openstack_rbac_policy_deleted' | 'openstack_router_interface_added' | 'openstack_router_interface_removed' | 'openstack_router_updated' | 'openstack_subnet_host_routes_changed' | 'openstack_security_group_cleaned' | 'openstack_security_group_created' | 'openstack_security_group_deleted' | 'openstack_security_group_imported' | 'openstack_security_group_pulled' | 'openstack_security_group_rule_cleaned' | 'openstack_security_group_rule_created' | 'openstack_security_group_rule_deleted' | 'openstack_security_group_rule_imported' | 'openstack_security_group_rule_updated' | 'openstack_security_group_rules_changed' | 'openstack_security_group_updated' | 'openstack_security_group_added_remotely' | 'openstack_security_group_removed_remotely' | 'openstack_security_group_added_locally' | 'openstack_security_group_removed_locally' | 'openstack_server_group_cleaned' | 'openstack_server_group_created' | 'openstack_server_group_deleted' | 'openstack_server_group_imported' | 'openstack_server_group_pulled' | 'openstack_subnet_cleaned' | 'openstack_subnet_created' | 'openstack_subnet_deleted' | 'openstack_subnet_imported' | 'openstack_subnet_pulled' | 'openstack_subnet_updated' | 'openstack_tenant_quota_limit_updated' | 'payment_added' | 'payment_created' | 'payment_removed' | 'policy_notification' | 'project_creation_succeeded' | 'project_deletion_succeeded' | 'project_deletion_triggered' | 'project_update_request_approved' | 'project_update_request_created' | 'project_update_request_rejected' | 'project_end_date_change_request_approved' | 'project_end_date_change_request_created' | 'project_end_date_change_request_rejected' | 'project_update_succeeded' | 'project_permission_review_created' | 'project_permission_review_closed' | 'proposal_canceled' | 'proposal_document_added' | 'proposal_document_removed' | 'proposal_workflow_advanced' | 'query_executed' | 'increase_of_customer_credit_due_to_affiliate_fee' | 'reduction_of_customer_credit' | 'reduction_of_customer_credit_due_to_minimal_consumption' | 'reduction_of_customer_expected_consumption' | 'reduction_of_project_credit' | 'reduction_of_project_credit_due_to_minimal_consumption' | 'reduction_of_project_expected_consumption' | 'request_downscaling' | 'request_pausing' | 'request_slurm_resource_downscaling' | 'request_slurm_resource_pausing' | 'reset_downscaling' | 'reset_member_restriction' | 'reset_pausing' | 'resource_assign_floating_ip_failed' | 'resource_assign_floating_ip_scheduled' | 'resource_assign_floating_ip_succeeded' | 'resource_attach_failed' | 'resource_attach_scheduled' | 'resource_attach_succeeded' | 'resource_backup_creation_failed' | 'resource_backup_creation_scheduled' | 'resource_backup_creation_succeeded' | 'resource_backup_deletion_failed' | 'resource_backup_deletion_scheduled' | 'resource_backup_deletion_succeeded' | 'resource_backup_restoration_failed' | 'resource_backup_restoration_scheduled' | 'resource_backup_restoration_succeeded' | 'resource_change_flavor_failed' | 'resource_change_flavor_scheduled' | 'resource_change_flavor_succeeded' | 'resource_creation_failed' | 'resource_creation_scheduled' | 'resource_creation_succeeded' | 'resource_deletion_failed' | 'resource_deletion_scheduled' | 'resource_deletion_succeeded' | 'resource_detach_failed' | 'resource_detach_scheduled' | 'resource_detach_succeeded' | 'resource_extend_failed' | 'resource_extend_scheduled' | 'resource_extend_succeeded' | 'resource_extend_volume_failed' | 'resource_extend_volume_scheduled' | 'resource_extend_volume_succeeded' | 'resource_import_succeeded' | 'resource_pull_failed' | 'resource_pull_scheduled' | 'resource_pull_succeeded' | 'resource_rescue_failed' | 'resource_rescue_scheduled' | 'resource_rescue_succeeded' | 'resource_restart_failed' | 'resource_restart_scheduled' | 'resource_restart_succeeded' | 'resource_retype_failed' | 'resource_retype_scheduled' | 'resource_retype_succeeded' | 'resource_robot_account_created' | 'resource_robot_account_deleted' | 'resource_robot_account_state_changed' | 'resource_robot_account_updated' | 'resource_start_failed' | 'resource_start_scheduled' | 'resource_start_succeeded' | 'resource_stop_failed' | 'resource_stop_scheduled' | 'resource_stop_succeeded' | 'resource_unassign_floating_ip_failed' | 'resource_unassign_floating_ip_scheduled' | 'resource_unassign_floating_ip_succeeded' | 'resource_unrescue_failed' | 'resource_unrescue_scheduled' | 'resource_unrescue_succeeded' | 'resource_update_allowed_address_pairs_failed' | 'resource_update_allowed_address_pairs_scheduled' | 'resource_update_allowed_address_pairs_succeeded' | 'resource_update_floating_ips_failed' | 'resource_update_floating_ips_scheduled' | 'resource_update_floating_ips_succeeded' | 'resource_update_ports_failed' | 'resource_update_ports_scheduled' | 'resource_update_ports_succeeded' | 'resource_update_security_groups_failed' | 'resource_update_security_groups_scheduled' | 'resource_update_security_groups_succeeded' | 'resource_update_succeeded' | 'restrict_members' | 'review_canceled' | 'role_granted' | 'role_revoked' | 'role_updated' | 'roll_back_customer_credit' | 'roll_back_project_credit' | 'service_account_created' | 'service_account_deleted' | 'service_account_updated' | 'set_to_zero_overdue_credit' | 'slurm_policy_evaluation' | 'ssh_key_creation_succeeded' | 'ssh_key_deletion_succeeded' | 'terminate_resources' | 'token_created' | 'token_lifetime_updated' | 'update_of_affiliate_by_staff' | 'update_of_credit_by_staff' | 'update_of_project_credit_by_staff' | 'automatic_credit_adjustment' | 'user_activated' | 'user_blocked' | 'user_creation_succeeded' | 'user_data_accessed' | 'user_deactivated' | 'user_deactivated_no_roles' | 'user_deletion_succeeded' | 'user_details_update_succeeded' | 'user_has_been_created_by_staff' | 'user_password_updated' | 'user_password_updated_by_staff' | 'user_password_removed_by_staff' | 'user_update_succeeded' | 'user_group_invitation_updated' | 'user_invitation_updated' | 'user_invitation_deleted' | 'terms_of_service_consent_granted' | 'terms_of_service_consent_revoked' | 'chat_session_accessed' | 'chat_thread_accessed' | 'chat_injection_detected' | 'chat_pii_detected' | 'chat_feedback_submitted' | 'onboarding_verification_deleted' | 'onboarding_verification_deleted_by_task' | 'pat_created' | 'pat_revoked' | 'pat_rotated' | 'pat_expired' | 'pat_used_from_new_ip' | 'pat_access_denied_from_ip' | 'pat_network_acl_updated' | 'pat_authentication_rejected' | 'passkey_registered' | 'passkey_renamed' | 'passkey_revoked' | 'passkey_revoked_by_staff' | 'passkey_authentication_succeeded' | 'passkey_authentication_failed'>;
     };
 };
 
@@ -8712,7 +8930,7 @@ export type EventSubscriptionRequest = {
     observable_objects?: Array<EventSubscriptionObservableObjectRequest>;
 };
 
-export type EventTypesEnum = 'access_subnet_creation_succeeded' | 'access_subnet_deletion_succeeded' | 'access_subnet_update_succeeded' | 'offering_access_subnet_creation_succeeded' | 'offering_access_subnet_deletion_succeeded' | 'offering_access_subnet_update_succeeded' | 'allowed_offerings_have_been_updated' | 'attachment_created' | 'attachment_deleted' | 'attachment_updated' | 'auth_logged_in_with_saml2' | 'auth_logged_in_with_username' | 'auth_logged_in_with_oauth' | 'auth_logged_out' | 'auth_logged_out_with_saml2' | 'auth_login_failed_with_username' | 'block_creation_of_new_resources' | 'block_modification_of_existing_resources' | 'call_document_added' | 'call_document_removed' | 'create_of_affiliate_by_staff' | 'create_of_credit_by_staff' | 'create_of_project_credit_by_staff' | 'custom_notification' | 'customer_creation_succeeded' | 'customer_deletion_succeeded' | 'customer_update_succeeded' | 'customer_permission_review_created' | 'customer_permission_review_closed' | 'droplet_resize_scheduled' | 'droplet_resize_succeeded' | 'freeipa_profile_created' | 'freeipa_profile_deleted' | 'freeipa_profile_disabled' | 'freeipa_profile_enabled' | 'invoice_canceled' | 'invoice_created' | 'invoice_item_created' | 'invoice_item_deleted' | 'invoice_item_updated' | 'invoice_paid' | 'issue_creation_succeeded' | 'issue_deletion_succeeded' | 'issue_update_succeeded' | 'marketplace_offering_component_created' | 'marketplace_offering_component_deleted' | 'marketplace_offering_component_updated' | 'marketplace_offering_created' | 'marketplace_offering_updated' | 'marketplace_offering_options_updated' | 'marketplace_offering_resource_options_updated' | 'marketplace_offering_user_created' | 'marketplace_offering_user_updated' | 'marketplace_offering_user_deleted' | 'marketplace_offering_user_restriction_updated' | 'marketplace_order_approved' | 'marketplace_order_completed' | 'marketplace_order_created' | 'marketplace_order_failed' | 'marketplace_order_rejected' | 'marketplace_order_terminated' | 'marketplace_order_unlinked' | 'marketplace_plan_archived' | 'marketplace_plan_component_current_price_updated' | 'marketplace_plan_component_future_price_updated' | 'marketplace_plan_component_quota_updated' | 'marketplace_plan_created' | 'marketplace_plan_updated' | 'marketplace_plan_deleted' | 'marketplace_resource_create_canceled' | 'marketplace_resource_create_failed' | 'marketplace_resource_create_requested' | 'marketplace_resource_create_succeeded' | 'marketplace_resource_downscaled' | 'marketplace_resource_erred_on_backend' | 'marketplace_resource_paused' | 'marketplace_resource_terminate_canceled' | 'marketplace_resource_terminate_failed' | 'marketplace_resource_terminate_requested' | 'marketplace_resource_terminate_succeeded' | 'marketplace_resource_unlinked' | 'marketplace_resource_update_canceled' | 'marketplace_resource_update_end_date_succeeded' | 'marketplace_resource_api_key_rotated' | 'marketplace_resource_api_key_revealed' | 'marketplace_resource_update_failed' | 'marketplace_resource_update_limits_failed' | 'marketplace_resource_update_limits_succeeded' | 'marketplace_resource_plan_switched' | 'marketplace_resource_project_created' | 'marketplace_resource_project_recovered' | 'marketplace_resource_project_removed' | 'marketplace_resource_update_requested' | 'marketplace_resource_update_succeeded' | 'marketplace_resource_limit_change_request_created' | 'marketplace_resource_limit_change_request_approved' | 'marketplace_resource_limit_change_request_rejected' | 'marketplace_resource_end_date_change_request_created' | 'marketplace_resource_end_date_change_request_approved' | 'marketplace_resource_end_date_change_request_rejected' | 'marketplace_resource_end_date_change_request_canceled' | 'maintenance_announcement_cancelled' | 'maintenance_announcement_completed' | 'maintenance_announcement_created' | 'maintenance_announcement_deleted' | 'maintenance_announcement_scheduled' | 'maintenance_announcement_started' | 'maintenance_announcement_unscheduled' | 'maintenance_announcement_updated' | 'notify_external_user' | 'notify_organization_owners' | 'notify_project_team' | 'openstack_floating_ip_attached' | 'openstack_floating_ip_connected' | 'openstack_floating_ip_description_updated' | 'openstack_floating_ip_detached' | 'openstack_floating_ip_disconnected' | 'openstack_instance_security_groups_changed' | 'openstack_network_cleaned' | 'openstack_network_created' | 'openstack_network_deleted' | 'openstack_network_imported' | 'openstack_network_pulled' | 'openstack_network_updated' | 'openstack_load_balancer_created' | 'openstack_load_balancer_updated' | 'openstack_load_balancer_deleted' | 'openstack_load_balancer_security_groups_changed' | 'openstack_listener_created' | 'openstack_listener_updated' | 'openstack_listener_deleted' | 'openstack_pool_created' | 'openstack_pool_updated' | 'openstack_pool_deleted' | 'openstack_pool_member_created' | 'openstack_pool_member_updated' | 'openstack_pool_member_deleted' | 'openstack_port_cleaned' | 'openstack_port_created' | 'openstack_port_deleted' | 'openstack_port_imported' | 'openstack_port_pulled' | 'openstack_port_updated' | 'openstack_port_security_enabled' | 'openstack_port_security_disabled' | 'openstack_port_allowed_address_pairs_changed' | 'openstack_port_security_groups_changed' | 'openstack_rbac_policy_created' | 'openstack_rbac_policy_deleted' | 'openstack_router_interface_added' | 'openstack_router_interface_removed' | 'openstack_router_updated' | 'openstack_subnet_host_routes_changed' | 'openstack_security_group_cleaned' | 'openstack_security_group_created' | 'openstack_security_group_deleted' | 'openstack_security_group_imported' | 'openstack_security_group_pulled' | 'openstack_security_group_rule_cleaned' | 'openstack_security_group_rule_created' | 'openstack_security_group_rule_deleted' | 'openstack_security_group_rule_imported' | 'openstack_security_group_rule_updated' | 'openstack_security_group_rules_changed' | 'openstack_security_group_updated' | 'openstack_security_group_added_remotely' | 'openstack_security_group_removed_remotely' | 'openstack_security_group_added_locally' | 'openstack_security_group_removed_locally' | 'openstack_server_group_cleaned' | 'openstack_server_group_created' | 'openstack_server_group_deleted' | 'openstack_server_group_imported' | 'openstack_server_group_pulled' | 'openstack_subnet_cleaned' | 'openstack_subnet_created' | 'openstack_subnet_deleted' | 'openstack_subnet_imported' | 'openstack_subnet_pulled' | 'openstack_subnet_updated' | 'openstack_tenant_quota_limit_updated' | 'payment_added' | 'payment_created' | 'payment_removed' | 'policy_notification' | 'project_creation_succeeded' | 'project_deletion_succeeded' | 'project_deletion_triggered' | 'project_update_request_approved' | 'project_update_request_created' | 'project_update_request_rejected' | 'project_end_date_change_request_approved' | 'project_end_date_change_request_created' | 'project_end_date_change_request_rejected' | 'project_update_succeeded' | 'project_permission_review_created' | 'project_permission_review_closed' | 'proposal_canceled' | 'proposal_document_added' | 'proposal_document_removed' | 'proposal_workflow_advanced' | 'query_executed' | 'increase_of_customer_credit_due_to_affiliate_fee' | 'reduction_of_customer_credit' | 'reduction_of_customer_credit_due_to_minimal_consumption' | 'reduction_of_customer_expected_consumption' | 'reduction_of_project_credit' | 'reduction_of_project_credit_due_to_minimal_consumption' | 'reduction_of_project_expected_consumption' | 'request_downscaling' | 'request_pausing' | 'request_slurm_resource_downscaling' | 'request_slurm_resource_pausing' | 'reset_downscaling' | 'reset_member_restriction' | 'reset_pausing' | 'resource_assign_floating_ip_failed' | 'resource_assign_floating_ip_scheduled' | 'resource_assign_floating_ip_succeeded' | 'resource_attach_failed' | 'resource_attach_scheduled' | 'resource_attach_succeeded' | 'resource_backup_creation_failed' | 'resource_backup_creation_scheduled' | 'resource_backup_creation_succeeded' | 'resource_backup_deletion_failed' | 'resource_backup_deletion_scheduled' | 'resource_backup_deletion_succeeded' | 'resource_backup_restoration_failed' | 'resource_backup_restoration_scheduled' | 'resource_backup_restoration_succeeded' | 'resource_change_flavor_failed' | 'resource_change_flavor_scheduled' | 'resource_change_flavor_succeeded' | 'resource_creation_failed' | 'resource_creation_scheduled' | 'resource_creation_succeeded' | 'resource_deletion_failed' | 'resource_deletion_scheduled' | 'resource_deletion_succeeded' | 'resource_detach_failed' | 'resource_detach_scheduled' | 'resource_detach_succeeded' | 'resource_extend_failed' | 'resource_extend_scheduled' | 'resource_extend_succeeded' | 'resource_extend_volume_failed' | 'resource_extend_volume_scheduled' | 'resource_extend_volume_succeeded' | 'resource_import_succeeded' | 'resource_pull_failed' | 'resource_pull_scheduled' | 'resource_pull_succeeded' | 'resource_rescue_failed' | 'resource_rescue_scheduled' | 'resource_rescue_succeeded' | 'resource_restart_failed' | 'resource_restart_scheduled' | 'resource_restart_succeeded' | 'resource_retype_failed' | 'resource_retype_scheduled' | 'resource_retype_succeeded' | 'resource_robot_account_created' | 'resource_robot_account_deleted' | 'resource_robot_account_state_changed' | 'resource_robot_account_updated' | 'resource_start_failed' | 'resource_start_scheduled' | 'resource_start_succeeded' | 'resource_stop_failed' | 'resource_stop_scheduled' | 'resource_stop_succeeded' | 'resource_unassign_floating_ip_failed' | 'resource_unassign_floating_ip_scheduled' | 'resource_unassign_floating_ip_succeeded' | 'resource_unrescue_failed' | 'resource_unrescue_scheduled' | 'resource_unrescue_succeeded' | 'resource_update_allowed_address_pairs_failed' | 'resource_update_allowed_address_pairs_scheduled' | 'resource_update_allowed_address_pairs_succeeded' | 'resource_update_floating_ips_failed' | 'resource_update_floating_ips_scheduled' | 'resource_update_floating_ips_succeeded' | 'resource_update_metadata_failed' | 'resource_update_metadata_scheduled' | 'resource_update_metadata_succeeded' | 'resource_update_ports_failed' | 'resource_update_ports_scheduled' | 'resource_update_ports_succeeded' | 'resource_update_security_groups_failed' | 'resource_update_security_groups_scheduled' | 'resource_update_security_groups_succeeded' | 'resource_update_succeeded' | 'restrict_members' | 'review_canceled' | 'role_granted' | 'role_revoked' | 'role_updated' | 'roll_back_customer_credit' | 'roll_back_project_credit' | 'service_account_created' | 'service_account_deleted' | 'service_account_updated' | 'set_to_zero_overdue_credit' | 'slurm_policy_evaluation' | 'ssh_key_creation_succeeded' | 'ssh_key_deletion_succeeded' | 'terminate_resources' | 'token_created' | 'token_lifetime_updated' | 'update_of_affiliate_by_staff' | 'update_of_credit_by_staff' | 'update_of_project_credit_by_staff' | 'automatic_credit_adjustment' | 'user_activated' | 'user_blocked' | 'user_creation_succeeded' | 'user_data_accessed' | 'user_deactivated' | 'user_deactivated_no_roles' | 'user_deletion_succeeded' | 'user_details_update_succeeded' | 'user_has_been_created_by_staff' | 'user_password_updated' | 'user_password_updated_by_staff' | 'user_password_removed_by_staff' | 'user_update_succeeded' | 'user_group_invitation_updated' | 'user_invitation_updated' | 'user_invitation_deleted' | 'terms_of_service_consent_granted' | 'terms_of_service_consent_revoked' | 'chat_session_accessed' | 'chat_thread_accessed' | 'chat_injection_detected' | 'chat_pii_detected' | 'chat_feedback_submitted' | 'onboarding_verification_deleted' | 'onboarding_verification_deleted_by_task' | 'pat_created' | 'pat_revoked' | 'pat_rotated' | 'pat_expired' | 'pat_used_from_new_ip' | 'pat_access_denied_from_ip' | 'pat_network_acl_updated' | 'pat_authentication_rejected' | 'passkey_registered' | 'passkey_renamed' | 'passkey_revoked' | 'passkey_revoked_by_staff' | 'passkey_authentication_succeeded' | 'passkey_authentication_failed' | 'event_consumer_registered_with_broad_credential';
+export type EventTypesEnum = 'access_subnet_creation_succeeded' | 'access_subnet_deletion_succeeded' | 'access_subnet_update_succeeded' | 'offering_access_subnet_creation_succeeded' | 'offering_access_subnet_deletion_succeeded' | 'offering_access_subnet_update_succeeded' | 'allowed_offerings_have_been_updated' | 'attachment_created' | 'attachment_deleted' | 'attachment_updated' | 'auth_logged_in_with_saml2' | 'auth_logged_in_with_username' | 'auth_logged_in_with_oauth' | 'auth_logged_out' | 'auth_logged_out_with_saml2' | 'auth_login_failed_with_username' | 'block_creation_of_new_resources' | 'block_modification_of_existing_resources' | 'call_document_added' | 'call_document_removed' | 'create_of_affiliate_by_staff' | 'create_of_credit_by_staff' | 'create_of_project_credit_by_staff' | 'custom_notification' | 'customer_creation_succeeded' | 'customer_deletion_succeeded' | 'customer_update_succeeded' | 'customer_permission_review_created' | 'customer_permission_review_closed' | 'droplet_resize_scheduled' | 'droplet_resize_succeeded' | 'freeipa_profile_created' | 'freeipa_profile_deleted' | 'freeipa_profile_disabled' | 'freeipa_profile_enabled' | 'invoice_canceled' | 'invoice_created' | 'invoice_item_created' | 'invoice_item_deleted' | 'invoice_item_updated' | 'invoice_paid' | 'issue_creation_succeeded' | 'issue_deletion_succeeded' | 'issue_update_succeeded' | 'marketplace_offering_component_created' | 'marketplace_offering_component_deleted' | 'marketplace_offering_component_updated' | 'marketplace_offering_created' | 'marketplace_offering_updated' | 'marketplace_offering_options_updated' | 'marketplace_offering_resource_options_updated' | 'marketplace_offering_user_created' | 'marketplace_offering_user_updated' | 'marketplace_offering_user_deleted' | 'marketplace_offering_user_restriction_updated' | 'marketplace_order_approved' | 'marketplace_order_completed' | 'marketplace_order_created' | 'marketplace_order_failed' | 'marketplace_order_rejected' | 'marketplace_order_terminated' | 'marketplace_order_unlinked' | 'marketplace_plan_archived' | 'marketplace_plan_component_current_price_updated' | 'marketplace_plan_component_future_price_updated' | 'marketplace_plan_component_quota_updated' | 'marketplace_plan_created' | 'marketplace_plan_updated' | 'marketplace_plan_deleted' | 'marketplace_resource_create_canceled' | 'marketplace_resource_create_failed' | 'marketplace_resource_create_requested' | 'marketplace_resource_create_succeeded' | 'marketplace_resource_downscaled' | 'marketplace_resource_erred_on_backend' | 'marketplace_resource_paused' | 'marketplace_resource_terminate_canceled' | 'marketplace_resource_terminate_failed' | 'marketplace_resource_terminate_requested' | 'marketplace_resource_terminate_succeeded' | 'marketplace_resource_unlinked' | 'marketplace_resource_update_canceled' | 'marketplace_resource_update_end_date_succeeded' | 'marketplace_resource_api_key_rotated' | 'marketplace_resource_api_key_revealed' | 'marketplace_resource_update_failed' | 'marketplace_resource_update_limits_failed' | 'marketplace_resource_update_limits_succeeded' | 'marketplace_resource_project_created' | 'marketplace_resource_project_recovered' | 'marketplace_resource_project_removed' | 'marketplace_resource_update_requested' | 'marketplace_resource_update_succeeded' | 'marketplace_resource_limit_change_request_created' | 'marketplace_resource_limit_change_request_approved' | 'marketplace_resource_limit_change_request_rejected' | 'marketplace_resource_end_date_change_request_created' | 'marketplace_resource_end_date_change_request_approved' | 'marketplace_resource_end_date_change_request_rejected' | 'marketplace_resource_end_date_change_request_canceled' | 'maintenance_announcement_cancelled' | 'maintenance_announcement_completed' | 'maintenance_announcement_created' | 'maintenance_announcement_deleted' | 'maintenance_announcement_scheduled' | 'maintenance_announcement_started' | 'maintenance_announcement_unscheduled' | 'maintenance_announcement_updated' | 'notify_external_user' | 'notify_organization_owners' | 'notify_project_team' | 'openstack_floating_ip_attached' | 'openstack_floating_ip_connected' | 'openstack_floating_ip_description_updated' | 'openstack_floating_ip_detached' | 'openstack_floating_ip_disconnected' | 'openstack_instance_security_groups_changed' | 'openstack_network_cleaned' | 'openstack_network_created' | 'openstack_network_deleted' | 'openstack_network_imported' | 'openstack_network_pulled' | 'openstack_network_updated' | 'openstack_load_balancer_created' | 'openstack_load_balancer_updated' | 'openstack_load_balancer_deleted' | 'openstack_load_balancer_security_groups_changed' | 'openstack_listener_created' | 'openstack_listener_updated' | 'openstack_listener_deleted' | 'openstack_pool_created' | 'openstack_pool_updated' | 'openstack_pool_deleted' | 'openstack_pool_member_created' | 'openstack_pool_member_updated' | 'openstack_pool_member_deleted' | 'openstack_port_cleaned' | 'openstack_port_created' | 'openstack_port_deleted' | 'openstack_port_imported' | 'openstack_port_pulled' | 'openstack_port_updated' | 'openstack_port_security_enabled' | 'openstack_port_security_disabled' | 'openstack_port_allowed_address_pairs_changed' | 'openstack_port_security_groups_changed' | 'openstack_rbac_policy_created' | 'openstack_rbac_policy_deleted' | 'openstack_router_interface_added' | 'openstack_router_interface_removed' | 'openstack_router_updated' | 'openstack_subnet_host_routes_changed' | 'openstack_security_group_cleaned' | 'openstack_security_group_created' | 'openstack_security_group_deleted' | 'openstack_security_group_imported' | 'openstack_security_group_pulled' | 'openstack_security_group_rule_cleaned' | 'openstack_security_group_rule_created' | 'openstack_security_group_rule_deleted' | 'openstack_security_group_rule_imported' | 'openstack_security_group_rule_updated' | 'openstack_security_group_rules_changed' | 'openstack_security_group_updated' | 'openstack_security_group_added_remotely' | 'openstack_security_group_removed_remotely' | 'openstack_security_group_added_locally' | 'openstack_security_group_removed_locally' | 'openstack_server_group_cleaned' | 'openstack_server_group_created' | 'openstack_server_group_deleted' | 'openstack_server_group_imported' | 'openstack_server_group_pulled' | 'openstack_subnet_cleaned' | 'openstack_subnet_created' | 'openstack_subnet_deleted' | 'openstack_subnet_imported' | 'openstack_subnet_pulled' | 'openstack_subnet_updated' | 'openstack_tenant_quota_limit_updated' | 'payment_added' | 'payment_created' | 'payment_removed' | 'policy_notification' | 'project_creation_succeeded' | 'project_deletion_succeeded' | 'project_deletion_triggered' | 'project_update_request_approved' | 'project_update_request_created' | 'project_update_request_rejected' | 'project_end_date_change_request_approved' | 'project_end_date_change_request_created' | 'project_end_date_change_request_rejected' | 'project_update_succeeded' | 'project_permission_review_created' | 'project_permission_review_closed' | 'proposal_canceled' | 'proposal_document_added' | 'proposal_document_removed' | 'proposal_workflow_advanced' | 'query_executed' | 'increase_of_customer_credit_due_to_affiliate_fee' | 'reduction_of_customer_credit' | 'reduction_of_customer_credit_due_to_minimal_consumption' | 'reduction_of_customer_expected_consumption' | 'reduction_of_project_credit' | 'reduction_of_project_credit_due_to_minimal_consumption' | 'reduction_of_project_expected_consumption' | 'request_downscaling' | 'request_pausing' | 'request_slurm_resource_downscaling' | 'request_slurm_resource_pausing' | 'reset_downscaling' | 'reset_member_restriction' | 'reset_pausing' | 'resource_assign_floating_ip_failed' | 'resource_assign_floating_ip_scheduled' | 'resource_assign_floating_ip_succeeded' | 'resource_attach_failed' | 'resource_attach_scheduled' | 'resource_attach_succeeded' | 'resource_backup_creation_failed' | 'resource_backup_creation_scheduled' | 'resource_backup_creation_succeeded' | 'resource_backup_deletion_failed' | 'resource_backup_deletion_scheduled' | 'resource_backup_deletion_succeeded' | 'resource_backup_restoration_failed' | 'resource_backup_restoration_scheduled' | 'resource_backup_restoration_succeeded' | 'resource_change_flavor_failed' | 'resource_change_flavor_scheduled' | 'resource_change_flavor_succeeded' | 'resource_creation_failed' | 'resource_creation_scheduled' | 'resource_creation_succeeded' | 'resource_deletion_failed' | 'resource_deletion_scheduled' | 'resource_deletion_succeeded' | 'resource_detach_failed' | 'resource_detach_scheduled' | 'resource_detach_succeeded' | 'resource_extend_failed' | 'resource_extend_scheduled' | 'resource_extend_succeeded' | 'resource_extend_volume_failed' | 'resource_extend_volume_scheduled' | 'resource_extend_volume_succeeded' | 'resource_import_succeeded' | 'resource_pull_failed' | 'resource_pull_scheduled' | 'resource_pull_succeeded' | 'resource_rescue_failed' | 'resource_rescue_scheduled' | 'resource_rescue_succeeded' | 'resource_restart_failed' | 'resource_restart_scheduled' | 'resource_restart_succeeded' | 'resource_retype_failed' | 'resource_retype_scheduled' | 'resource_retype_succeeded' | 'resource_robot_account_created' | 'resource_robot_account_deleted' | 'resource_robot_account_state_changed' | 'resource_robot_account_updated' | 'resource_start_failed' | 'resource_start_scheduled' | 'resource_start_succeeded' | 'resource_stop_failed' | 'resource_stop_scheduled' | 'resource_stop_succeeded' | 'resource_unassign_floating_ip_failed' | 'resource_unassign_floating_ip_scheduled' | 'resource_unassign_floating_ip_succeeded' | 'resource_unrescue_failed' | 'resource_unrescue_scheduled' | 'resource_unrescue_succeeded' | 'resource_update_allowed_address_pairs_failed' | 'resource_update_allowed_address_pairs_scheduled' | 'resource_update_allowed_address_pairs_succeeded' | 'resource_update_floating_ips_failed' | 'resource_update_floating_ips_scheduled' | 'resource_update_floating_ips_succeeded' | 'resource_update_ports_failed' | 'resource_update_ports_scheduled' | 'resource_update_ports_succeeded' | 'resource_update_security_groups_failed' | 'resource_update_security_groups_scheduled' | 'resource_update_security_groups_succeeded' | 'resource_update_succeeded' | 'restrict_members' | 'review_canceled' | 'role_granted' | 'role_revoked' | 'role_updated' | 'roll_back_customer_credit' | 'roll_back_project_credit' | 'service_account_created' | 'service_account_deleted' | 'service_account_updated' | 'set_to_zero_overdue_credit' | 'slurm_policy_evaluation' | 'ssh_key_creation_succeeded' | 'ssh_key_deletion_succeeded' | 'terminate_resources' | 'token_created' | 'token_lifetime_updated' | 'update_of_affiliate_by_staff' | 'update_of_credit_by_staff' | 'update_of_project_credit_by_staff' | 'automatic_credit_adjustment' | 'user_activated' | 'user_blocked' | 'user_creation_succeeded' | 'user_data_accessed' | 'user_deactivated' | 'user_deactivated_no_roles' | 'user_deletion_succeeded' | 'user_details_update_succeeded' | 'user_has_been_created_by_staff' | 'user_password_updated' | 'user_password_updated_by_staff' | 'user_password_removed_by_staff' | 'user_update_succeeded' | 'user_group_invitation_updated' | 'user_invitation_updated' | 'user_invitation_deleted' | 'terms_of_service_consent_granted' | 'terms_of_service_consent_revoked' | 'chat_session_accessed' | 'chat_thread_accessed' | 'chat_injection_detected' | 'chat_pii_detected' | 'chat_feedback_submitted' | 'onboarding_verification_deleted' | 'onboarding_verification_deleted_by_task' | 'pat_created' | 'pat_revoked' | 'pat_rotated' | 'pat_expired' | 'pat_used_from_new_ip' | 'pat_access_denied_from_ip' | 'pat_network_acl_updated' | 'pat_authentication_rejected' | 'passkey_registered' | 'passkey_renamed' | 'passkey_revoked' | 'passkey_revoked_by_staff' | 'passkey_authentication_succeeded' | 'passkey_authentication_failed';
 
 export type ExecuteActionErrorResponse = {
     error: string;
@@ -8884,7 +9102,6 @@ export type ExportPlanData = {
     max_amount: number | null;
     article_code: string;
     backend_id: string;
-    billing_mode?: PlanBillingMode;
     components: Array<ExportPlanComponentData>;
 };
 
@@ -8897,7 +9114,6 @@ export type ExportPlanDataRequest = {
     max_amount: number | null;
     article_code: string;
     backend_id: string;
-    billing_mode?: PlanBillingMode;
     components: Array<ExportPlanComponentDataRequest>;
 };
 
@@ -9499,26 +9715,6 @@ export type GoogleCredentials = {
      * List of allowed domains for offering endpoints. Only staff can modify this field.
      */
     allowed_domains?: Array<string>;
-    /**
-     * Default for this provider's offerings: hold user accounts per offering (the historical behaviour) or once per provider. Choose 'provider' when one directory fronts several offerings. Any single offering can override this with an 'account_scope' plugin option, so a provider can run both -- for example a cluster with its own separate directory alongside offerings that share the main one.
-     */
-    account_scope?: AccountScope;
-    /**
-     * Provider-level default for the offering plugin option of the same name. Blank means each offering decides for itself.
-     */
-    account_username_generation_policy?: string;
-    /**
-     * Provider-level default home directory prefix. Blank means each offering decides for itself.
-     */
-    account_homedir_prefix?: string;
-    /**
-     * Provider-level default login shell. Blank means each offering decides for itself.
-     */
-    account_login_shell?: string;
-    /**
-     * Provider-level default prefix for anonymized usernames, which are the prefix followed by the account's POSIX UID. Blank means each offering decides for itself.
-     */
-    account_username_anonymized_prefix?: string;
     readonly calendar_token: string;
     readonly calendar_refresh_token: string;
     readonly google_auth_url: string;
@@ -10268,15 +10464,6 @@ export type InstanceRescueRequest = {
      * Optional rescue image. Required for volume-backed instances; must be a Glance image with hw_rescue_device or hw_rescue_bus set (a 'stable device rescue' image).
      */
     rescue_image?: string | null;
-};
-
-export type InstanceSetMetadataRequest = {
-    /**
-     * Nova instance metadata as string-to-string pairs. At most 128 entries; keys and values up to 255 characters.
-     */
-    metadata: {
-        [key: string]: string;
-    };
 };
 
 export type IntegrationStatus = {
@@ -11687,6 +11874,17 @@ export type ManagedProject = {
     local_identifier?: string | null;
 };
 
+export type ManagedProjectAccountingSummary = {
+    readonly project_uuid: string;
+    readonly project_name: string;
+    readonly customer_uuid: string;
+    readonly customer_name: string;
+    readonly has_award: boolean;
+    readonly allocation_credits: number | null;
+    readonly usage_credits: number;
+    readonly remaining_credits: number | null;
+};
+
 export type ManagedProjectAuditEntry = {
     readonly id: number;
     /**
@@ -11710,6 +11908,17 @@ export type ManagedProjectAuditEntry = {
 };
 
 export type ManagedProjectAuditEntryEventTypeEnum = 'created' | 'approved' | 'rejected' | 'deleted' | 'note_added' | 'details_updated' | 'project_attached' | 'project_detached';
+
+export type ManagedProjectHistoryEntry = {
+    attached_at?: string;
+    /**
+     * Null while this is the current attachment.
+     */
+    detached_at?: string | null;
+    readonly is_current: boolean;
+    readonly project_uuid: string | null;
+    readonly project_name: string | null;
+};
 
 export type ManagedRancherCreateNodeRequest = {
     role: RancherNodeRoleEnum;
@@ -12139,10 +12348,6 @@ export type MembershipStateEnum = 'invited' | 'joined' | 'left' | 'banned';
 
 export type MergedPluginOptions = {
     /**
-     * Where this offering's accounts are held, overriding the service provider's own account_scope. 'offering' keeps one account per offering (the historical behaviour); 'provider' shares one account per user across the provider's offerings. Omit to inherit.
-     */
-    account_scope?: AccountScope;
-    /**
      * If set to True, an order can be processed without approval
      */
     auto_approve_remote_orders?: boolean;
@@ -12242,10 +12447,6 @@ export type MergedPluginOptions = {
      * If set to True, users without RESOURCE.SET_END_DATE can request an end date change, and holders of that permission approve or reject. Approval writes the date directly; no order is created. Requests are published as events so an external approval system can decide instead. Not applicable to prepaid offerings, which extend through renewal instead.
      */
     enable_resource_end_date_change_requests?: boolean;
-    /**
-     * If set to True, users who cannot change resource limits directly (RESOURCE.SET_LIMITS together with ORDER.CREATE) can request a limit change, and holders of RESOURCE.SET_LIMITS approve or reject. Approval submits an update order for the requested limits.
-     */
-    enable_resource_limit_change_requests?: boolean;
     /**
      * Enable sub-project management within resources.
      */
@@ -12395,7 +12596,7 @@ export type MergedPluginOptions = {
      */
     resource_project_role_group_template?: string;
     /**
-     * Prefix for anonymized usernames; the name is the prefix followed by the account's POSIX UID
+     * GLAuth prefix for anonymized usernames
      */
     username_anonymized_prefix?: string;
     /**
@@ -12546,10 +12747,6 @@ export type MergedPluginOptions = {
 
 export type MergedPluginOptionsRequest = {
     /**
-     * Where this offering's accounts are held, overriding the service provider's own account_scope. 'offering' keeps one account per offering (the historical behaviour); 'provider' shares one account per user across the provider's offerings. Omit to inherit.
-     */
-    account_scope?: AccountScope;
-    /**
      * If set to True, an order can be processed without approval
      */
     auto_approve_remote_orders?: boolean;
@@ -12649,10 +12846,6 @@ export type MergedPluginOptionsRequest = {
      * If set to True, users without RESOURCE.SET_END_DATE can request an end date change, and holders of that permission approve or reject. Approval writes the date directly; no order is created. Requests are published as events so an external approval system can decide instead. Not applicable to prepaid offerings, which extend through renewal instead.
      */
     enable_resource_end_date_change_requests?: boolean;
-    /**
-     * If set to True, users who cannot change resource limits directly (RESOURCE.SET_LIMITS together with ORDER.CREATE) can request a limit change, and holders of RESOURCE.SET_LIMITS approve or reject. Approval submits an update order for the requested limits.
-     */
-    enable_resource_limit_change_requests?: boolean;
     /**
      * Enable sub-project management within resources.
      */
@@ -12802,7 +12995,7 @@ export type MergedPluginOptionsRequest = {
      */
     resource_project_role_group_template?: string;
     /**
-     * Prefix for anonymized usernames; the name is the prefix followed by the account's POSIX UID
+     * GLAuth prefix for anonymized usernames
      */
     username_anonymized_prefix?: string;
     /**
@@ -13963,10 +14156,10 @@ export type NestedPlanComponent = {
      * Display name for the measured unit, for example, Floating IP.
      */
     readonly name: string;
-    readonly measured_unit: string | null;
-    billing_type: BillingTypeEnum;
-    readonly is_prepaid: boolean;
-    limit_period: LimitPeriodEnum;
+    /**
+     * Unit of measurement, for example, GB.
+     */
+    readonly measured_unit: string;
     amount?: number;
     /**
      * Price per unit per billing period.
@@ -14580,7 +14773,7 @@ export type NullEnum = never;
 
 export type OpenportalmembershipsyncmodeEnum = 'invitation' | 'direct';
 
-export type ObservableObjectTypeEnum = 'order' | 'user_role' | 'resource' | 'offering_user' | 'importable_resources' | 'service_account' | 'course_account' | 'resource_periodic_limits' | 'offering_resources_sync' | 'resource_api_key_rotation' | 'resource_end_date_change_request' | 'user_profile' | 'user_ssh_key' | 'user_lifecycle' | 'service_provider_account';
+export type ObservableObjectTypeEnum = 'order' | 'user_role' | 'resource' | 'offering_user' | 'importable_resources' | 'service_account' | 'course_account' | 'resource_periodic_limits' | 'offering_resources_sync' | 'resource_api_key_rotation' | 'resource_end_date_change_request' | 'user_profile' | 'user_ssh_key' | 'user_lifecycle';
 
 export type ObtainAuthTokenRequest = {
     /**
@@ -14599,18 +14792,6 @@ export type Offering = {
     readonly url: string;
     readonly uuid: string;
     readonly created: string;
-    /**
-     * Per plan billing mode, whether a plan's billing period changes what is invoiced. False means every component of this offering would price a quantity of its own under that mode, so the period is inert on the invoice.
-     */
-    readonly billing_period_applies: {
-        [key: string]: boolean;
-    };
-    /**
-     * Per plan billing mode, every component of this offering as a plan in that mode would bill it: billing type, measured unit, prepaid flag and limit period.
-     */
-    readonly billing_mode_components: {
-        [key: string]: Array<BillingModeComponent>;
-    };
     name: string;
     /**
      * URL-friendly identifier. Only editable by staff users.
@@ -14792,10 +14973,6 @@ export type OfferingComponent = {
     unit_factor?: number;
     limit_period?: LimitPeriodEnum | NullEnum | null;
     limit_amount?: number | null;
-    /**
-     * Number of decimal places accepted for this component's limit. 0 keeps the limit integer-only.
-     */
-    limit_decimal_places?: number;
     article_code?: string;
     max_value?: number | null;
     min_value?: number | null;
@@ -14803,15 +14980,6 @@ export type OfferingComponent = {
     is_boolean?: boolean;
     default_limit?: number | null;
     readonly factor: number | null;
-    /**
-     * The API's older name for ``billed_per_plan``.
-     *
-     * It used to ask the plugin registry whether this component's type is one
-     * the plugin declares, which left out the OpenStack per-volume-type
-     * quotas: they are created by the volume type sync rather than declared,
-     * so the API called them provider components while the billing resolver
-     * treated them as builtin. Reading the stored flag makes the two agree.
-     */
     readonly is_builtin: boolean;
     is_prepaid?: boolean;
     overage_component?: string | null;
@@ -14871,10 +15039,6 @@ export type OfferingComponentRequest = {
     unit_factor?: number;
     limit_period?: LimitPeriodEnum | NullEnum | null;
     limit_amount?: number | null;
-    /**
-     * Number of decimal places accepted for this component's limit. 0 keeps the limit integer-only.
-     */
-    limit_decimal_places?: number;
     article_code?: string;
     max_value?: number | null;
     min_value?: number | null;
@@ -16842,14 +17006,6 @@ export type OpenStackBackupRestorationRequest = {
     ports: Array<OpenStackNestedPortRequest>;
 };
 
-export type OpenStackConsoleLog = {
-    length?: number;
-};
-
-export type OpenStackConsoleLogRequest = {
-    length?: number;
-};
-
 export type OpenStackCreateFloatingIpRequest = {
     url?: string;
     /**
@@ -17228,12 +17384,6 @@ export type OpenStackInstance = {
      */
     tenant: string;
     readonly external_address: Array<string>;
-    /**
-     * Nova instance metadata as string-to-string pairs. At most 128 entries; keys and values up to 255 characters.
-     */
-    metadata?: {
-        [key: string]: string;
-    };
     rancher_cluster: RancherClusterReference | null;
     readonly marketplace_offering_uuid: string | null;
     readonly marketplace_offering_name: string | null;
@@ -18596,7 +18746,7 @@ export type OpenStackSubNet = {
     /**
      * IP address of the gateway for this subnet
      */
-    gateway_ip?: string | null;
+    gateway_ip?: string | string | null;
     /**
      * If True, no gateway IP address will be allocated
      */
@@ -18620,12 +18770,6 @@ export type OpenStackSubNet = {
      */
     readonly is_connected: boolean;
     readonly port_security_enabled: boolean;
-    /**
-     * Router to attach the subnet to. Optional: when omitted Waldur picks a router of the tenant itself. Cannot be changed here afterwards -- use the router's add/remove interface actions.
-     */
-    router?: string | null;
-    readonly router_name: string | null;
-    readonly router_uuid: string | null;
     readonly marketplace_offering_uuid: string | null;
     readonly marketplace_offering_name: string | null;
     readonly marketplace_offering_type: string | null;
@@ -18670,7 +18814,7 @@ export type OpenStackSubNetRequest = {
     /**
      * IP address of the gateway for this subnet
      */
-    gateway_ip?: string | null;
+    gateway_ip?: string | string | null;
     /**
      * If True, no gateway IP address will be allocated
      */
@@ -18681,14 +18825,6 @@ export type OpenStackSubNetRequest = {
      */
     dns_nameservers?: Array<string | string>;
     host_routes?: Array<OpenStackStaticRouteRequest>;
-    /**
-     * Router to attach the subnet to. Optional: when omitted Waldur picks a router of the tenant itself. Cannot be changed here afterwards -- use the router's add/remove interface actions.
-     */
-    router?: string | null;
-    /**
-     * Create the subnet without attaching it to a router. Off by default, so an omitted field behaves exactly as before: Waldur attaches the subnet to a router of the tenant.
-     */
-    skip_router_connection?: boolean;
 };
 
 export type OpenStackTenant = {
@@ -19033,7 +19169,7 @@ export type OrderCreateRequest = {
     /**
      * Attributes structure depends on the offering type specified in the parent object. Can also be a generic object for offerings without a specific attributes schema.
      */
-    attributes?: MarketplaceOpenPortalCreateOrderAttributes | MarketplaceOpenPortalRemoteCreateOrderAttributes | OpenStackTenantCreateOrderAttributes | OpenStackInstanceCreateOrderAttributes | OpenStackVolumeCreateOrderAttributes | VMwareVirtualMachineCreateOrderAttributes | GenericOrderAttributes;
+    attributes?: AzureVirtualMachineCreateOrderAttributes | AzureSqlServerCreateOrderAttributes | MarketplaceOpenPortalCreateOrderAttributes | MarketplaceOpenPortalRemoteCreateOrderAttributes | OpenStackTenantCreateOrderAttributes | OpenStackInstanceCreateOrderAttributes | OpenStackVolumeCreateOrderAttributes | VMwareVirtualMachineCreateOrderAttributes | GenericOrderAttributes;
     limits?: {
         [key: string]: number;
     };
@@ -19174,8 +19310,6 @@ export type OrderDetails = {
     readonly new_plan_name: string | null;
     readonly old_plan_uuid: string | null;
     readonly new_plan_uuid: string | null;
-    readonly old_plan_billing_mode: string | null;
-    readonly new_plan_billing_mode: string | null;
     readonly old_cost_estimate: number;
     readonly new_cost_estimate: string | null;
     readonly can_terminate: boolean;
@@ -19644,6 +19778,30 @@ export type PatchedAttributeRequest = {
 export type PatchedAwsInstanceRequest = {
     name?: string;
     description?: string;
+};
+
+export type PatchedAzurePublicIpRequest = {
+    description?: string;
+    location?: string;
+    resource_group?: string;
+};
+
+export type PatchedAzureSqlDatabaseRequest = {
+    description?: string;
+    server?: string;
+    charset?: string | null;
+    collation?: string | null;
+};
+
+export type PatchedAzureSqlServerRequest = {
+    description?: string;
+    location?: string;
+    storage_mb?: number | null;
+};
+
+export type PatchedAzureVirtualMachineRequest = {
+    description?: string;
+    location?: string;
 };
 
 export type PatchedBroadcastMessageRequest = {
@@ -20763,7 +20921,7 @@ export type PatchedOpenStackSubNetRequest = {
     /**
      * IP address of the gateway for this subnet
      */
-    gateway_ip?: string | null;
+    gateway_ip?: string | string | null;
     /**
      * If True, no gateway IP address will be allocated
      */
@@ -20774,14 +20932,6 @@ export type PatchedOpenStackSubNetRequest = {
      */
     dns_nameservers?: Array<string | string>;
     host_routes?: Array<OpenStackStaticRouteRequest>;
-    /**
-     * Router to attach the subnet to. Optional: when omitted Waldur picks a router of the tenant itself. Cannot be changed here afterwards -- use the router's add/remove interface actions.
-     */
-    router?: string | null;
-    /**
-     * Create the subnet without attaching it to a router. Off by default, so an omitted field behaves exactly as before: Waldur attaches the subnet to a router of the tenant.
-     */
-    skip_router_connection?: boolean;
 };
 
 export type PatchedOpenStackTenantRequest = {
@@ -21135,10 +21285,6 @@ export type PatchedProviderPlanDetailsRequest = {
      * Forbids creation of new resources.
      */
     archived?: boolean;
-    /**
-     * How the offering's builtin components are billed under this plan. Custom components keep their own accounting type.
-     */
-    billing_mode?: PlanBillingMode;
     unit_price?: string;
     unit?: BillingUnit;
     backend_id?: string;
@@ -21401,7 +21547,7 @@ export type PatchedRequestedResourceRequest = {
         [key: string]: unknown;
     };
     limits?: {
-        [key: string]: number;
+        [key: string]: unknown;
     };
     purchase_order_reference?: string;
     description?: string;
@@ -21634,34 +21780,10 @@ export type PatchedRuleRequest = {
     name?: string;
     user_affiliations?: Array<string>;
     user_email_patterns?: Array<string>;
-    user_identity_sources?: Array<string>;
-    user_nationalities?: Array<string>;
-    user_organization_types?: Array<string>;
-    user_assurance_levels?: Array<string>;
-    /**
-     * Identity provider claims the user must carry, as {"claim": ["accepted", "values"]}. All claims must match; within one claim any value matches. A value ending in '*' matches by prefix.
-     */
-    user_claims?: {
-        [key: string]: Array<string>;
-    };
     customer?: string | null;
     use_user_organization_as_customer_name?: boolean;
-    /**
-     * Create (or join) a project for the matched user. Disable to grant only the organization-level role.
-     */
-    create_project?: boolean;
-    /**
-     * Template for project name. Supports {username}, {email}, {full_name} variables
-     */
-    project_name_template?: string | null;
-    /**
-     * Revoke the roles this rule granted once the user stops matching it. Off by default so enabling a rule cannot silently strip access that is already in use.
-     */
-    revoke_when_unmatched?: boolean;
     project_role?: string | null;
     project_role_name?: string | null;
-    customer_role?: string | null;
-    customer_role_name?: string | null;
     plan?: string | null;
     plan_attributes?: {
         [key: string]: unknown;
@@ -21717,22 +21839,6 @@ export type PatchedSectionRequest = {
     is_standalone?: boolean;
 };
 
-export type PatchedServiceProviderAccountRequest = {
-    username?: string | null;
-    /**
-     * Operational/access state of the user account. Separate from lifecycle state; can be set by the service provider at any time.
-     */
-    runtime_state?: RuntimeStateEnum;
-    /**
-     * Additional comment for pending states like validation or account linking
-     */
-    service_provider_comment?: string;
-    /**
-     * URL link for additional information or actions related to service provider comment
-     */
-    service_provider_comment_url?: string;
-};
-
 export type PatchedServiceProviderRequest = {
     description?: string;
     enable_notifications?: boolean;
@@ -21741,26 +21847,6 @@ export type PatchedServiceProviderRequest = {
      * List of allowed domains for offering endpoints. Only staff can modify this field.
      */
     allowed_domains?: Array<string>;
-    /**
-     * Default for this provider's offerings: hold user accounts per offering (the historical behaviour) or once per provider. Choose 'provider' when one directory fronts several offerings. Any single offering can override this with an 'account_scope' plugin option, so a provider can run both -- for example a cluster with its own separate directory alongside offerings that share the main one.
-     */
-    account_scope?: AccountScope;
-    /**
-     * Provider-level default for the offering plugin option of the same name. Blank means each offering decides for itself.
-     */
-    account_username_generation_policy?: string;
-    /**
-     * Provider-level default home directory prefix. Blank means each offering decides for itself.
-     */
-    account_homedir_prefix?: string;
-    /**
-     * Provider-level default login shell. Blank means each offering decides for itself.
-     */
-    account_login_shell?: string;
-    /**
-     * Provider-level default prefix for anonymized usernames, which are the prefix followed by the account's POSIX UID. Blank means each offering decides for itself.
-     */
-    account_username_anonymized_prefix?: string;
 };
 
 export type PatchedSlurmPeriodicUsagePolicyRequest = {
@@ -22161,7 +22247,6 @@ export type Permission = {
     readonly revoked_by_full_name: string | null;
     readonly revoked_by_username: string | null;
     revoke_reason?: string;
-    readonly source: string;
     readonly role_name: string;
     readonly role_description: string;
     readonly role_uuid: string;
@@ -22321,8 +22406,6 @@ export type PersonalAccessTokenNetworkAclRequest = {
     allowed_networks: Array<string>;
 };
 
-export type PlanBillingMode = 'inherit' | 'limit' | 'usage';
-
 export type PlanComponent = {
     readonly offering_uuid: string;
     readonly offering_name: string;
@@ -22333,7 +22416,10 @@ export type PlanComponent = {
      * Display name for the measured unit, for example, Floating IP.
      */
     readonly component_name: string;
-    readonly measured_unit: string | null;
+    /**
+     * Unit of measurement, for example, GB.
+     */
+    readonly measured_unit: string;
     billing_type: BillingTypeEnum;
     amount?: number;
     /**
@@ -22690,7 +22776,7 @@ export type Project = {
      */
     readonly resources_count: number;
     /**
-     * Answers to the customer's project-metadata checklist (read-only): the latest answer per question.
+     * Answers to the customer's project-metadata checklist (read-only).
      */
     readonly project_metadata: Array<ProjectMetadataAnswer>;
     /**
@@ -22767,9 +22853,11 @@ export type ProjectAccountingSummary = {
     readonly total_credits: string;
     readonly total_spend: string;
     readonly current_month_spend: string;
+    /**
+     * Names of offerings currently attached to the project. Only populated when the include_offering_names query parameter is set.
+     */
+    readonly offering_names: Array<string>;
 };
-
-export type ProjectActionEnum = 'create' | 'existing' | 'not_recreated';
 
 export type ProjectAffiliationUpdateRequest = {
     affiliation?: string | null;
@@ -22804,26 +22892,28 @@ export type ProjectAnswer = {
     readonly unanswered_required_count: number;
 };
 
-export type ProjectAnswerDetail = {
-    readonly project_uuid: string;
-    readonly project_name: string;
-    readonly answer_uuid: string | null;
-    readonly answer_data: {
-        [key: string]: unknown;
-    } | null;
-    readonly answered_by: string | null;
-    /**
-     * When the shown answer was last saved.
-     */
-    readonly answered_at: string | null;
-    readonly requires_review: boolean;
-};
-
 export type ProjectAttachRequest = {
     /**
      * UUID of the project to attach to this managed project
      */
     project_uuid: string;
+};
+
+export type ProjectAwardHistory = {
+    readonly project_uuid: string;
+    readonly project_name: string;
+    readonly awards: Array<ProjectAwardHistoryEntry>;
+};
+
+export type ProjectAwardHistoryEntry = {
+    attached_at?: string;
+    /**
+     * Null while this is the current attachment.
+     */
+    detached_at?: string | null;
+    readonly is_current: boolean;
+    readonly managed_project_identifier: string;
+    readonly managed_project_destination: string;
 };
 
 export type ProjectClassificationSummary = {
@@ -23132,10 +23222,6 @@ export type ProjectMetadataAnswer = {
      * Human-readable answer value; select-type option UUIDs are resolved to their labels.
      */
     answer: unknown;
-    /**
-     * When this answer was last saved.
-     */
-    modified: string;
 };
 
 export type ProjectOrderAutoApproval = {
@@ -24241,18 +24327,6 @@ export type ProviderOfferingDetails = {
     readonly url: string;
     readonly uuid: string;
     readonly created: string;
-    /**
-     * Per plan billing mode, whether a plan's billing period changes what is invoiced. False means every component of this offering would price a quantity of its own under that mode, so the period is inert on the invoice.
-     */
-    readonly billing_period_applies: {
-        [key: string]: boolean;
-    };
-    /**
-     * Per plan billing mode, every component of this offering as a plan in that mode would bill it: billing type, measured unit, prepaid flag and limit period.
-     */
-    readonly billing_mode_components: {
-        [key: string]: Array<BillingModeComponent>;
-    };
     name: string;
     /**
      * URL-friendly identifier. Only editable by staff users.
@@ -24287,7 +24361,6 @@ export type ProviderOfferingDetails = {
     options: OfferingOptions;
     resource_options: OfferingOptions;
     readonly components: Array<OfferingComponent>;
-    readonly limit_precision_advisory: string | null;
     plugin_options: MergedPluginOptions;
     secret_options?: MergedSecretOptions;
     readonly service_attributes?: {
@@ -24414,10 +24487,6 @@ export type ProviderPlanDetails = {
      * Forbids creation of new resources.
      */
     archived?: boolean;
-    /**
-     * How the offering's builtin components are billed under this plan. Custom components keep their own accounting type.
-     */
-    billing_mode?: PlanBillingMode;
     readonly is_active: boolean;
     unit_price?: string;
     unit?: BillingUnit;
@@ -24453,10 +24522,6 @@ export type ProviderPlanDetailsRequest = {
      * Forbids creation of new resources.
      */
     archived?: boolean;
-    /**
-     * How the offering's builtin components are billed under this plan. Custom components keep their own accounting type.
-     */
-    billing_mode?: PlanBillingMode;
     unit_price?: string;
     unit?: BillingUnit;
     backend_id?: string;
@@ -24515,7 +24580,7 @@ export type ProviderRequestedResource = {
         [key: string]: unknown;
     };
     limits?: {
-        [key: string]: number;
+        [key: string]: unknown;
     };
     purchase_order_reference?: string;
     readonly attachment: string;
@@ -24648,7 +24713,6 @@ export type ProviderTicket = {
     readonly modified: string;
     readonly parent_issue_key: string;
     readonly parent_issue_uuid: string;
-    readonly provider_helpdesk_uuid: string | null;
     /**
      * Whether this issue has been escalated.
      */
@@ -24706,21 +24770,6 @@ export type ProviderUser = {
      */
     email?: string;
     image?: string | null;
-};
-
-export type ProviderUsernameCandidate = {
-    username: string;
-    offering_count: number;
-    offering_uuids: Array<string>;
-    has_active_resources: boolean;
-    home_directories: Array<string>;
-};
-
-export type ProviderUsernameConflict = {
-    user_uuid: string;
-    user_username: string;
-    user_full_name: string;
-    candidates: Array<ProviderUsernameCandidate>;
 };
 
 export type PublicCall = {
@@ -24843,18 +24892,6 @@ export type PublicOfferingDetails = {
     readonly url: string;
     readonly uuid: string;
     readonly created: string;
-    /**
-     * Per plan billing mode, whether a plan's billing period changes what is invoiced. False means every component of this offering would price a quantity of its own under that mode, so the period is inert on the invoice.
-     */
-    readonly billing_period_applies: {
-        [key: string]: boolean;
-    };
-    /**
-     * Per plan billing mode, every component of this offering as a plan in that mode would bill it: billing type, measured unit, prepaid flag and limit period.
-     */
-    readonly billing_mode_components: {
-        [key: string]: Array<BillingModeComponent>;
-    };
     name: string;
     /**
      * URL-friendly identifier. Only editable by staff users.
@@ -25380,7 +25417,12 @@ export type QuestionAnswer = {
      * Get count of projects that answered this question.
      */
     readonly answered_projects_count: number;
-    readonly project_answers: Array<ProjectAnswerDetail>;
+    /**
+     * Get all project answers for this question.
+     */
+    readonly project_answers: Array<{
+        [key: string]: unknown;
+    }>;
     /**
      * Get question options for select-type questions.
      */
@@ -25582,8 +25624,6 @@ export type QuestionWithAnswerReviewer = {
      */
     always_requires_review?: boolean;
 };
-
-export type QueueKindEnum = 'consumer' | 'legacy' | 'unknown';
 
 export type Quota = {
     name: string;
@@ -27091,7 +27131,7 @@ export type RequestedResource = {
         [key: string]: unknown;
     };
     limits?: {
-        [key: string]: number;
+        [key: string]: unknown;
     };
     purchase_order_reference?: string;
     readonly attachment: string;
@@ -27124,7 +27164,7 @@ export type RequestedResourceRequest = {
         [key: string]: unknown;
     };
     limits?: {
-        [key: string]: number;
+        [key: string]: unknown;
     };
     purchase_order_reference?: string;
     description?: string;
@@ -27221,11 +27261,11 @@ export type Resource = {
     readonly parent_name: string;
     backend_metadata: BackendMetadata;
     /**
-     * Returns True if the resource bills any component by usage under its plan.
+     * Returns True if the resource has usage-based components that track variable consumption.
      */
     readonly is_usage_based: boolean;
     /**
-     * Returns True if the resource bills any component on user-adjustable limits under its plan.
+     * Returns True if the resource has limit-based components with user-adjustable quotas.
      */
     readonly is_limit_based: boolean;
     name: string;
@@ -27534,7 +27574,7 @@ export type ResourceLimitChangeRequest = {
 export type ResourceLimitChangeRequestCreate = {
     resource: string;
     requested_limits: {
-        [key: string]: number;
+        [key: string]: unknown;
     };
     readonly uuid: string;
     readonly state: string;
@@ -27543,7 +27583,7 @@ export type ResourceLimitChangeRequestCreate = {
 export type ResourceLimitChangeRequestCreateRequest = {
     resource: string;
     requested_limits: {
-        [key: string]: number;
+        [key: string]: unknown;
     };
 };
 
@@ -28706,14 +28746,6 @@ export type RmqQueueStats = {
      */
     readonly object_type: string | null;
     /**
-     * Parsed EventConsumer UUID from a unified consumer queue name
-     */
-    readonly consumer_uuid: string | null;
-    /**
-     * How Waldur uses the queue: a unified consumer queue, a legacy subscription queue, or one whose name matches neither
-     */
-    queue_kind: QueueKindEnum;
-    /**
      * Message TTL in milliseconds
      */
     readonly message_ttl: number | null;
@@ -29163,31 +29195,6 @@ export type RoleDetails = {
     readonly customer_name: string | null;
 };
 
-export type RoleHygieneFinding = {
-    check: string;
-    severity: RoleHygieneFindingSeverityEnum;
-    role_uuid: string;
-    role_name: string;
-    role_description: string;
-    scope_type: RoleType | NullEnum | null;
-    is_system_role: boolean;
-    message: string;
-    details: {
-        [key: string]: unknown;
-    };
-};
-
-export type RoleHygieneFindingSeverityEnum = 'error' | 'warning' | 'info';
-
-export type RoleHygieneReport = {
-    roles_checked: number;
-    roles_with_findings: number;
-    error_count: number;
-    warning_count: number;
-    info_count: number;
-    findings: Array<RoleHygieneFinding>;
-};
-
 export type RoleModifyRequest = {
     name: string;
     description?: string;
@@ -29302,38 +29309,13 @@ export type Rule = {
     readonly url: string;
     user_affiliations?: Array<string>;
     user_email_patterns?: Array<string>;
-    user_identity_sources?: Array<string>;
-    user_nationalities?: Array<string>;
-    user_organization_types?: Array<string>;
-    user_assurance_levels?: Array<string>;
-    /**
-     * Identity provider claims the user must carry, as {"claim": ["accepted", "values"]}. All claims must match; within one claim any value matches. A value ending in '*' matches by prefix.
-     */
-    user_claims?: {
-        [key: string]: Array<string>;
-    };
     customer?: string | null;
     readonly customer_name: string;
     readonly customer_uuid: string;
     use_user_organization_as_customer_name?: boolean;
-    /**
-     * Create (or join) a project for the matched user. Disable to grant only the organization-level role.
-     */
-    create_project?: boolean;
-    /**
-     * Template for project name. Supports {username}, {email}, {full_name} variables
-     */
-    project_name_template?: string | null;
-    /**
-     * Revoke the roles this rule granted once the user stops matching it. Off by default so enabling a rule cannot silently strip access that is already in use.
-     */
-    revoke_when_unmatched?: boolean;
     project_role?: string | null;
     readonly project_role_display_name: string;
     readonly project_role_description: string;
-    customer_role?: string | null;
-    readonly customer_role_display_name: string;
-    readonly customer_role_description: string;
     plan?: string | null;
     plan_attributes?: {
         [key: string]: unknown;
@@ -29352,34 +29334,10 @@ export type RuleRequest = {
     name: string;
     user_affiliations?: Array<string>;
     user_email_patterns?: Array<string>;
-    user_identity_sources?: Array<string>;
-    user_nationalities?: Array<string>;
-    user_organization_types?: Array<string>;
-    user_assurance_levels?: Array<string>;
-    /**
-     * Identity provider claims the user must carry, as {"claim": ["accepted", "values"]}. All claims must match; within one claim any value matches. A value ending in '*' matches by prefix.
-     */
-    user_claims?: {
-        [key: string]: Array<string>;
-    };
     customer?: string | null;
     use_user_organization_as_customer_name?: boolean;
-    /**
-     * Create (or join) a project for the matched user. Disable to grant only the organization-level role.
-     */
-    create_project?: boolean;
-    /**
-     * Template for project name. Supports {username}, {email}, {full_name} variables
-     */
-    project_name_template?: string | null;
-    /**
-     * Revoke the roles this rule granted once the user stops matching it. Off by default so enabling a rule cannot silently strip access that is already in use.
-     */
-    revoke_when_unmatched?: boolean;
     project_role?: string | null;
     project_role_name?: string | null;
-    customer_role?: string | null;
-    customer_role_name?: string | null;
     plan?: string | null;
     plan_attributes?: {
         [key: string]: unknown;
@@ -29405,26 +29363,12 @@ export type RuleTestMatchResponse = {
     user_registration_method: string;
     user_identity_source: string;
     user_affiliations: Array<string>;
-    /**
-     * Values the user carries for each claim the rule requires.
-     */
-    user_claims: {
-        [key: string]: Array<string>;
-    };
-    /**
-     * Claims the rule matches on that no active identity provider passes through, so Waldur never receives them. Distinguishes 'the provider sent a different value' from 'the provider never sent this claim', which need opposite fixes.
-     */
-    unconfigured_claims: Array<string>;
     user_is_protected: boolean;
     filter_results: Array<FilterCheckResult>;
     customer_lookup_performed: boolean;
     customer_candidates: Array<CustomerCandidate>;
     customer_lookup_ambiguous: boolean;
     resolved_project_name: string | null;
-    /**
-     * What provisioning does with the rule's project for this user: 'create' a new one, reuse an 'existing' one, or leave it deleted ('not_recreated') because this rule provisioned it before. Null when the rule creates no project or would not provision.
-     */
-    project_action: ProjectActionEnum | NullEnum | null;
 };
 
 export type RuntimeStateEnum = 'Active' | 'Pending account linking' | 'Pending additional validation';
@@ -29768,26 +29712,6 @@ export type ServiceProvider = {
      * List of allowed domains for offering endpoints. Only staff can modify this field.
      */
     allowed_domains?: Array<string>;
-    /**
-     * Default for this provider's offerings: hold user accounts per offering (the historical behaviour) or once per provider. Choose 'provider' when one directory fronts several offerings. Any single offering can override this with an 'account_scope' plugin option, so a provider can run both -- for example a cluster with its own separate directory alongside offerings that share the main one.
-     */
-    account_scope?: AccountScope;
-    /**
-     * Provider-level default for the offering plugin option of the same name. Blank means each offering decides for itself.
-     */
-    account_username_generation_policy?: string;
-    /**
-     * Provider-level default home directory prefix. Blank means each offering decides for itself.
-     */
-    account_homedir_prefix?: string;
-    /**
-     * Provider-level default login shell. Blank means each offering decides for itself.
-     */
-    account_login_shell?: string;
-    /**
-     * Provider-level default prefix for anonymized usernames, which are the prefix followed by the account's POSIX UID. Blank means each offering decides for itself.
-     */
-    account_username_anonymized_prefix?: string;
 };
 
 export type ServiceProviderAccess = {
@@ -29799,63 +29723,6 @@ export type ServiceProviderAccess = {
     consent_date: string | null;
     consent_version: string | null;
     provider_team?: Array<ProviderTeamUser>;
-};
-
-export type ServiceProviderAccount = {
-    readonly url: string;
-    readonly uuid: string;
-    readonly created: string;
-    readonly modified: string;
-    readonly service_provider: string;
-    readonly service_provider_uuid: string;
-    readonly service_provider_name: string;
-    readonly user: string;
-    readonly user_uuid: string;
-    /**
-     * Required. 128 characters or fewer. Lowercase letters, numbers and @/./+/-/_ characters
-     */
-    readonly user_username: string;
-    readonly user_full_name: string;
-    /**
-     * Email address
-     */
-    readonly user_email: string;
-    username?: string | null;
-    state: OfferingUserState;
-    /**
-     * Operational/access state of the user account. Separate from lifecycle state; can be set by the service provider at any time.
-     */
-    runtime_state?: RuntimeStateEnum;
-    readonly is_restricted: boolean;
-    /**
-     * Additional comment for pending states like validation or account linking
-     */
-    service_provider_comment?: string;
-    /**
-     * URL link for additional information or actions related to service provider comment
-     */
-    service_provider_comment_url?: string;
-    readonly uidnumber: number | null;
-    readonly primarygroup: number | null;
-    readonly login_shell: string | null;
-    readonly home_directory: string | null;
-    readonly offering_count: number;
-};
-
-export type ServiceProviderAccountRequest = {
-    username?: string | null;
-    /**
-     * Operational/access state of the user account. Separate from lifecycle state; can be set by the service provider at any time.
-     */
-    runtime_state?: RuntimeStateEnum;
-    /**
-     * Additional comment for pending states like validation or account linking
-     */
-    service_provider_comment?: string;
-    /**
-     * URL link for additional information or actions related to service provider comment
-     */
-    service_provider_comment_url?: string;
 };
 
 export type ServiceProviderApiSecretCode = {
@@ -29908,26 +29775,6 @@ export type ServiceProviderRequest = {
      * List of allowed domains for offering endpoints. Only staff can modify this field.
      */
     allowed_domains?: Array<string>;
-    /**
-     * Default for this provider's offerings: hold user accounts per offering (the historical behaviour) or once per provider. Choose 'provider' when one directory fronts several offerings. Any single offering can override this with an 'account_scope' plugin option, so a provider can run both -- for example a cluster with its own separate directory alongside offerings that share the main one.
-     */
-    account_scope?: AccountScope;
-    /**
-     * Provider-level default for the offering plugin option of the same name. Blank means each offering decides for itself.
-     */
-    account_username_generation_policy?: string;
-    /**
-     * Provider-level default home directory prefix. Blank means each offering decides for itself.
-     */
-    account_homedir_prefix?: string;
-    /**
-     * Provider-level default login shell. Blank means each offering decides for itself.
-     */
-    account_login_shell?: string;
-    /**
-     * Provider-level default prefix for anonymized usernames, which are the prefix followed by the account's POSIX UID. Blank means each offering decides for itself.
-     */
-    account_username_anonymized_prefix?: string;
 };
 
 export type ServiceProviderRevenues = {
@@ -31801,10 +31648,6 @@ export type UpdateOfferingComponentRequest = {
     unit_factor?: number;
     limit_period?: LimitPeriodEnum | NullEnum | null;
     limit_amount?: number | null;
-    /**
-     * Number of decimal places accepted for this component's limit. 0 keeps the limit integer-only.
-     */
-    limit_decimal_places?: number;
     article_code?: string;
     max_value?: number | null;
     min_value?: number | null;
@@ -32014,12 +31857,6 @@ export type User = {
      * Designates that the user was deactivated by an administrator and must not be reactivated automatically by the role-sync task. Visible to staff and support.
      */
     readonly is_admin_deactivated: boolean;
-    /**
-     * Extra details from authentication backend.
-     */
-    readonly details: {
-        [key: string]: unknown;
-    };
 };
 
 export type UserAction = {
@@ -32471,12 +32308,6 @@ export type UserMe = {
      * Designates that the user was deactivated by an administrator and must not be reactivated automatically by the role-sync task. Visible to staff and support.
      */
     readonly is_admin_deactivated: boolean;
-    /**
-     * Extra details from authentication backend.
-     */
-    readonly details: {
-        [key: string]: unknown;
-    };
     profile_completeness: ProfileCompleteness;
 };
 
@@ -32738,11 +32569,11 @@ export type UserRoleDetails = {
      * Required. 128 characters or fewer. Lowercase letters, numbers and @/./+/-/_ characters
      */
     readonly user_username: string;
+    readonly user_slug: string;
     readonly user_uuid: string;
     readonly user_image: string;
     readonly created_by_full_name: string;
     readonly created_by_uuid: string;
-    readonly source: string;
 };
 
 export type UserRoleExpirationTime = {
@@ -33315,13 +33146,6 @@ export type WebHookRequest = {
     content_type?: WebHookContentTypeEnum;
 };
 
-export type WebShellTicket = {
-    /**
-     * Single-use link that opens the web shell. Valid for one minute; the ticket is in the URL fragment.
-     */
-    readonly url: string;
-};
-
 export type WebhookPayload = {
     event_type: string;
     issue_backend_id?: string;
@@ -33369,6 +33193,20 @@ export type OfferingProfileRole = {
     name: string;
     content_type: string | null;
     description: string;
+};
+
+export type AzureVirtualMachineCreateOrderAttributes = {
+    name: string;
+    description?: string;
+    size: string;
+    image: string;
+    location: string;
+};
+
+export type AzureSqlServerCreateOrderAttributes = {
+    name: string;
+    description?: string;
+    location: string;
 };
 
 export type MarketplaceOpenPortalCreateOrderAttributes = {
@@ -33481,12 +33319,6 @@ export type OpenStackInstanceCreateOrderAttributes = {
      * Additional data volumes to attach to the instance
      */
     data_volumes?: Array<OpenStackDataVolumeRequest>;
-    /**
-     * Nova instance metadata as string-to-string pairs. At most 128 entries; keys and values up to 255 characters.
-     */
-    metadata?: {
-        [key: string]: string;
-    };
 };
 
 export type OpenStackVolumeCreateOrderAttributes = {
@@ -34328,26 +34160,6 @@ export type ServiceProviderRequestForm = {
      * List of allowed domains for offering endpoints. Only staff can modify this field.
      */
     allowed_domains?: Array<string>;
-    /**
-     * Default for this provider's offerings: hold user accounts per offering (the historical behaviour) or once per provider. Choose 'provider' when one directory fronts several offerings. Any single offering can override this with an 'account_scope' plugin option, so a provider can run both -- for example a cluster with its own separate directory alongside offerings that share the main one.
-     */
-    account_scope?: AccountScope;
-    /**
-     * Provider-level default for the offering plugin option of the same name. Blank means each offering decides for itself.
-     */
-    account_username_generation_policy?: string;
-    /**
-     * Provider-level default home directory prefix. Blank means each offering decides for itself.
-     */
-    account_homedir_prefix?: string;
-    /**
-     * Provider-level default login shell. Blank means each offering decides for itself.
-     */
-    account_login_shell?: string;
-    /**
-     * Provider-level default prefix for anonymized usernames, which are the prefix followed by the account's POSIX UID. Blank means each offering decides for itself.
-     */
-    account_username_anonymized_prefix?: string;
 };
 
 export type ServiceProviderRequestMultipart = {
@@ -34359,26 +34171,6 @@ export type ServiceProviderRequestMultipart = {
      * List of allowed domains for offering endpoints. Only staff can modify this field.
      */
     allowed_domains?: Array<string>;
-    /**
-     * Default for this provider's offerings: hold user accounts per offering (the historical behaviour) or once per provider. Choose 'provider' when one directory fronts several offerings. Any single offering can override this with an 'account_scope' plugin option, so a provider can run both -- for example a cluster with its own separate directory alongside offerings that share the main one.
-     */
-    account_scope?: AccountScope;
-    /**
-     * Provider-level default for the offering plugin option of the same name. Blank means each offering decides for itself.
-     */
-    account_username_generation_policy?: string;
-    /**
-     * Provider-level default home directory prefix. Blank means each offering decides for itself.
-     */
-    account_homedir_prefix?: string;
-    /**
-     * Provider-level default login shell. Blank means each offering decides for itself.
-     */
-    account_login_shell?: string;
-    /**
-     * Provider-level default prefix for anonymized usernames, which are the prefix followed by the account's POSIX UID. Blank means each offering decides for itself.
-     */
-    account_username_anonymized_prefix?: string;
 };
 
 export type PatchedServiceProviderRequestForm = {
@@ -34389,26 +34181,6 @@ export type PatchedServiceProviderRequestForm = {
      * List of allowed domains for offering endpoints. Only staff can modify this field.
      */
     allowed_domains?: Array<string>;
-    /**
-     * Default for this provider's offerings: hold user accounts per offering (the historical behaviour) or once per provider. Choose 'provider' when one directory fronts several offerings. Any single offering can override this with an 'account_scope' plugin option, so a provider can run both -- for example a cluster with its own separate directory alongside offerings that share the main one.
-     */
-    account_scope?: AccountScope;
-    /**
-     * Provider-level default for the offering plugin option of the same name. Blank means each offering decides for itself.
-     */
-    account_username_generation_policy?: string;
-    /**
-     * Provider-level default home directory prefix. Blank means each offering decides for itself.
-     */
-    account_homedir_prefix?: string;
-    /**
-     * Provider-level default login shell. Blank means each offering decides for itself.
-     */
-    account_login_shell?: string;
-    /**
-     * Provider-level default prefix for anonymized usernames, which are the prefix followed by the account's POSIX UID. Blank means each offering decides for itself.
-     */
-    account_username_anonymized_prefix?: string;
 };
 
 export type PatchedServiceProviderRequestMultipart = {
@@ -34419,26 +34191,6 @@ export type PatchedServiceProviderRequestMultipart = {
      * List of allowed domains for offering endpoints. Only staff can modify this field.
      */
     allowed_domains?: Array<string>;
-    /**
-     * Default for this provider's offerings: hold user accounts per offering (the historical behaviour) or once per provider. Choose 'provider' when one directory fronts several offerings. Any single offering can override this with an 'account_scope' plugin option, so a provider can run both -- for example a cluster with its own separate directory alongside offerings that share the main one.
-     */
-    account_scope?: AccountScope;
-    /**
-     * Provider-level default for the offering plugin option of the same name. Blank means each offering decides for itself.
-     */
-    account_username_generation_policy?: string;
-    /**
-     * Provider-level default home directory prefix. Blank means each offering decides for itself.
-     */
-    account_homedir_prefix?: string;
-    /**
-     * Provider-level default login shell. Blank means each offering decides for itself.
-     */
-    account_login_shell?: string;
-    /**
-     * Provider-level default prefix for anonymized usernames, which are the prefix followed by the account's POSIX UID. Blank means each offering decides for itself.
-     */
-    account_username_anonymized_prefix?: string;
 };
 
 export type OnboardingJustificationDocumentationRequestForm = {
@@ -34736,7 +34488,6 @@ export type ConstanceSettingsRequestForm = {
     WALDUR_SUPPORT_ENABLED?: boolean;
     WALDUR_SUPPORT_ACTIVE_BACKEND_TYPE?: WaldursupportactivebackendtypeEnum;
     WALDUR_SUPPORT_DISPLAY_REQUEST_TYPE?: boolean;
-    WALDUR_SUPPORT_ISSUE_KEY_PREFIX?: string;
     WALDUR_SUPPORT_PROVIDER_ROUTING_ENABLED?: boolean;
     WALDUR_SUPPORT_AUTO_ASSIGN?: boolean;
     WALDUR_SUPPORT_AUTO_ASSIGN_STRATEGY?: string;
@@ -34846,7 +34597,6 @@ export type ConstanceSettingsRequestForm = {
     OIDC_CLIENT_SECRET?: string;
     OIDC_USER_FIELD?: string;
     OIDC_CACHE_TIMEOUT?: number;
-    OIDC_REGISTRATION_METHOD?: string;
     OIDC_ACCESS_TOKEN_ENABLED?: boolean;
     OIDC_BLOCK_CREATION_OF_UNINVITED_USERS?: boolean;
     OIDC_BLOCK_CREATION_OF_UNINVITED_USERS_RESPONSE_MESSAGE?: string;
@@ -35070,7 +34820,6 @@ export type ConstanceSettingsRequestMultipart = {
     WALDUR_SUPPORT_ENABLED?: boolean;
     WALDUR_SUPPORT_ACTIVE_BACKEND_TYPE?: WaldursupportactivebackendtypeEnum;
     WALDUR_SUPPORT_DISPLAY_REQUEST_TYPE?: boolean;
-    WALDUR_SUPPORT_ISSUE_KEY_PREFIX?: string;
     WALDUR_SUPPORT_PROVIDER_ROUTING_ENABLED?: boolean;
     WALDUR_SUPPORT_AUTO_ASSIGN?: boolean;
     WALDUR_SUPPORT_AUTO_ASSIGN_STRATEGY?: string;
@@ -35180,7 +34929,6 @@ export type ConstanceSettingsRequestMultipart = {
     OIDC_CLIENT_SECRET?: string;
     OIDC_USER_FIELD?: string;
     OIDC_CACHE_TIMEOUT?: number;
-    OIDC_REGISTRATION_METHOD?: string;
     OIDC_ACCESS_TOKEN_ENABLED?: boolean;
     OIDC_BLOCK_CREATION_OF_UNINVITED_USERS?: boolean;
     OIDC_BLOCK_CREATION_OF_UNINVITED_USERS_RESPONSE_MESSAGE?: string;
@@ -35825,9 +35573,19 @@ export type AwsInstanceFieldEnum = 'access_url' | 'backend_id' | 'cores' | 'crea
 
 export type AwsVolumeFieldEnum = 'access_url' | 'backend_id' | 'created' | 'customer' | 'customer_abbreviation' | 'customer_name' | 'customer_native_name' | 'customer_uuid' | 'description' | 'device' | 'error_message' | 'error_traceback' | 'instance' | 'is_limit_based' | 'is_usage_based' | 'marketplace_category_name' | 'marketplace_category_uuid' | 'marketplace_offering_name' | 'marketplace_offering_plugin_options' | 'marketplace_offering_type' | 'marketplace_offering_uuid' | 'marketplace_plan_uuid' | 'marketplace_resource_state' | 'marketplace_resource_uuid' | 'modified' | 'name' | 'project' | 'project_name' | 'project_uuid' | 'region' | 'resource_type' | 'runtime_state' | 'service_name' | 'service_settings' | 'service_settings_error_message' | 'service_settings_state' | 'service_settings_uuid' | 'size' | 'state' | 'url' | 'uuid' | 'volume_type';
 
+export type AzurePublicIpFieldEnum = 'access_url' | 'backend_id' | 'created' | 'customer' | 'customer_abbreviation' | 'customer_name' | 'customer_native_name' | 'customer_uuid' | 'description' | 'error_message' | 'error_traceback' | 'is_limit_based' | 'is_usage_based' | 'location' | 'marketplace_category_name' | 'marketplace_category_uuid' | 'marketplace_offering_name' | 'marketplace_offering_plugin_options' | 'marketplace_offering_type' | 'marketplace_offering_uuid' | 'marketplace_plan_uuid' | 'marketplace_resource_state' | 'marketplace_resource_uuid' | 'modified' | 'name' | 'project' | 'project_name' | 'project_uuid' | 'resource_group' | 'resource_type' | 'service_name' | 'service_settings' | 'service_settings_error_message' | 'service_settings_state' | 'service_settings_uuid' | 'state' | 'url' | 'uuid';
+
+export type AzureResourceGroupFieldEnum = 'access_url' | 'backend_id' | 'created' | 'customer' | 'customer_abbreviation' | 'customer_name' | 'customer_native_name' | 'customer_uuid' | 'description' | 'error_message' | 'error_traceback' | 'is_limit_based' | 'is_usage_based' | 'location' | 'marketplace_category_name' | 'marketplace_category_uuid' | 'marketplace_offering_name' | 'marketplace_offering_plugin_options' | 'marketplace_offering_type' | 'marketplace_offering_uuid' | 'marketplace_plan_uuid' | 'marketplace_resource_state' | 'marketplace_resource_uuid' | 'modified' | 'name' | 'project' | 'project_name' | 'project_uuid' | 'resource_type' | 'service_name' | 'service_settings' | 'service_settings_error_message' | 'service_settings_state' | 'service_settings_uuid' | 'state' | 'url' | 'uuid';
+
+export type AzureSqlDatabaseFieldEnum = 'access_url' | 'backend_id' | 'charset' | 'collation' | 'created' | 'customer' | 'customer_abbreviation' | 'customer_name' | 'customer_native_name' | 'customer_uuid' | 'description' | 'error_message' | 'error_traceback' | 'is_limit_based' | 'is_usage_based' | 'location_name' | 'marketplace_category_name' | 'marketplace_category_uuid' | 'marketplace_offering_name' | 'marketplace_offering_plugin_options' | 'marketplace_offering_type' | 'marketplace_offering_uuid' | 'marketplace_plan_uuid' | 'marketplace_resource_state' | 'marketplace_resource_uuid' | 'modified' | 'name' | 'project' | 'project_name' | 'project_uuid' | 'resource_group_name' | 'resource_type' | 'server' | 'server_marketplace_uuid' | 'server_name' | 'server_uuid' | 'service_name' | 'service_settings' | 'service_settings_error_message' | 'service_settings_state' | 'service_settings_uuid' | 'state' | 'url' | 'uuid';
+
+export type AzureSqlServerFieldEnum = 'access_url' | 'backend_id' | 'created' | 'customer' | 'customer_abbreviation' | 'customer_name' | 'customer_native_name' | 'customer_uuid' | 'description' | 'error_message' | 'error_traceback' | 'fqdn' | 'is_limit_based' | 'is_usage_based' | 'location' | 'location_name' | 'marketplace_category_name' | 'marketplace_category_uuid' | 'marketplace_offering_name' | 'marketplace_offering_plugin_options' | 'marketplace_offering_type' | 'marketplace_offering_uuid' | 'marketplace_plan_uuid' | 'marketplace_resource_state' | 'marketplace_resource_uuid' | 'modified' | 'name' | 'password' | 'project' | 'project_name' | 'project_uuid' | 'resource_group' | 'resource_group_name' | 'resource_type' | 'service_name' | 'service_settings' | 'service_settings_error_message' | 'service_settings_state' | 'service_settings_uuid' | 'state' | 'storage_mb' | 'url' | 'username' | 'uuid';
+
+export type AzureVirtualMachineFieldEnum = 'access_url' | 'backend_id' | 'cores' | 'created' | 'customer' | 'customer_abbreviation' | 'customer_name' | 'customer_native_name' | 'customer_uuid' | 'description' | 'disk' | 'error_message' | 'error_traceback' | 'external_ips' | 'image' | 'image_name' | 'internal_ips' | 'is_limit_based' | 'is_usage_based' | 'key_fingerprint' | 'key_name' | 'latitude' | 'location' | 'location_name' | 'longitude' | 'marketplace_category_name' | 'marketplace_category_uuid' | 'marketplace_offering_name' | 'marketplace_offering_plugin_options' | 'marketplace_offering_type' | 'marketplace_offering_uuid' | 'marketplace_plan_uuid' | 'marketplace_resource_state' | 'marketplace_resource_uuid' | 'min_disk' | 'min_ram' | 'modified' | 'name' | 'password' | 'project' | 'project_name' | 'project_uuid' | 'ram' | 'resource_group' | 'resource_group_name' | 'resource_type' | 'runtime_state' | 'service_name' | 'service_settings' | 'service_settings_error_message' | 'service_settings_state' | 'service_settings_uuid' | 'size' | 'size_name' | 'ssh_public_key' | 'start_time' | 'state' | 'url' | 'user_data' | 'username' | 'uuid';
+
 export type BackendResourceReqOEnum = '-created' | 'created';
 
-export type OfferingFieldEnum = 'access_url' | 'attributes' | 'backend_id' | 'backend_metadata' | 'billable' | 'billing_mode_components' | 'billing_period_applies' | 'billing_type_classification' | 'can_update_integration' | 'can_update_options' | 'category' | 'category_title' | 'category_uuid' | 'citation_count' | 'compliance_checklist' | 'components' | 'country' | 'created' | 'customer' | 'customer_name' | 'customer_uuid' | 'datacite_doi' | 'default_access_subnets' | 'description' | 'documentation_url' | 'effective_available_limits' | 'endpoints' | 'files' | 'full_description' | 'getting_started' | 'googlecalendar' | 'has_compliance_requirements' | 'helpdesk_url' | 'image' | 'integration_guide' | 'is_accessible' | 'latitude' | 'longitude' | 'name' | 'offering_group' | 'offering_group_title' | 'offering_group_uuid' | 'open_for_proposals' | 'options' | 'order_count' | 'organization_groups' | 'parent_description' | 'parent_name' | 'parent_uuid' | 'partitions' | 'paused_reason' | 'plans' | 'plugin_options' | 'privacy_policy_link' | 'profile_name' | 'profile_uuid' | 'project' | 'project_name' | 'project_uuid' | 'qos_profiles' | 'quotas' | 'resource_options' | 'scope' | 'scope_error_message' | 'scope_name' | 'scope_resource' | 'scope_resource_name' | 'scope_resource_uuid' | 'scope_state' | 'scope_uuid' | 'screenshots' | 'secret_options' | 'service_attributes' | 'shared' | 'slug' | 'software_catalogs' | 'state' | 'tags' | 'thumbnail' | 'total_cost' | 'total_cost_estimated' | 'total_customers' | 'type' | 'url' | 'user_has_consent' | 'user_has_offering_user' | 'uuid' | 'vendor_details';
+export type OfferingFieldEnum = 'access_url' | 'attributes' | 'backend_id' | 'backend_metadata' | 'billable' | 'billing_type_classification' | 'can_update_integration' | 'can_update_options' | 'category' | 'category_title' | 'category_uuid' | 'citation_count' | 'compliance_checklist' | 'components' | 'country' | 'created' | 'customer' | 'customer_name' | 'customer_uuid' | 'datacite_doi' | 'default_access_subnets' | 'description' | 'documentation_url' | 'effective_available_limits' | 'endpoints' | 'files' | 'full_description' | 'getting_started' | 'googlecalendar' | 'has_compliance_requirements' | 'helpdesk_url' | 'image' | 'integration_guide' | 'is_accessible' | 'latitude' | 'longitude' | 'name' | 'offering_group' | 'offering_group_title' | 'offering_group_uuid' | 'open_for_proposals' | 'options' | 'order_count' | 'organization_groups' | 'parent_description' | 'parent_name' | 'parent_uuid' | 'partitions' | 'paused_reason' | 'plans' | 'plugin_options' | 'privacy_policy_link' | 'profile_name' | 'profile_uuid' | 'project' | 'project_name' | 'project_uuid' | 'qos_profiles' | 'quotas' | 'resource_options' | 'scope' | 'scope_error_message' | 'scope_name' | 'scope_resource' | 'scope_resource_name' | 'scope_resource_uuid' | 'scope_state' | 'scope_uuid' | 'screenshots' | 'secret_options' | 'service_attributes' | 'shared' | 'slug' | 'software_catalogs' | 'state' | 'tags' | 'thumbnail' | 'total_cost' | 'total_cost_estimated' | 'total_customers' | 'type' | 'url' | 'user_has_consent' | 'user_has_offering_user' | 'uuid' | 'vendor_details';
 
 export type BookingResourceFieldEnum = 'attributes' | 'available_actions' | 'backend_id' | 'backend_metadata' | 'can_terminate' | 'category_icon' | 'category_title' | 'category_uuid' | 'consumer_reviewed_by' | 'consumer_reviewed_by_full_name' | 'consumer_reviewed_by_username' | 'created' | 'created_by' | 'created_by_full_name' | 'created_by_username' | 'creation_order' | 'current_usages' | 'customer_name' | 'customer_slug' | 'customer_uuid' | 'description' | 'downscaled' | 'effective_id' | 'end_date' | 'end_date_requested_by' | 'end_date_updated_at' | 'endpoints' | 'error_message' | 'error_traceback' | 'has_api_keys' | 'is_limit_based' | 'is_usage_based' | 'last_sync' | 'limit_usage' | 'limits' | 'modified' | 'name' | 'offering' | 'offering_backend_id' | 'offering_billable' | 'offering_components' | 'offering_description' | 'offering_image' | 'offering_name' | 'offering_plugin_options' | 'offering_shared' | 'offering_slug' | 'offering_state' | 'offering_thumbnail' | 'offering_type' | 'offering_uuid' | 'options' | 'order_in_progress' | 'parent_name' | 'parent_offering_name' | 'parent_offering_slug' | 'parent_offering_uuid' | 'parent_uuid' | 'paused' | 'plan' | 'plan_description' | 'plan_name' | 'plan_unit' | 'plan_uuid' | 'project' | 'project_description' | 'project_effective_end_date' | 'project_end_date' | 'project_end_date_requested_by' | 'project_is_in_grace_period' | 'project_name' | 'project_slug' | 'project_start_date' | 'project_uuid' | 'provider_description' | 'provider_name' | 'provider_slug' | 'provider_uuid' | 'renewal_date' | 'report' | 'resource_effective_end_date' | 'resource_type' | 'resource_uuid' | 'restrict_member_access' | 'scope' | 'service_settings_uuid' | 'slots' | 'slug' | 'state' | 'url' | 'usage_limit_restriction' | 'user_requires_reconsent' | 'username' | 'uuid';
 
@@ -35839,7 +35597,7 @@ export type BroadcastMessageOEnum = '-author_full_name' | '-created' | '-subject
 
 export type CallManagingOrganisationOEnum = '-customer_name' | 'customer_name';
 
-export type UserRoleDetailsFieldEnum = 'created' | 'created_by_full_name' | 'created_by_uuid' | 'expiration_time' | 'role_name' | 'role_uuid' | 'source' | 'user_email' | 'user_full_name' | 'user_image' | 'user_username' | 'user_uuid' | 'uuid';
+export type UserRoleDetailsFieldEnum = 'created' | 'created_by_full_name' | 'created_by_uuid' | 'expiration_time' | 'role_name' | 'role_uuid' | 'user_email' | 'user_full_name' | 'user_image' | 'user_slug' | 'user_username' | 'user_uuid' | 'uuid';
 
 export type UserRoleDetailsOEnum = 'created' | 'email' | 'expiration_time' | 'full_name' | 'native_name' | 'role' | 'username';
 
@@ -35869,13 +35627,13 @@ export type CustomerPermissionReviewOEnum = '-closed' | '-created' | 'closed' | 
 
 export type CustomerQuotasQuotaNameEnum = 'estimated_price' | 'nc_resource_count' | 'os_cpu_count' | 'os_ram_size' | 'os_storage_size' | 'vpc_cpu_count' | 'vpc_floating_ip_count' | 'vpc_instance_count' | 'vpc_ram_size' | 'vpc_storage_size';
 
-export type CustomerFieldEnum = 'abbreviation' | 'access_subnets' | 'accounting_start_date' | 'address' | 'agreement_number' | 'apartment_nr' | 'archived' | 'backend_id' | 'bank_account' | 'bank_name' | 'billing_price_estimate' | 'blocked' | 'call_managing_organization_uuid' | 'city' | 'contact_details' | 'country' | 'country_name' | 'created' | 'customer_credit' | 'customer_unallocated_credit' | 'default_affiliations' | 'default_tax_percent' | 'description' | 'display_billing_info_in_projects' | 'display_name' | 'domain' | 'email' | 'grace_period_days' | 'has_active_helpdesk' | 'has_affiliate_links' | 'homepage' | 'house_nr' | 'household' | 'image' | 'is_service_provider' | 'is_service_provider_manager_only' | 'latitude' | 'longitude' | 'max_service_accounts' | 'name' | 'native_name' | 'notification_emails' | 'organization_groups' | 'parish' | 'payment_profiles' | 'phone_number' | 'postal' | 'project_metadata_checklist' | 'project_slug_template' | 'projects_count' | 'registration_code' | 'service_provider' | 'service_provider_uuid' | 'slug' | 'sponsor_number' | 'state' | 'street' | 'url' | 'user_affiliations' | 'user_email_patterns' | 'user_identity_sources' | 'users_count' | 'uuid' | 'vat_code';
+export type CustomerFieldEnum = 'abbreviation' | 'access_subnets' | 'accounting_start_date' | 'address' | 'agreement_number' | 'apartment_nr' | 'archived' | 'backend_id' | 'bank_account' | 'bank_name' | 'billing_price_estimate' | 'blocked' | 'call_managing_organization_uuid' | 'city' | 'contact_details' | 'country' | 'country_name' | 'created' | 'customer_credit' | 'customer_unallocated_credit' | 'default_affiliations' | 'default_tax_percent' | 'description' | 'display_billing_info_in_projects' | 'display_name' | 'domain' | 'email' | 'grace_period_days' | 'has_active_helpdesk' | 'has_affiliate_links' | 'homepage' | 'house_nr' | 'household' | 'image' | 'is_service_provider' | 'latitude' | 'longitude' | 'max_service_accounts' | 'name' | 'native_name' | 'notification_emails' | 'organization_groups' | 'parish' | 'payment_profiles' | 'phone_number' | 'postal' | 'project_metadata_checklist' | 'project_slug_template' | 'projects_count' | 'registration_code' | 'service_provider' | 'service_provider_uuid' | 'slug' | 'sponsor_number' | 'state' | 'street' | 'url' | 'user_affiliations' | 'user_email_patterns' | 'user_identity_sources' | 'users_count' | 'uuid' | 'vat_code';
 
-export type CustomerUserFieldEnum = 'email' | 'expiration_time' | 'full_name' | 'image' | 'projects' | 'role_name' | 'url' | 'username' | 'uuid';
+export type CustomerUserFieldEnum = 'email' | 'expiration_time' | 'full_name' | 'image' | 'projects' | 'role_name' | 'slug' | 'url' | 'username' | 'uuid';
 
 export type CustomerUserOEnum = 'concatenated_name' | '-concatenated_name';
 
-export type ServiceProviderFieldEnum = 'account_homedir_prefix' | 'account_login_shell' | 'account_scope' | 'account_username_anonymized_prefix' | 'account_username_generation_policy' | 'allowed_domains' | 'created' | 'customer' | 'customer_abbreviation' | 'customer_country' | 'customer_image' | 'customer_name' | 'customer_native_name' | 'customer_slug' | 'customer_uuid' | 'description' | 'enable_notifications' | 'image' | 'offering_count' | 'organization_groups' | 'url' | 'uuid';
+export type ServiceProviderFieldEnum = 'allowed_domains' | 'created' | 'customer' | 'customer_abbreviation' | 'customer_country' | 'customer_image' | 'customer_name' | 'customer_native_name' | 'customer_slug' | 'customer_uuid' | 'description' | 'enable_notifications' | 'image' | 'offering_count' | 'organization_groups' | 'url' | 'uuid';
 
 export type GlobalUserDataAccessLogOEnum = '-accessor_type' | '-accessor_username' | '-timestamp' | '-user_username' | 'accessor_type' | 'accessor_username' | 'timestamp' | 'user_username';
 
@@ -35889,7 +35647,7 @@ export type EventFieldEnum = 'context' | 'created' | 'event_type' | 'message' | 
 
 export type ExpertiseCategoryOEnum = '-code' | '-level' | '-name' | 'code' | 'level' | 'name';
 
-export type GoogleCredentialsFieldEnum = 'account_homedir_prefix' | 'account_login_shell' | 'account_scope' | 'account_username_anonymized_prefix' | 'account_username_generation_policy' | 'allowed_domains' | 'calendar_refresh_token' | 'calendar_token' | 'created' | 'customer' | 'customer_abbreviation' | 'customer_country' | 'customer_image' | 'customer_name' | 'customer_native_name' | 'customer_slug' | 'customer_uuid' | 'description' | 'enable_notifications' | 'google_auth_url' | 'image' | 'offering_count' | 'organization_groups' | 'url' | 'uuid';
+export type GoogleCredentialsFieldEnum = 'allowed_domains' | 'calendar_refresh_token' | 'calendar_token' | 'created' | 'customer' | 'customer_abbreviation' | 'customer_country' | 'customer_image' | 'customer_name' | 'customer_native_name' | 'customer_slug' | 'customer_uuid' | 'description' | 'enable_notifications' | 'google_auth_url' | 'image' | 'offering_count' | 'organization_groups' | 'url' | 'uuid';
 
 export type WebHookContentTypeEnum1 = 1 | 2;
 
@@ -35951,11 +35709,11 @@ export type OfferingUserFieldEnum = 'consent_data' | 'created' | 'customer_name'
 
 export type OfferingUserOEnum = '-created' | '-modified' | '-user_first_name' | '-user_last_name' | '-username' | 'created' | 'modified' | 'user_first_name' | 'user_last_name' | 'username';
 
-export type OrderDetailsFieldEnum = 'accepting_terms_of_service' | 'activation_price' | 'attachment' | 'attributes' | 'auto_approved' | 'auto_approved_by_rule_uuid' | 'auto_approved_cost_limit_snapshot' | 'backend_id' | 'callback_url' | 'can_terminate' | 'category_icon' | 'category_title' | 'category_uuid' | 'completed_at' | 'consumer_message' | 'consumer_message_attachment' | 'consumer_message_updated_at' | 'consumer_rejection_comment' | 'consumer_reviewed_at' | 'consumer_reviewed_by' | 'consumer_reviewed_by_full_name' | 'consumer_reviewed_by_username' | 'cost' | 'created' | 'created_by_civil_number' | 'created_by_email' | 'created_by_full_name' | 'created_by_organization' | 'created_by_organization_address' | 'created_by_organization_country' | 'created_by_organization_registry_code' | 'created_by_organization_vat_code' | 'created_by_username' | 'customer_name' | 'customer_slug' | 'customer_uuid' | 'error_message' | 'error_traceback' | 'error_updated_at' | 'fixed_price' | 'issue' | 'limits' | 'marketplace_resource_uuid' | 'modified' | 'new_cost_estimate' | 'new_plan_billing_mode' | 'new_plan_name' | 'new_plan_uuid' | 'offering' | 'offering_billable' | 'offering_description' | 'offering_image' | 'offering_name' | 'offering_plugin_options' | 'offering_shared' | 'offering_thumbnail' | 'offering_type' | 'offering_uuid' | 'old_cost_estimate' | 'old_plan_billing_mode' | 'old_plan_name' | 'old_plan_uuid' | 'order_subtype' | 'output' | 'output_updated_at' | 'plan' | 'plan_description' | 'plan_name' | 'plan_unit' | 'plan_uuid' | 'project_description' | 'project_name' | 'project_slug' | 'project_uuid' | 'provider_description' | 'provider_message' | 'provider_message_attachment' | 'provider_message_updated_at' | 'provider_message_url' | 'provider_name' | 'provider_rejection_comment' | 'provider_reviewed_at' | 'provider_reviewed_by' | 'provider_reviewed_by_full_name' | 'provider_reviewed_by_username' | 'provider_slug' | 'provider_uuid' | 'request_comment' | 'resource_name' | 'resource_type' | 'resource_uuid' | 'slug' | 'start_date' | 'state' | 'termination_comment' | 'type' | 'url' | 'uuid';
+export type OrderDetailsFieldEnum = 'accepting_terms_of_service' | 'activation_price' | 'attachment' | 'attributes' | 'auto_approved' | 'auto_approved_by_rule_uuid' | 'auto_approved_cost_limit_snapshot' | 'backend_id' | 'callback_url' | 'can_terminate' | 'category_icon' | 'category_title' | 'category_uuid' | 'completed_at' | 'consumer_message' | 'consumer_message_attachment' | 'consumer_message_updated_at' | 'consumer_rejection_comment' | 'consumer_reviewed_at' | 'consumer_reviewed_by' | 'consumer_reviewed_by_full_name' | 'consumer_reviewed_by_username' | 'cost' | 'created' | 'created_by_civil_number' | 'created_by_email' | 'created_by_full_name' | 'created_by_organization' | 'created_by_organization_address' | 'created_by_organization_country' | 'created_by_organization_registry_code' | 'created_by_organization_vat_code' | 'created_by_username' | 'customer_name' | 'customer_slug' | 'customer_uuid' | 'error_message' | 'error_traceback' | 'error_updated_at' | 'fixed_price' | 'issue' | 'limits' | 'marketplace_resource_uuid' | 'modified' | 'new_cost_estimate' | 'new_plan_name' | 'new_plan_uuid' | 'offering' | 'offering_billable' | 'offering_description' | 'offering_image' | 'offering_name' | 'offering_plugin_options' | 'offering_shared' | 'offering_thumbnail' | 'offering_type' | 'offering_uuid' | 'old_cost_estimate' | 'old_plan_name' | 'old_plan_uuid' | 'order_subtype' | 'output' | 'output_updated_at' | 'plan' | 'plan_description' | 'plan_name' | 'plan_unit' | 'plan_uuid' | 'project_description' | 'project_name' | 'project_slug' | 'project_uuid' | 'provider_description' | 'provider_message' | 'provider_message_attachment' | 'provider_message_updated_at' | 'provider_message_url' | 'provider_name' | 'provider_rejection_comment' | 'provider_reviewed_at' | 'provider_reviewed_by' | 'provider_reviewed_by_full_name' | 'provider_reviewed_by_username' | 'provider_slug' | 'provider_uuid' | 'request_comment' | 'resource_name' | 'resource_type' | 'resource_uuid' | 'slug' | 'start_date' | 'state' | 'termination_comment' | 'type' | 'url' | 'uuid';
 
 export type OrderDetailsOEnum = '-consumer_reviewed_at' | '-cost' | '-created' | '-state' | 'consumer_reviewed_at' | 'cost' | 'created' | 'state';
 
-export type PublicOfferingDetailsFieldEnum = 'access_url' | 'attributes' | 'backend_id' | 'backend_metadata' | 'billable' | 'billing_mode_components' | 'billing_period_applies' | 'billing_type_classification' | 'can_update_integration' | 'can_update_options' | 'category' | 'category_title' | 'category_uuid' | 'citation_count' | 'compliance_checklist' | 'components' | 'config_drive_default' | 'country' | 'created' | 'customer' | 'customer_name' | 'customer_uuid' | 'datacite_doi' | 'default_access_subnets' | 'description' | 'documentation_url' | 'effective_available_limits' | 'endpoints' | 'files' | 'full_description' | 'getting_started' | 'google_calendar_is_public' | 'google_calendar_link' | 'has_compliance_requirements' | 'helpdesk_url' | 'image' | 'integration_guide' | 'is_accessible' | 'latitude' | 'longitude' | 'name' | 'offering_group' | 'offering_group_title' | 'offering_group_uuid' | 'open_for_proposals' | 'options' | 'order_count' | 'organization_groups' | 'parent_description' | 'parent_name' | 'parent_uuid' | 'partitions' | 'paused_reason' | 'plans' | 'plugin_options' | 'privacy_policy_link' | 'profile_name' | 'profile_uuid' | 'project' | 'project_name' | 'project_uuid' | 'promotion_campaigns' | 'qos_profiles' | 'quotas' | 'resource_options' | 'scope' | 'scope_error_message' | 'scope_name' | 'scope_resource' | 'scope_resource_name' | 'scope_resource_uuid' | 'scope_state' | 'scope_uuid' | 'screenshots' | 'secret_options' | 'service_attributes' | 'shared' | 'slug' | 'software_catalogs' | 'state' | 'tags' | 'thumbnail' | 'total_cost' | 'total_cost_estimated' | 'total_customers' | 'type' | 'url' | 'user_has_consent' | 'user_has_offering_user' | 'uuid' | 'vendor_details';
+export type PublicOfferingDetailsFieldEnum = 'access_url' | 'attributes' | 'backend_id' | 'backend_metadata' | 'billable' | 'billing_type_classification' | 'can_update_integration' | 'can_update_options' | 'category' | 'category_title' | 'category_uuid' | 'citation_count' | 'compliance_checklist' | 'components' | 'config_drive_default' | 'country' | 'created' | 'customer' | 'customer_name' | 'customer_uuid' | 'datacite_doi' | 'default_access_subnets' | 'description' | 'documentation_url' | 'effective_available_limits' | 'endpoints' | 'files' | 'full_description' | 'getting_started' | 'google_calendar_is_public' | 'google_calendar_link' | 'has_compliance_requirements' | 'helpdesk_url' | 'image' | 'integration_guide' | 'is_accessible' | 'latitude' | 'longitude' | 'name' | 'offering_group' | 'offering_group_title' | 'offering_group_uuid' | 'open_for_proposals' | 'options' | 'order_count' | 'organization_groups' | 'parent_description' | 'parent_name' | 'parent_uuid' | 'partitions' | 'paused_reason' | 'plans' | 'plugin_options' | 'privacy_policy_link' | 'profile_name' | 'profile_uuid' | 'project' | 'project_name' | 'project_uuid' | 'promotion_campaigns' | 'qos_profiles' | 'quotas' | 'resource_options' | 'scope' | 'scope_error_message' | 'scope_name' | 'scope_resource' | 'scope_resource_name' | 'scope_resource_uuid' | 'scope_state' | 'scope_uuid' | 'screenshots' | 'secret_options' | 'service_attributes' | 'shared' | 'slug' | 'software_catalogs' | 'state' | 'tags' | 'thumbnail' | 'total_cost' | 'total_cost_estimated' | 'total_customers' | 'type' | 'url' | 'user_has_consent' | 'user_has_offering_user' | 'uuid' | 'vendor_details';
 
 export type PosixIdPoolFieldEnum = 'created' | 'customer_name' | 'customer_uuid' | 'description' | 'gid_used' | 'gid_utilization' | 'max_gid' | 'max_uid' | 'min_gid' | 'min_uid' | 'next_gid' | 'next_uid' | 'offering' | 'scope' | 'service_provider' | 'uid_used' | 'uid_utilization' | 'url' | 'uuid';
 
@@ -35967,7 +35725,7 @@ export type ProjectEstimatedCostPolicyFieldEnum = 'actions' | 'affected_resource
 
 export type RemoteProjectUpdateRequestStateEnum = 'approved' | 'canceled' | 'draft' | 'pending' | 'rejected';
 
-export type ProviderOfferingDetailsFieldEnum = 'access_url' | 'attributes' | 'backend_id' | 'backend_id_rules' | 'backend_metadata' | 'billable' | 'billing_mode_components' | 'billing_period_applies' | 'billing_type_classification' | 'can_update_integration' | 'can_update_options' | 'category' | 'category_title' | 'category_uuid' | 'citation_count' | 'compliance_checklist' | 'components' | 'country' | 'created' | 'customer' | 'customer_name' | 'customer_uuid' | 'datacite_doi' | 'default_access_subnets' | 'description' | 'documentation_url' | 'effective_available_limits' | 'endpoints' | 'files' | 'full_description' | 'getting_started' | 'google_calendar_is_public' | 'google_calendar_link' | 'has_compliance_requirements' | 'helpdesk_url' | 'image' | 'integration_guide' | 'integration_status' | 'latitude' | 'limit_precision_advisory' | 'longitude' | 'name' | 'offering_group' | 'offering_group_title' | 'offering_group_uuid' | 'options' | 'order_count' | 'organization_groups' | 'parent_description' | 'parent_name' | 'parent_uuid' | 'partitions' | 'paused_reason' | 'plans' | 'plugin_options' | 'privacy_policy_link' | 'profile_name' | 'profile_uuid' | 'project' | 'project_name' | 'project_uuid' | 'qos_profiles' | 'quotas' | 'resource_options' | 'scope' | 'scope_error_message' | 'scope_name' | 'scope_resource' | 'scope_resource_name' | 'scope_resource_uuid' | 'scope_state' | 'scope_uuid' | 'screenshots' | 'secret_options' | 'service_attributes' | 'shared' | 'slug' | 'software_catalogs' | 'state' | 'tags' | 'thumbnail' | 'total_cost' | 'total_cost_estimated' | 'total_customers' | 'type' | 'url' | 'uuid' | 'vendor_details';
+export type ProviderOfferingDetailsFieldEnum = 'access_url' | 'attributes' | 'backend_id' | 'backend_id_rules' | 'backend_metadata' | 'billable' | 'billing_type_classification' | 'can_update_integration' | 'can_update_options' | 'category' | 'category_title' | 'category_uuid' | 'citation_count' | 'compliance_checklist' | 'components' | 'country' | 'created' | 'customer' | 'customer_name' | 'customer_uuid' | 'datacite_doi' | 'default_access_subnets' | 'description' | 'documentation_url' | 'effective_available_limits' | 'endpoints' | 'files' | 'full_description' | 'getting_started' | 'google_calendar_is_public' | 'google_calendar_link' | 'has_compliance_requirements' | 'helpdesk_url' | 'image' | 'integration_guide' | 'integration_status' | 'latitude' | 'longitude' | 'name' | 'offering_group' | 'offering_group_title' | 'offering_group_uuid' | 'options' | 'order_count' | 'organization_groups' | 'parent_description' | 'parent_name' | 'parent_uuid' | 'partitions' | 'paused_reason' | 'plans' | 'plugin_options' | 'privacy_policy_link' | 'profile_name' | 'profile_uuid' | 'project' | 'project_name' | 'project_uuid' | 'qos_profiles' | 'quotas' | 'resource_options' | 'scope' | 'scope_error_message' | 'scope_name' | 'scope_resource' | 'scope_resource_name' | 'scope_resource_uuid' | 'scope_state' | 'scope_uuid' | 'screenshots' | 'secret_options' | 'service_attributes' | 'shared' | 'slug' | 'software_catalogs' | 'state' | 'tags' | 'thumbnail' | 'total_cost' | 'total_cost_estimated' | 'total_customers' | 'type' | 'url' | 'uuid' | 'vendor_details';
 
 export type ProviderOfferingDetailsOEnum = '-created' | '-name' | '-state' | '-total_cost' | '-total_cost_estimated' | '-total_customers' | '-type' | 'created' | 'name' | 'state' | 'total_cost' | 'total_cost_estimated' | 'total_customers' | 'type';
 
@@ -35975,15 +35733,13 @@ export type ProviderOfferingCustomerFieldEnum = 'abbreviation' | 'email' | 'name
 
 export type ProjectFieldEnum = 'affiliation' | 'affiliation_code' | 'affiliation_name' | 'affiliation_uuid' | 'backend_id' | 'billing_price_estimate' | 'created' | 'customer' | 'customer_abbreviation' | 'customer_display_billing_info_in_projects' | 'customer_grace_period_days' | 'customer_name' | 'customer_native_name' | 'customer_slug' | 'customer_uuid' | 'description' | 'effective_end_date' | 'end_date' | 'end_date_requested_by' | 'end_date_updated_at' | 'grace_period_days' | 'image' | 'is_in_grace_period' | 'is_industry' | 'is_removed' | 'kind' | 'marketplace_resource_count' | 'max_service_accounts' | 'name' | 'oecd_fos_2007_code' | 'oecd_fos_2007_label' | 'project_credit' | 'project_metadata' | 'resources_count' | 'science_domain_code' | 'science_domain_name' | 'science_domain_uuid' | 'science_sub_domain' | 'science_sub_domain_code' | 'science_sub_domain_name' | 'slug' | 'staff_notes' | 'start_date' | 'termination_metadata' | 'type' | 'type_name' | 'type_uuid' | 'url' | 'user_affiliations' | 'user_email_patterns' | 'user_identity_sources' | 'uuid';
 
-export type UserFieldEnum = 'active_isds' | 'address' | 'affiliations' | 'agree_with_policy' | 'agreement_date' | 'attribute_sources' | 'birth_date' | 'can_use_personal_access_tokens' | 'civil_number' | 'country_of_residence' | 'date_joined' | 'deactivation_reason' | 'description' | 'details' | 'eduperson_assurance' | 'email' | 'first_name' | 'full_name' | 'gender' | 'has_active_session' | 'has_passkey' | 'has_usable_password' | 'identity_provider_fields' | 'identity_provider_label' | 'identity_provider_management_url' | 'identity_provider_name' | 'identity_source' | 'image' | 'ip_address' | 'is_active' | 'is_admin_deactivated' | 'is_identity_manager' | 'is_staff' | 'is_support' | 'job_title' | 'last_name' | 'managed_isds' | 'nationalities' | 'nationality' | 'native_name' | 'notifications_enabled' | 'organization' | 'organization_address' | 'organization_country' | 'organization_registry_code' | 'organization_type' | 'organization_vat_code' | 'passkey_count' | 'permissions' | 'personal_title' | 'phone_number' | 'place_of_birth' | 'preferred_language' | 'primary_gid' | 'registration_method' | 'requested_email' | 'should_protect_user_details' | 'slug' | 'token' | 'token_expires_at' | 'token_lifetime' | 'uid_number' | 'url' | 'username' | 'uuid';
+export type UserFieldEnum = 'active_isds' | 'address' | 'affiliations' | 'agree_with_policy' | 'agreement_date' | 'attribute_sources' | 'birth_date' | 'can_use_personal_access_tokens' | 'civil_number' | 'country_of_residence' | 'date_joined' | 'deactivation_reason' | 'description' | 'eduperson_assurance' | 'email' | 'first_name' | 'full_name' | 'gender' | 'has_active_session' | 'has_passkey' | 'has_usable_password' | 'identity_provider_fields' | 'identity_provider_label' | 'identity_provider_management_url' | 'identity_provider_name' | 'identity_source' | 'image' | 'ip_address' | 'is_active' | 'is_admin_deactivated' | 'is_identity_manager' | 'is_staff' | 'is_support' | 'job_title' | 'last_name' | 'managed_isds' | 'nationalities' | 'nationality' | 'native_name' | 'notifications_enabled' | 'organization' | 'organization_address' | 'organization_country' | 'organization_registry_code' | 'organization_type' | 'organization_vat_code' | 'passkey_count' | 'permissions' | 'personal_title' | 'phone_number' | 'place_of_birth' | 'preferred_language' | 'primary_gid' | 'registration_method' | 'requested_email' | 'should_protect_user_details' | 'slug' | 'token' | 'token_expires_at' | 'token_lifetime' | 'uid_number' | 'url' | 'username' | 'uuid';
 
 export type ResourceOEnum = '-backend_id' | '-created' | '-customer_name' | '-end_date' | '-name' | '-offering_name' | '-plan_name' | '-project_name' | '-state' | 'backend_id' | 'created' | 'customer_name' | 'end_date' | 'name' | 'offering_name' | 'plan_name' | 'project_name' | 'state';
 
 export type ResourceTeamMemberFieldEnum = 'email' | 'expiration_time' | 'full_name' | 'image' | 'resource_projects' | 'role_name' | 'role_uuid' | 'roles' | 'url' | 'username' | 'uuid';
 
 export type RobotAccountDetailsFieldEnum = 'backend_id' | 'created' | 'customer_name' | 'customer_uuid' | 'description' | 'error_message' | 'error_traceback' | 'fingerprints' | 'keys' | 'modified' | 'offering_plugin_options' | 'project_name' | 'project_uuid' | 'provider_name' | 'provider_uuid' | 'resource' | 'resource_name' | 'resource_uuid' | 'responsible_user' | 'state' | 'type' | 'url' | 'user_keys' | 'username' | 'users' | 'uuid';
-
-export type ServiceProviderAccountFieldEnum = 'created' | 'home_directory' | 'is_restricted' | 'login_shell' | 'modified' | 'offering_count' | 'primarygroup' | 'runtime_state' | 'service_provider' | 'service_provider_comment' | 'service_provider_comment_url' | 'service_provider_name' | 'service_provider_uuid' | 'state' | 'uidnumber' | 'url' | 'user' | 'user_email' | 'user_full_name' | 'user_username' | 'user_uuid' | 'username' | 'uuid';
 
 export type MarketplaceProviderCustomerProjectFieldEnum = 'billing_price_estimate' | 'description' | 'end_date' | 'name' | 'resources_count' | 'users_count' | 'uuid';
 
@@ -36043,7 +35799,7 @@ export type OpenStackFloatingIpFieldEnum = 'access_url' | 'address' | 'backend_i
 
 export type OpenStackHealthMonitorFieldEnum = 'access_url' | 'backend_id' | 'created' | 'customer' | 'customer_abbreviation' | 'customer_name' | 'customer_native_name' | 'customer_uuid' | 'delay' | 'description' | 'error_message' | 'error_traceback' | 'is_limit_based' | 'is_usage_based' | 'load_balancer_uuid' | 'marketplace_category_name' | 'marketplace_category_uuid' | 'marketplace_offering_name' | 'marketplace_offering_plugin_options' | 'marketplace_offering_type' | 'marketplace_offering_uuid' | 'marketplace_plan_uuid' | 'marketplace_resource_state' | 'marketplace_resource_uuid' | 'max_retries' | 'modified' | 'name' | 'operating_status' | 'pool' | 'pool_name' | 'pool_uuid' | 'project' | 'project_name' | 'project_uuid' | 'provisioning_status' | 'resource_type' | 'service_name' | 'service_settings' | 'service_settings_error_message' | 'service_settings_state' | 'service_settings_uuid' | 'state' | 'timeout' | 'type' | 'url' | 'uuid';
 
-export type OpenStackInstanceFieldEnum = 'access_url' | 'action' | 'action_details' | 'availability_zone' | 'availability_zone_name' | 'backend_id' | 'config_drive' | 'connect_directly_to_external_network' | 'cores' | 'created' | 'customer' | 'customer_abbreviation' | 'customer_name' | 'customer_native_name' | 'customer_uuid' | 'description' | 'disk' | 'error_message' | 'error_traceback' | 'external_address' | 'external_ips' | 'flavor_disk' | 'flavor_name' | 'floating_ips' | 'hypervisor_hostname' | 'image_name' | 'internal_ips' | 'is_limit_based' | 'is_usage_based' | 'key_fingerprint' | 'key_name' | 'latitude' | 'longitude' | 'marketplace_category_name' | 'marketplace_category_uuid' | 'marketplace_offering_name' | 'marketplace_offering_plugin_options' | 'marketplace_offering_type' | 'marketplace_offering_uuid' | 'marketplace_plan_uuid' | 'marketplace_resource_state' | 'marketplace_resource_uuid' | 'metadata' | 'min_disk' | 'min_ram' | 'modified' | 'name' | 'ports' | 'project' | 'project_name' | 'project_uuid' | 'ram' | 'rancher_cluster' | 'resource_type' | 'runtime_state' | 'security_groups' | 'server_group' | 'service_name' | 'service_settings' | 'service_settings_error_message' | 'service_settings_state' | 'service_settings_uuid' | 'ssh_public_key' | 'start_time' | 'state' | 'tenant' | 'tenant_uuid' | 'url' | 'user_data' | 'uuid' | 'volumes';
+export type OpenStackInstanceFieldEnum = 'access_url' | 'action' | 'action_details' | 'availability_zone' | 'availability_zone_name' | 'backend_id' | 'config_drive' | 'connect_directly_to_external_network' | 'cores' | 'created' | 'customer' | 'customer_abbreviation' | 'customer_name' | 'customer_native_name' | 'customer_uuid' | 'description' | 'disk' | 'error_message' | 'error_traceback' | 'external_address' | 'external_ips' | 'flavor_disk' | 'flavor_name' | 'floating_ips' | 'hypervisor_hostname' | 'image_name' | 'internal_ips' | 'is_limit_based' | 'is_usage_based' | 'key_fingerprint' | 'key_name' | 'latitude' | 'longitude' | 'marketplace_category_name' | 'marketplace_category_uuid' | 'marketplace_offering_name' | 'marketplace_offering_plugin_options' | 'marketplace_offering_type' | 'marketplace_offering_uuid' | 'marketplace_plan_uuid' | 'marketplace_resource_state' | 'marketplace_resource_uuid' | 'min_disk' | 'min_ram' | 'modified' | 'name' | 'ports' | 'project' | 'project_name' | 'project_uuid' | 'ram' | 'rancher_cluster' | 'resource_type' | 'runtime_state' | 'security_groups' | 'server_group' | 'service_name' | 'service_settings' | 'service_settings_error_message' | 'service_settings_state' | 'service_settings_uuid' | 'ssh_public_key' | 'start_time' | 'state' | 'tenant' | 'tenant_uuid' | 'url' | 'user_data' | 'uuid' | 'volumes';
 
 export type OpenStackInstanceOEnum = 'start_time' | '-start_time';
 
@@ -36071,7 +35827,7 @@ export type OpenStackServerGroupFieldEnum = 'access_url' | 'backend_id' | 'creat
 
 export type OpenStackSnapshotFieldEnum = 'access_url' | 'action' | 'action_details' | 'backend_id' | 'backups' | 'created' | 'customer' | 'customer_abbreviation' | 'customer_name' | 'customer_native_name' | 'customer_uuid' | 'description' | 'error_message' | 'error_traceback' | 'is_limit_based' | 'is_usage_based' | 'kept_until' | 'marketplace_category_name' | 'marketplace_category_uuid' | 'marketplace_offering_name' | 'marketplace_offering_plugin_options' | 'marketplace_offering_type' | 'marketplace_offering_uuid' | 'marketplace_plan_uuid' | 'marketplace_resource_state' | 'marketplace_resource_uuid' | 'metadata' | 'modified' | 'name' | 'project' | 'project_name' | 'project_uuid' | 'resource_type' | 'restorations' | 'runtime_state' | 'service_name' | 'service_settings' | 'service_settings_error_message' | 'service_settings_state' | 'service_settings_uuid' | 'size' | 'source_volume' | 'source_volume_marketplace_uuid' | 'source_volume_name' | 'state' | 'url' | 'uuid';
 
-export type OpenStackSubNetFieldEnum = 'access_url' | 'allocation_pools' | 'backend_id' | 'cidr' | 'created' | 'customer' | 'customer_abbreviation' | 'customer_name' | 'customer_native_name' | 'customer_uuid' | 'description' | 'disable_gateway' | 'dns_nameservers' | 'enable_dhcp' | 'error_message' | 'error_traceback' | 'gateway_ip' | 'host_routes' | 'ip_version' | 'is_connected' | 'is_limit_based' | 'is_usage_based' | 'marketplace_category_name' | 'marketplace_category_uuid' | 'marketplace_offering_name' | 'marketplace_offering_plugin_options' | 'marketplace_offering_type' | 'marketplace_offering_uuid' | 'marketplace_plan_uuid' | 'marketplace_resource_state' | 'marketplace_resource_uuid' | 'modified' | 'name' | 'network' | 'network_name' | 'port_security_enabled' | 'project' | 'project_name' | 'project_uuid' | 'resource_type' | 'router' | 'router_name' | 'router_uuid' | 'service_name' | 'service_settings' | 'service_settings_error_message' | 'service_settings_state' | 'service_settings_uuid' | 'skip_router_connection' | 'state' | 'tenant' | 'tenant_name' | 'url' | 'uuid';
+export type OpenStackSubNetFieldEnum = 'access_url' | 'allocation_pools' | 'backend_id' | 'cidr' | 'created' | 'customer' | 'customer_abbreviation' | 'customer_name' | 'customer_native_name' | 'customer_uuid' | 'description' | 'disable_gateway' | 'dns_nameservers' | 'enable_dhcp' | 'error_message' | 'error_traceback' | 'gateway_ip' | 'host_routes' | 'ip_version' | 'is_connected' | 'is_limit_based' | 'is_usage_based' | 'marketplace_category_name' | 'marketplace_category_uuid' | 'marketplace_offering_name' | 'marketplace_offering_plugin_options' | 'marketplace_offering_type' | 'marketplace_offering_uuid' | 'marketplace_plan_uuid' | 'marketplace_resource_state' | 'marketplace_resource_uuid' | 'modified' | 'name' | 'network' | 'network_name' | 'port_security_enabled' | 'project' | 'project_name' | 'project_uuid' | 'resource_type' | 'service_name' | 'service_settings' | 'service_settings_error_message' | 'service_settings_state' | 'service_settings_uuid' | 'state' | 'tenant' | 'tenant_name' | 'url' | 'uuid';
 
 export type OpenStackTenantFieldEnum = 'availability_zone' | 'backend_id' | 'created' | 'customer' | 'customer_abbreviation' | 'customer_name' | 'customer_native_name' | 'customer_uuid' | 'default_volume_type_name' | 'description' | 'error_message' | 'error_traceback' | 'external_network_id' | 'external_network_ref_name' | 'external_network_ref_uuid' | 'internal_network_id' | 'is_limit_based' | 'is_usage_based' | 'marketplace_category_name' | 'marketplace_category_uuid' | 'marketplace_offering_name' | 'marketplace_offering_plugin_options' | 'marketplace_offering_type' | 'marketplace_offering_uuid' | 'marketplace_plan_uuid' | 'marketplace_resource_state' | 'marketplace_resource_uuid' | 'modified' | 'name' | 'project' | 'project_name' | 'project_uuid' | 'quotas' | 'resource_type' | 'security_groups' | 'service_name' | 'service_settings' | 'service_settings_error_message' | 'service_settings_state' | 'service_settings_uuid' | 'skip_creation_of_default_router' | 'skip_creation_of_default_subnet' | 'state' | 'subnet_cidr' | 'url' | 'uuid';
 
@@ -36153,7 +35909,7 @@ export type SystemLogOEnum = '-created' | '-instance' | '-level_number' | 'creat
 
 export type InvitationOEnum = '-created' | '-created_by' | '-email' | '-state' | 'created' | 'created_by' | 'email' | 'state';
 
-export type UserMeFieldEnum = 'active_isds' | 'address' | 'affiliations' | 'agree_with_policy' | 'agreement_date' | 'attribute_sources' | 'birth_date' | 'can_use_personal_access_tokens' | 'civil_number' | 'country_of_residence' | 'date_joined' | 'deactivation_reason' | 'description' | 'details' | 'eduperson_assurance' | 'email' | 'first_name' | 'full_name' | 'gender' | 'has_active_session' | 'has_passkey' | 'has_usable_password' | 'identity_provider_fields' | 'identity_provider_label' | 'identity_provider_management_url' | 'identity_provider_name' | 'identity_source' | 'image' | 'ip_address' | 'is_active' | 'is_admin_deactivated' | 'is_identity_manager' | 'is_staff' | 'is_support' | 'job_title' | 'last_name' | 'managed_isds' | 'nationalities' | 'nationality' | 'native_name' | 'notifications_enabled' | 'organization' | 'organization_address' | 'organization_country' | 'organization_registry_code' | 'organization_type' | 'organization_vat_code' | 'passkey_count' | 'permissions' | 'personal_title' | 'phone_number' | 'place_of_birth' | 'preferred_language' | 'primary_gid' | 'profile_completeness' | 'registration_method' | 'requested_email' | 'should_protect_user_details' | 'slug' | 'token' | 'token_expires_at' | 'token_lifetime' | 'uid_number' | 'url' | 'username' | 'uuid';
+export type UserMeFieldEnum = 'active_isds' | 'address' | 'affiliations' | 'agree_with_policy' | 'agreement_date' | 'attribute_sources' | 'birth_date' | 'can_use_personal_access_tokens' | 'civil_number' | 'country_of_residence' | 'date_joined' | 'deactivation_reason' | 'description' | 'eduperson_assurance' | 'email' | 'first_name' | 'full_name' | 'gender' | 'has_active_session' | 'has_passkey' | 'has_usable_password' | 'identity_provider_fields' | 'identity_provider_label' | 'identity_provider_management_url' | 'identity_provider_name' | 'identity_source' | 'image' | 'ip_address' | 'is_active' | 'is_admin_deactivated' | 'is_identity_manager' | 'is_staff' | 'is_support' | 'job_title' | 'last_name' | 'managed_isds' | 'nationalities' | 'nationality' | 'native_name' | 'notifications_enabled' | 'organization' | 'organization_address' | 'organization_country' | 'organization_registry_code' | 'organization_type' | 'organization_vat_code' | 'passkey_count' | 'permissions' | 'personal_title' | 'phone_number' | 'place_of_birth' | 'preferred_language' | 'primary_gid' | 'profile_completeness' | 'registration_method' | 'requested_email' | 'should_protect_user_details' | 'slug' | 'token' | 'token_expires_at' | 'token_lifetime' | 'uid_number' | 'url' | 'username' | 'uuid';
 
 export type VmwareDiskFieldEnum = 'access_url' | 'backend_id' | 'created' | 'customer' | 'customer_abbreviation' | 'customer_name' | 'customer_native_name' | 'customer_uuid' | 'description' | 'error_message' | 'error_traceback' | 'is_limit_based' | 'is_usage_based' | 'marketplace_category_name' | 'marketplace_category_uuid' | 'marketplace_offering_name' | 'marketplace_offering_plugin_options' | 'marketplace_offering_type' | 'marketplace_offering_uuid' | 'marketplace_plan_uuid' | 'marketplace_resource_state' | 'marketplace_resource_uuid' | 'modified' | 'name' | 'project' | 'project_name' | 'project_uuid' | 'resource_type' | 'service_name' | 'service_settings' | 'service_settings_error_message' | 'service_settings_state' | 'service_settings_uuid' | 'size' | 'state' | 'url' | 'uuid' | 'vm' | 'vm_name' | 'vm_uuid';
 
@@ -36186,42 +35942,6 @@ export type MatrixAppV1TransactionsUpdateResponses = {
      */
     200: unknown;
 };
-
-export type ApiAuthDefaultInitRetrieveData = {
-    body?: never;
-    path?: never;
-    query?: {
-        /**
-         * Ask whether a default provider is configured instead of starting the flow: answers 204 or 404 and writes no session state.
-         */
-        probe?: string;
-        /**
-         * Origin to send the browser back to after login.
-         */
-        return_url?: string;
-        /**
-         * Language hint forwarded to the identity provider.
-         */
-        ui_locales?: string;
-    };
-    url: '/api-auth/default/init/';
-};
-
-export type ApiAuthDefaultInitRetrieveErrors = {
-    /**
-     * No response body
-     */
-    404: unknown;
-};
-
-export type ApiAuthDefaultInitRetrieveResponses = {
-    /**
-     * No response body
-     */
-    204: void;
-};
-
-export type ApiAuthDefaultInitRetrieveResponse = ApiAuthDefaultInitRetrieveResponses[keyof ApiAuthDefaultInitRetrieveResponses];
 
 export type ApiAuthEduteamsCompleteRetrieveData = {
     body?: never;
@@ -40214,6 +39934,1769 @@ export type AwsVolumesUnlinkResponses = {
 };
 
 export type AwsVolumesUnlinkResponse = AwsVolumesUnlinkResponses[keyof AwsVolumesUnlinkResponses];
+
+export type AzureImagesListData = {
+    body?: never;
+    path?: never;
+    query?: {
+        location?: string;
+        location_uuid?: string;
+        /**
+         * Name
+         */
+        name?: string;
+        /**
+         * Name (exact)
+         */
+        name_exact?: string;
+        /**
+         * A page number within the paginated result set.
+         */
+        page?: number;
+        /**
+         * Number of results to return per page.
+         */
+        page_size?: number;
+        /**
+         * Settings URL
+         */
+        settings?: string;
+        /**
+         * Settings UUID
+         */
+        settings_uuid?: string;
+    };
+    url: '/api/azure-images/';
+};
+
+export type AzureImagesListResponses = {
+    200: Array<AzureImage>;
+};
+
+export type AzureImagesListResponse = AzureImagesListResponses[keyof AzureImagesListResponses];
+
+export type AzureImagesCountData = {
+    body?: never;
+    path?: never;
+    query?: {
+        location?: string;
+        location_uuid?: string;
+        /**
+         * Name
+         */
+        name?: string;
+        /**
+         * Name (exact)
+         */
+        name_exact?: string;
+        /**
+         * A page number within the paginated result set.
+         */
+        page?: number;
+        /**
+         * Number of results to return per page.
+         */
+        page_size?: number;
+        /**
+         * Settings URL
+         */
+        settings?: string;
+        /**
+         * Settings UUID
+         */
+        settings_uuid?: string;
+    };
+    url: '/api/azure-images/';
+};
+
+export type AzureImagesCountResponses = {
+    /**
+     * No response body
+     */
+    200: unknown;
+};
+
+export type AzureImagesRetrieveData = {
+    body?: never;
+    path: {
+        uuid: string;
+    };
+    query?: never;
+    url: '/api/azure-images/{uuid}/';
+};
+
+export type AzureImagesRetrieveResponses = {
+    200: AzureImage;
+};
+
+export type AzureImagesRetrieveResponse = AzureImagesRetrieveResponses[keyof AzureImagesRetrieveResponses];
+
+export type AzureLocationsListData = {
+    body?: never;
+    path?: never;
+    query?: {
+        has_sizes?: boolean;
+        /**
+         * Name
+         */
+        name?: string;
+        /**
+         * Name (exact)
+         */
+        name_exact?: string;
+        /**
+         * A page number within the paginated result set.
+         */
+        page?: number;
+        /**
+         * Number of results to return per page.
+         */
+        page_size?: number;
+        /**
+         * Settings URL
+         */
+        settings?: string;
+        /**
+         * Settings UUID
+         */
+        settings_uuid?: string;
+    };
+    url: '/api/azure-locations/';
+};
+
+export type AzureLocationsListResponses = {
+    200: Array<AzureLocation>;
+};
+
+export type AzureLocationsListResponse = AzureLocationsListResponses[keyof AzureLocationsListResponses];
+
+export type AzureLocationsCountData = {
+    body?: never;
+    path?: never;
+    query?: {
+        has_sizes?: boolean;
+        /**
+         * Name
+         */
+        name?: string;
+        /**
+         * Name (exact)
+         */
+        name_exact?: string;
+        /**
+         * A page number within the paginated result set.
+         */
+        page?: number;
+        /**
+         * Number of results to return per page.
+         */
+        page_size?: number;
+        /**
+         * Settings URL
+         */
+        settings?: string;
+        /**
+         * Settings UUID
+         */
+        settings_uuid?: string;
+    };
+    url: '/api/azure-locations/';
+};
+
+export type AzureLocationsCountResponses = {
+    /**
+     * No response body
+     */
+    200: unknown;
+};
+
+export type AzureLocationsRetrieveData = {
+    body?: never;
+    path: {
+        uuid: string;
+    };
+    query?: never;
+    url: '/api/azure-locations/{uuid}/';
+};
+
+export type AzureLocationsRetrieveResponses = {
+    200: AzureLocation;
+};
+
+export type AzureLocationsRetrieveResponse = AzureLocationsRetrieveResponses[keyof AzureLocationsRetrieveResponses];
+
+export type AzurePublicIpsListData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Backend ID
+         */
+        backend_id?: string;
+        /**
+         * Can manage
+         */
+        can_manage?: boolean;
+        /**
+         * Customer UUID
+         */
+        customer?: string;
+        /**
+         * Customer abbreviation
+         */
+        customer_abbreviation?: string;
+        /**
+         * Customer name
+         */
+        customer_name?: string;
+        /**
+         * Customer native name
+         */
+        customer_native_name?: string;
+        /**
+         * Customer UUID
+         */
+        customer_uuid?: string;
+        /**
+         * Description
+         */
+        description?: string;
+        /**
+         * External IP
+         */
+        external_ip?: string;
+        field?: Array<AzurePublicIpFieldEnum>;
+        /**
+         * Name
+         */
+        name?: string;
+        /**
+         * Name (exact)
+         */
+        name_exact?: string;
+        /**
+         * A page number within the paginated result set.
+         */
+        page?: number;
+        /**
+         * Number of results to return per page.
+         */
+        page_size?: number;
+        /**
+         * Project UUID
+         */
+        project?: string;
+        /**
+         * Project name
+         */
+        project_name?: string;
+        /**
+         * Project UUID
+         */
+        project_uuid?: string;
+        resource_group?: string;
+        resource_group_uuid?: string;
+        /**
+         * Service settings name
+         */
+        service_settings_name?: string;
+        /**
+         * Service settings UUID
+         */
+        service_settings_uuid?: string;
+        /**
+         * State
+         *
+         *
+         */
+        state?: Array<CoreStates>;
+    };
+    url: '/api/azure-public-ips/';
+};
+
+export type AzurePublicIpsListResponses = {
+    200: Array<AzurePublicIp>;
+};
+
+export type AzurePublicIpsListResponse = AzurePublicIpsListResponses[keyof AzurePublicIpsListResponses];
+
+export type AzurePublicIpsCountData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Backend ID
+         */
+        backend_id?: string;
+        /**
+         * Can manage
+         */
+        can_manage?: boolean;
+        /**
+         * Customer UUID
+         */
+        customer?: string;
+        /**
+         * Customer abbreviation
+         */
+        customer_abbreviation?: string;
+        /**
+         * Customer name
+         */
+        customer_name?: string;
+        /**
+         * Customer native name
+         */
+        customer_native_name?: string;
+        /**
+         * Customer UUID
+         */
+        customer_uuid?: string;
+        /**
+         * Description
+         */
+        description?: string;
+        /**
+         * External IP
+         */
+        external_ip?: string;
+        /**
+         * Name
+         */
+        name?: string;
+        /**
+         * Name (exact)
+         */
+        name_exact?: string;
+        /**
+         * A page number within the paginated result set.
+         */
+        page?: number;
+        /**
+         * Number of results to return per page.
+         */
+        page_size?: number;
+        /**
+         * Project UUID
+         */
+        project?: string;
+        /**
+         * Project name
+         */
+        project_name?: string;
+        /**
+         * Project UUID
+         */
+        project_uuid?: string;
+        resource_group?: string;
+        resource_group_uuid?: string;
+        /**
+         * Service settings name
+         */
+        service_settings_name?: string;
+        /**
+         * Service settings UUID
+         */
+        service_settings_uuid?: string;
+        /**
+         * State
+         *
+         *
+         */
+        state?: Array<CoreStates>;
+    };
+    url: '/api/azure-public-ips/';
+};
+
+export type AzurePublicIpsCountResponses = {
+    /**
+     * No response body
+     */
+    200: unknown;
+};
+
+export type AzurePublicIpsCreateData = {
+    body: AzurePublicIpRequest;
+    path?: never;
+    query?: never;
+    url: '/api/azure-public-ips/';
+};
+
+export type AzurePublicIpsCreateResponses = {
+    201: AzurePublicIp;
+};
+
+export type AzurePublicIpsCreateResponse = AzurePublicIpsCreateResponses[keyof AzurePublicIpsCreateResponses];
+
+export type AzurePublicIpsDestroyData = {
+    body?: never;
+    path: {
+        uuid: string;
+    };
+    query?: never;
+    url: '/api/azure-public-ips/{uuid}/';
+};
+
+export type AzurePublicIpsDestroyResponses = {
+    /**
+     * No response body
+     */
+    204: void;
+};
+
+export type AzurePublicIpsDestroyResponse = AzurePublicIpsDestroyResponses[keyof AzurePublicIpsDestroyResponses];
+
+export type AzurePublicIpsRetrieveData = {
+    body?: never;
+    path: {
+        uuid: string;
+    };
+    query?: {
+        field?: Array<AzurePublicIpFieldEnum>;
+    };
+    url: '/api/azure-public-ips/{uuid}/';
+};
+
+export type AzurePublicIpsRetrieveResponses = {
+    200: AzurePublicIp;
+};
+
+export type AzurePublicIpsRetrieveResponse = AzurePublicIpsRetrieveResponses[keyof AzurePublicIpsRetrieveResponses];
+
+export type AzurePublicIpsPartialUpdateData = {
+    body?: PatchedAzurePublicIpRequest;
+    path: {
+        uuid: string;
+    };
+    query?: never;
+    url: '/api/azure-public-ips/{uuid}/';
+};
+
+export type AzurePublicIpsPartialUpdateResponses = {
+    200: AzurePublicIp;
+};
+
+export type AzurePublicIpsPartialUpdateResponse = AzurePublicIpsPartialUpdateResponses[keyof AzurePublicIpsPartialUpdateResponses];
+
+export type AzurePublicIpsUpdateData = {
+    body: AzurePublicIpRequest;
+    path: {
+        uuid: string;
+    };
+    query?: never;
+    url: '/api/azure-public-ips/{uuid}/';
+};
+
+export type AzurePublicIpsUpdateResponses = {
+    200: AzurePublicIp;
+};
+
+export type AzurePublicIpsUpdateResponse = AzurePublicIpsUpdateResponses[keyof AzurePublicIpsUpdateResponses];
+
+export type AzurePublicIpsPullData = {
+    body?: never;
+    path: {
+        uuid: string;
+    };
+    query?: never;
+    url: '/api/azure-public-ips/{uuid}/pull/';
+};
+
+export type AzurePublicIpsPullErrors = {
+    409: Detail;
+};
+
+export type AzurePublicIpsPullError = AzurePublicIpsPullErrors[keyof AzurePublicIpsPullErrors];
+
+export type AzurePublicIpsPullResponses = {
+    202: Detail;
+};
+
+export type AzurePublicIpsPullResponse = AzurePublicIpsPullResponses[keyof AzurePublicIpsPullResponses];
+
+export type AzurePublicIpsSetErredData = {
+    body?: SetErredRequest;
+    path: {
+        uuid: string;
+    };
+    query?: never;
+    url: '/api/azure-public-ips/{uuid}/set_erred/';
+};
+
+export type AzurePublicIpsSetErredResponses = {
+    200: Detail;
+};
+
+export type AzurePublicIpsSetErredResponse = AzurePublicIpsSetErredResponses[keyof AzurePublicIpsSetErredResponses];
+
+export type AzurePublicIpsSetOkData = {
+    body?: never;
+    path: {
+        uuid: string;
+    };
+    query?: never;
+    url: '/api/azure-public-ips/{uuid}/set_ok/';
+};
+
+export type AzurePublicIpsSetOkResponses = {
+    200: Detail;
+};
+
+export type AzurePublicIpsSetOkResponse = AzurePublicIpsSetOkResponses[keyof AzurePublicIpsSetOkResponses];
+
+export type AzurePublicIpsUnlinkData = {
+    body?: never;
+    path: {
+        uuid: string;
+    };
+    query?: never;
+    url: '/api/azure-public-ips/{uuid}/unlink/';
+};
+
+export type AzurePublicIpsUnlinkResponses = {
+    /**
+     * No response body
+     */
+    204: void;
+};
+
+export type AzurePublicIpsUnlinkResponse = AzurePublicIpsUnlinkResponses[keyof AzurePublicIpsUnlinkResponses];
+
+export type AzureResourceGroupsListData = {
+    body?: never;
+    path?: never;
+    query?: {
+        field?: Array<AzureResourceGroupFieldEnum>;
+        /**
+         * A page number within the paginated result set.
+         */
+        page?: number;
+        /**
+         * Number of results to return per page.
+         */
+        page_size?: number;
+    };
+    url: '/api/azure-resource-groups/';
+};
+
+export type AzureResourceGroupsListResponses = {
+    200: Array<AzureResourceGroup>;
+};
+
+export type AzureResourceGroupsListResponse = AzureResourceGroupsListResponses[keyof AzureResourceGroupsListResponses];
+
+export type AzureResourceGroupsCountData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * A page number within the paginated result set.
+         */
+        page?: number;
+        /**
+         * Number of results to return per page.
+         */
+        page_size?: number;
+    };
+    url: '/api/azure-resource-groups/';
+};
+
+export type AzureResourceGroupsCountResponses = {
+    /**
+     * No response body
+     */
+    200: unknown;
+};
+
+export type AzureResourceGroupsRetrieveData = {
+    body?: never;
+    path: {
+        uuid: string;
+    };
+    query?: {
+        field?: Array<AzureResourceGroupFieldEnum>;
+    };
+    url: '/api/azure-resource-groups/{uuid}/';
+};
+
+export type AzureResourceGroupsRetrieveResponses = {
+    200: AzureResourceGroup;
+};
+
+export type AzureResourceGroupsRetrieveResponse = AzureResourceGroupsRetrieveResponses[keyof AzureResourceGroupsRetrieveResponses];
+
+export type AzureSizesListData = {
+    body?: never;
+    path?: never;
+    query?: {
+        location?: string;
+        location_uuid?: string;
+        /**
+         * Name
+         */
+        name?: string;
+        /**
+         * Name (exact)
+         */
+        name_exact?: string;
+        /**
+         * A page number within the paginated result set.
+         */
+        page?: number;
+        /**
+         * Number of results to return per page.
+         */
+        page_size?: number;
+        /**
+         * Settings URL
+         */
+        settings?: string;
+        /**
+         * Settings UUID
+         */
+        settings_uuid?: string;
+        zone?: number;
+    };
+    url: '/api/azure-sizes/';
+};
+
+export type AzureSizesListResponses = {
+    200: Array<AzureSize>;
+};
+
+export type AzureSizesListResponse = AzureSizesListResponses[keyof AzureSizesListResponses];
+
+export type AzureSizesCountData = {
+    body?: never;
+    path?: never;
+    query?: {
+        location?: string;
+        location_uuid?: string;
+        /**
+         * Name
+         */
+        name?: string;
+        /**
+         * Name (exact)
+         */
+        name_exact?: string;
+        /**
+         * A page number within the paginated result set.
+         */
+        page?: number;
+        /**
+         * Number of results to return per page.
+         */
+        page_size?: number;
+        /**
+         * Settings URL
+         */
+        settings?: string;
+        /**
+         * Settings UUID
+         */
+        settings_uuid?: string;
+        zone?: number;
+    };
+    url: '/api/azure-sizes/';
+};
+
+export type AzureSizesCountResponses = {
+    /**
+     * No response body
+     */
+    200: unknown;
+};
+
+export type AzureSizesRetrieveData = {
+    body?: never;
+    path: {
+        uuid: string;
+    };
+    query?: never;
+    url: '/api/azure-sizes/{uuid}/';
+};
+
+export type AzureSizesRetrieveResponses = {
+    200: AzureSize;
+};
+
+export type AzureSizesRetrieveResponse = AzureSizesRetrieveResponses[keyof AzureSizesRetrieveResponses];
+
+export type AzureSqlDatabasesListData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Backend ID
+         */
+        backend_id?: string;
+        /**
+         * Can manage
+         */
+        can_manage?: boolean;
+        /**
+         * Customer UUID
+         */
+        customer?: string;
+        /**
+         * Customer abbreviation
+         */
+        customer_abbreviation?: string;
+        /**
+         * Customer name
+         */
+        customer_name?: string;
+        /**
+         * Customer native name
+         */
+        customer_native_name?: string;
+        /**
+         * Customer UUID
+         */
+        customer_uuid?: string;
+        /**
+         * Description
+         */
+        description?: string;
+        /**
+         * External IP
+         */
+        external_ip?: string;
+        field?: Array<AzureSqlDatabaseFieldEnum>;
+        /**
+         * Name
+         */
+        name?: string;
+        /**
+         * Name (exact)
+         */
+        name_exact?: string;
+        /**
+         * A page number within the paginated result set.
+         */
+        page?: number;
+        /**
+         * Number of results to return per page.
+         */
+        page_size?: number;
+        /**
+         * Project UUID
+         */
+        project?: string;
+        /**
+         * Project name
+         */
+        project_name?: string;
+        /**
+         * Project UUID
+         */
+        project_uuid?: string;
+        resource_group?: string;
+        resource_group_uuid?: string;
+        server?: string;
+        server_uuid?: string;
+        /**
+         * Service settings name
+         */
+        service_settings_name?: string;
+        /**
+         * Service settings UUID
+         */
+        service_settings_uuid?: string;
+        /**
+         * State
+         *
+         *
+         */
+        state?: Array<CoreStates>;
+    };
+    url: '/api/azure-sql-databases/';
+};
+
+export type AzureSqlDatabasesListResponses = {
+    200: Array<AzureSqlDatabase>;
+};
+
+export type AzureSqlDatabasesListResponse = AzureSqlDatabasesListResponses[keyof AzureSqlDatabasesListResponses];
+
+export type AzureSqlDatabasesCountData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Backend ID
+         */
+        backend_id?: string;
+        /**
+         * Can manage
+         */
+        can_manage?: boolean;
+        /**
+         * Customer UUID
+         */
+        customer?: string;
+        /**
+         * Customer abbreviation
+         */
+        customer_abbreviation?: string;
+        /**
+         * Customer name
+         */
+        customer_name?: string;
+        /**
+         * Customer native name
+         */
+        customer_native_name?: string;
+        /**
+         * Customer UUID
+         */
+        customer_uuid?: string;
+        /**
+         * Description
+         */
+        description?: string;
+        /**
+         * External IP
+         */
+        external_ip?: string;
+        /**
+         * Name
+         */
+        name?: string;
+        /**
+         * Name (exact)
+         */
+        name_exact?: string;
+        /**
+         * A page number within the paginated result set.
+         */
+        page?: number;
+        /**
+         * Number of results to return per page.
+         */
+        page_size?: number;
+        /**
+         * Project UUID
+         */
+        project?: string;
+        /**
+         * Project name
+         */
+        project_name?: string;
+        /**
+         * Project UUID
+         */
+        project_uuid?: string;
+        resource_group?: string;
+        resource_group_uuid?: string;
+        server?: string;
+        server_uuid?: string;
+        /**
+         * Service settings name
+         */
+        service_settings_name?: string;
+        /**
+         * Service settings UUID
+         */
+        service_settings_uuid?: string;
+        /**
+         * State
+         *
+         *
+         */
+        state?: Array<CoreStates>;
+    };
+    url: '/api/azure-sql-databases/';
+};
+
+export type AzureSqlDatabasesCountResponses = {
+    /**
+     * No response body
+     */
+    200: unknown;
+};
+
+export type AzureSqlDatabasesCreateData = {
+    body: AzureSqlDatabaseRequest;
+    path?: never;
+    query?: never;
+    url: '/api/azure-sql-databases/';
+};
+
+export type AzureSqlDatabasesCreateResponses = {
+    201: AzureSqlDatabase;
+};
+
+export type AzureSqlDatabasesCreateResponse = AzureSqlDatabasesCreateResponses[keyof AzureSqlDatabasesCreateResponses];
+
+export type AzureSqlDatabasesDestroyData = {
+    body?: never;
+    path: {
+        uuid: string;
+    };
+    query?: never;
+    url: '/api/azure-sql-databases/{uuid}/';
+};
+
+export type AzureSqlDatabasesDestroyResponses = {
+    /**
+     * No response body
+     */
+    204: void;
+};
+
+export type AzureSqlDatabasesDestroyResponse = AzureSqlDatabasesDestroyResponses[keyof AzureSqlDatabasesDestroyResponses];
+
+export type AzureSqlDatabasesRetrieveData = {
+    body?: never;
+    path: {
+        uuid: string;
+    };
+    query?: {
+        field?: Array<AzureSqlDatabaseFieldEnum>;
+    };
+    url: '/api/azure-sql-databases/{uuid}/';
+};
+
+export type AzureSqlDatabasesRetrieveResponses = {
+    200: AzureSqlDatabase;
+};
+
+export type AzureSqlDatabasesRetrieveResponse = AzureSqlDatabasesRetrieveResponses[keyof AzureSqlDatabasesRetrieveResponses];
+
+export type AzureSqlDatabasesPartialUpdateData = {
+    body?: PatchedAzureSqlDatabaseRequest;
+    path: {
+        uuid: string;
+    };
+    query?: never;
+    url: '/api/azure-sql-databases/{uuid}/';
+};
+
+export type AzureSqlDatabasesPartialUpdateResponses = {
+    200: AzureSqlDatabase;
+};
+
+export type AzureSqlDatabasesPartialUpdateResponse = AzureSqlDatabasesPartialUpdateResponses[keyof AzureSqlDatabasesPartialUpdateResponses];
+
+export type AzureSqlDatabasesUpdateData = {
+    body: AzureSqlDatabaseRequest;
+    path: {
+        uuid: string;
+    };
+    query?: never;
+    url: '/api/azure-sql-databases/{uuid}/';
+};
+
+export type AzureSqlDatabasesUpdateResponses = {
+    200: AzureSqlDatabase;
+};
+
+export type AzureSqlDatabasesUpdateResponse = AzureSqlDatabasesUpdateResponses[keyof AzureSqlDatabasesUpdateResponses];
+
+export type AzureSqlDatabasesPullData = {
+    body?: never;
+    path: {
+        uuid: string;
+    };
+    query?: never;
+    url: '/api/azure-sql-databases/{uuid}/pull/';
+};
+
+export type AzureSqlDatabasesPullErrors = {
+    409: Detail;
+};
+
+export type AzureSqlDatabasesPullError = AzureSqlDatabasesPullErrors[keyof AzureSqlDatabasesPullErrors];
+
+export type AzureSqlDatabasesPullResponses = {
+    202: Detail;
+};
+
+export type AzureSqlDatabasesPullResponse = AzureSqlDatabasesPullResponses[keyof AzureSqlDatabasesPullResponses];
+
+export type AzureSqlDatabasesSetErredData = {
+    body?: SetErredRequest;
+    path: {
+        uuid: string;
+    };
+    query?: never;
+    url: '/api/azure-sql-databases/{uuid}/set_erred/';
+};
+
+export type AzureSqlDatabasesSetErredResponses = {
+    200: Detail;
+};
+
+export type AzureSqlDatabasesSetErredResponse = AzureSqlDatabasesSetErredResponses[keyof AzureSqlDatabasesSetErredResponses];
+
+export type AzureSqlDatabasesSetOkData = {
+    body?: never;
+    path: {
+        uuid: string;
+    };
+    query?: never;
+    url: '/api/azure-sql-databases/{uuid}/set_ok/';
+};
+
+export type AzureSqlDatabasesSetOkResponses = {
+    200: Detail;
+};
+
+export type AzureSqlDatabasesSetOkResponse = AzureSqlDatabasesSetOkResponses[keyof AzureSqlDatabasesSetOkResponses];
+
+export type AzureSqlDatabasesUnlinkData = {
+    body?: never;
+    path: {
+        uuid: string;
+    };
+    query?: never;
+    url: '/api/azure-sql-databases/{uuid}/unlink/';
+};
+
+export type AzureSqlDatabasesUnlinkResponses = {
+    /**
+     * No response body
+     */
+    204: void;
+};
+
+export type AzureSqlDatabasesUnlinkResponse = AzureSqlDatabasesUnlinkResponses[keyof AzureSqlDatabasesUnlinkResponses];
+
+export type AzureSqlServersListData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Backend ID
+         */
+        backend_id?: string;
+        /**
+         * Can manage
+         */
+        can_manage?: boolean;
+        /**
+         * Customer UUID
+         */
+        customer?: string;
+        /**
+         * Customer abbreviation
+         */
+        customer_abbreviation?: string;
+        /**
+         * Customer name
+         */
+        customer_name?: string;
+        /**
+         * Customer native name
+         */
+        customer_native_name?: string;
+        /**
+         * Customer UUID
+         */
+        customer_uuid?: string;
+        /**
+         * Description
+         */
+        description?: string;
+        /**
+         * External IP
+         */
+        external_ip?: string;
+        field?: Array<AzureSqlServerFieldEnum>;
+        /**
+         * Name
+         */
+        name?: string;
+        /**
+         * Name (exact)
+         */
+        name_exact?: string;
+        /**
+         * A page number within the paginated result set.
+         */
+        page?: number;
+        /**
+         * Number of results to return per page.
+         */
+        page_size?: number;
+        /**
+         * Project UUID
+         */
+        project?: string;
+        /**
+         * Project name
+         */
+        project_name?: string;
+        /**
+         * Project UUID
+         */
+        project_uuid?: string;
+        resource_group?: string;
+        resource_group_uuid?: string;
+        /**
+         * Service settings name
+         */
+        service_settings_name?: string;
+        /**
+         * Service settings UUID
+         */
+        service_settings_uuid?: string;
+        /**
+         * State
+         *
+         *
+         */
+        state?: Array<CoreStates>;
+    };
+    url: '/api/azure-sql-servers/';
+};
+
+export type AzureSqlServersListResponses = {
+    200: Array<AzureSqlServer>;
+};
+
+export type AzureSqlServersListResponse = AzureSqlServersListResponses[keyof AzureSqlServersListResponses];
+
+export type AzureSqlServersCountData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Backend ID
+         */
+        backend_id?: string;
+        /**
+         * Can manage
+         */
+        can_manage?: boolean;
+        /**
+         * Customer UUID
+         */
+        customer?: string;
+        /**
+         * Customer abbreviation
+         */
+        customer_abbreviation?: string;
+        /**
+         * Customer name
+         */
+        customer_name?: string;
+        /**
+         * Customer native name
+         */
+        customer_native_name?: string;
+        /**
+         * Customer UUID
+         */
+        customer_uuid?: string;
+        /**
+         * Description
+         */
+        description?: string;
+        /**
+         * External IP
+         */
+        external_ip?: string;
+        /**
+         * Name
+         */
+        name?: string;
+        /**
+         * Name (exact)
+         */
+        name_exact?: string;
+        /**
+         * A page number within the paginated result set.
+         */
+        page?: number;
+        /**
+         * Number of results to return per page.
+         */
+        page_size?: number;
+        /**
+         * Project UUID
+         */
+        project?: string;
+        /**
+         * Project name
+         */
+        project_name?: string;
+        /**
+         * Project UUID
+         */
+        project_uuid?: string;
+        resource_group?: string;
+        resource_group_uuid?: string;
+        /**
+         * Service settings name
+         */
+        service_settings_name?: string;
+        /**
+         * Service settings UUID
+         */
+        service_settings_uuid?: string;
+        /**
+         * State
+         *
+         *
+         */
+        state?: Array<CoreStates>;
+    };
+    url: '/api/azure-sql-servers/';
+};
+
+export type AzureSqlServersCountResponses = {
+    /**
+     * No response body
+     */
+    200: unknown;
+};
+
+export type AzureSqlServersCreateData = {
+    body: AzureSqlServerRequest;
+    path?: never;
+    query?: never;
+    url: '/api/azure-sql-servers/';
+};
+
+export type AzureSqlServersCreateResponses = {
+    201: AzureSqlServer;
+};
+
+export type AzureSqlServersCreateResponse = AzureSqlServersCreateResponses[keyof AzureSqlServersCreateResponses];
+
+export type AzureSqlServersDestroyData = {
+    body?: never;
+    path: {
+        uuid: string;
+    };
+    query?: never;
+    url: '/api/azure-sql-servers/{uuid}/';
+};
+
+export type AzureSqlServersDestroyResponses = {
+    /**
+     * No response body
+     */
+    204: void;
+};
+
+export type AzureSqlServersDestroyResponse = AzureSqlServersDestroyResponses[keyof AzureSqlServersDestroyResponses];
+
+export type AzureSqlServersRetrieveData = {
+    body?: never;
+    path: {
+        uuid: string;
+    };
+    query?: {
+        field?: Array<AzureSqlServerFieldEnum>;
+    };
+    url: '/api/azure-sql-servers/{uuid}/';
+};
+
+export type AzureSqlServersRetrieveResponses = {
+    200: AzureSqlServer;
+};
+
+export type AzureSqlServersRetrieveResponse = AzureSqlServersRetrieveResponses[keyof AzureSqlServersRetrieveResponses];
+
+export type AzureSqlServersPartialUpdateData = {
+    body?: PatchedAzureSqlServerRequest;
+    path: {
+        uuid: string;
+    };
+    query?: never;
+    url: '/api/azure-sql-servers/{uuid}/';
+};
+
+export type AzureSqlServersPartialUpdateResponses = {
+    200: AzureSqlServer;
+};
+
+export type AzureSqlServersPartialUpdateResponse = AzureSqlServersPartialUpdateResponses[keyof AzureSqlServersPartialUpdateResponses];
+
+export type AzureSqlServersUpdateData = {
+    body: AzureSqlServerRequest;
+    path: {
+        uuid: string;
+    };
+    query?: never;
+    url: '/api/azure-sql-servers/{uuid}/';
+};
+
+export type AzureSqlServersUpdateResponses = {
+    200: AzureSqlServer;
+};
+
+export type AzureSqlServersUpdateResponse = AzureSqlServersUpdateResponses[keyof AzureSqlServersUpdateResponses];
+
+export type AzureSqlServersCreateDatabaseData = {
+    body: AzureSqlDatabaseCreateRequest;
+    path: {
+        uuid: string;
+    };
+    query?: never;
+    url: '/api/azure-sql-servers/{uuid}/create_database/';
+};
+
+export type AzureSqlServersCreateDatabaseResponses = {
+    202: AzureSqlDatabaseCreateResponse;
+};
+
+export type AzureSqlServersCreateDatabaseResponse = AzureSqlServersCreateDatabaseResponses[keyof AzureSqlServersCreateDatabaseResponses];
+
+export type AzureSqlServersPullData = {
+    body?: never;
+    path: {
+        uuid: string;
+    };
+    query?: never;
+    url: '/api/azure-sql-servers/{uuid}/pull/';
+};
+
+export type AzureSqlServersPullErrors = {
+    409: Detail;
+};
+
+export type AzureSqlServersPullError = AzureSqlServersPullErrors[keyof AzureSqlServersPullErrors];
+
+export type AzureSqlServersPullResponses = {
+    202: Detail;
+};
+
+export type AzureSqlServersPullResponse = AzureSqlServersPullResponses[keyof AzureSqlServersPullResponses];
+
+export type AzureSqlServersSetErredData = {
+    body?: SetErredRequest;
+    path: {
+        uuid: string;
+    };
+    query?: never;
+    url: '/api/azure-sql-servers/{uuid}/set_erred/';
+};
+
+export type AzureSqlServersSetErredResponses = {
+    200: Detail;
+};
+
+export type AzureSqlServersSetErredResponse = AzureSqlServersSetErredResponses[keyof AzureSqlServersSetErredResponses];
+
+export type AzureSqlServersSetOkData = {
+    body?: never;
+    path: {
+        uuid: string;
+    };
+    query?: never;
+    url: '/api/azure-sql-servers/{uuid}/set_ok/';
+};
+
+export type AzureSqlServersSetOkResponses = {
+    200: Detail;
+};
+
+export type AzureSqlServersSetOkResponse = AzureSqlServersSetOkResponses[keyof AzureSqlServersSetOkResponses];
+
+export type AzureSqlServersUnlinkData = {
+    body?: never;
+    path: {
+        uuid: string;
+    };
+    query?: never;
+    url: '/api/azure-sql-servers/{uuid}/unlink/';
+};
+
+export type AzureSqlServersUnlinkResponses = {
+    /**
+     * No response body
+     */
+    204: void;
+};
+
+export type AzureSqlServersUnlinkResponse = AzureSqlServersUnlinkResponses[keyof AzureSqlServersUnlinkResponses];
+
+export type AzureVirtualmachinesListData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Backend ID
+         */
+        backend_id?: string;
+        /**
+         * Can manage
+         */
+        can_manage?: boolean;
+        /**
+         * Customer UUID
+         */
+        customer?: string;
+        /**
+         * Customer abbreviation
+         */
+        customer_abbreviation?: string;
+        /**
+         * Customer name
+         */
+        customer_name?: string;
+        /**
+         * Customer native name
+         */
+        customer_native_name?: string;
+        /**
+         * Customer UUID
+         */
+        customer_uuid?: string;
+        /**
+         * Description
+         */
+        description?: string;
+        /**
+         * External IP
+         */
+        external_ip?: string;
+        field?: Array<AzureVirtualMachineFieldEnum>;
+        /**
+         * Name
+         */
+        name?: string;
+        /**
+         * Name (exact)
+         */
+        name_exact?: string;
+        /**
+         * A page number within the paginated result set.
+         */
+        page?: number;
+        /**
+         * Number of results to return per page.
+         */
+        page_size?: number;
+        /**
+         * Project UUID
+         */
+        project?: string;
+        /**
+         * Project name
+         */
+        project_name?: string;
+        /**
+         * Project UUID
+         */
+        project_uuid?: string;
+        resource_group?: string;
+        resource_group_uuid?: string;
+        /**
+         * Service settings name
+         */
+        service_settings_name?: string;
+        /**
+         * Service settings UUID
+         */
+        service_settings_uuid?: string;
+        /**
+         * State
+         *
+         *
+         */
+        state?: Array<CoreStates>;
+    };
+    url: '/api/azure-virtualmachines/';
+};
+
+export type AzureVirtualmachinesListResponses = {
+    200: Array<AzureVirtualMachine>;
+};
+
+export type AzureVirtualmachinesListResponse = AzureVirtualmachinesListResponses[keyof AzureVirtualmachinesListResponses];
+
+export type AzureVirtualmachinesCountData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Backend ID
+         */
+        backend_id?: string;
+        /**
+         * Can manage
+         */
+        can_manage?: boolean;
+        /**
+         * Customer UUID
+         */
+        customer?: string;
+        /**
+         * Customer abbreviation
+         */
+        customer_abbreviation?: string;
+        /**
+         * Customer name
+         */
+        customer_name?: string;
+        /**
+         * Customer native name
+         */
+        customer_native_name?: string;
+        /**
+         * Customer UUID
+         */
+        customer_uuid?: string;
+        /**
+         * Description
+         */
+        description?: string;
+        /**
+         * External IP
+         */
+        external_ip?: string;
+        /**
+         * Name
+         */
+        name?: string;
+        /**
+         * Name (exact)
+         */
+        name_exact?: string;
+        /**
+         * A page number within the paginated result set.
+         */
+        page?: number;
+        /**
+         * Number of results to return per page.
+         */
+        page_size?: number;
+        /**
+         * Project UUID
+         */
+        project?: string;
+        /**
+         * Project name
+         */
+        project_name?: string;
+        /**
+         * Project UUID
+         */
+        project_uuid?: string;
+        resource_group?: string;
+        resource_group_uuid?: string;
+        /**
+         * Service settings name
+         */
+        service_settings_name?: string;
+        /**
+         * Service settings UUID
+         */
+        service_settings_uuid?: string;
+        /**
+         * State
+         *
+         *
+         */
+        state?: Array<CoreStates>;
+    };
+    url: '/api/azure-virtualmachines/';
+};
+
+export type AzureVirtualmachinesCountResponses = {
+    /**
+     * No response body
+     */
+    200: unknown;
+};
+
+export type AzureVirtualmachinesCreateData = {
+    body: AzureVirtualMachineRequest;
+    path?: never;
+    query?: never;
+    url: '/api/azure-virtualmachines/';
+};
+
+export type AzureVirtualmachinesCreateResponses = {
+    201: AzureVirtualMachine;
+};
+
+export type AzureVirtualmachinesCreateResponse = AzureVirtualmachinesCreateResponses[keyof AzureVirtualmachinesCreateResponses];
+
+export type AzureVirtualmachinesDestroyData = {
+    body?: never;
+    path: {
+        uuid: string;
+    };
+    query?: never;
+    url: '/api/azure-virtualmachines/{uuid}/';
+};
+
+export type AzureVirtualmachinesDestroyResponses = {
+    /**
+     * No response body
+     */
+    204: void;
+};
+
+export type AzureVirtualmachinesDestroyResponse = AzureVirtualmachinesDestroyResponses[keyof AzureVirtualmachinesDestroyResponses];
+
+export type AzureVirtualmachinesRetrieveData = {
+    body?: never;
+    path: {
+        uuid: string;
+    };
+    query?: {
+        field?: Array<AzureVirtualMachineFieldEnum>;
+    };
+    url: '/api/azure-virtualmachines/{uuid}/';
+};
+
+export type AzureVirtualmachinesRetrieveResponses = {
+    200: AzureVirtualMachine;
+};
+
+export type AzureVirtualmachinesRetrieveResponse = AzureVirtualmachinesRetrieveResponses[keyof AzureVirtualmachinesRetrieveResponses];
+
+export type AzureVirtualmachinesPartialUpdateData = {
+    body?: PatchedAzureVirtualMachineRequest;
+    path: {
+        uuid: string;
+    };
+    query?: never;
+    url: '/api/azure-virtualmachines/{uuid}/';
+};
+
+export type AzureVirtualmachinesPartialUpdateResponses = {
+    200: AzureVirtualMachine;
+};
+
+export type AzureVirtualmachinesPartialUpdateResponse = AzureVirtualmachinesPartialUpdateResponses[keyof AzureVirtualmachinesPartialUpdateResponses];
+
+export type AzureVirtualmachinesUpdateData = {
+    body: AzureVirtualMachineRequest;
+    path: {
+        uuid: string;
+    };
+    query?: never;
+    url: '/api/azure-virtualmachines/{uuid}/';
+};
+
+export type AzureVirtualmachinesUpdateResponses = {
+    200: AzureVirtualMachine;
+};
+
+export type AzureVirtualmachinesUpdateResponse = AzureVirtualmachinesUpdateResponses[keyof AzureVirtualmachinesUpdateResponses];
+
+export type AzureVirtualmachinesPullData = {
+    body?: never;
+    path: {
+        uuid: string;
+    };
+    query?: never;
+    url: '/api/azure-virtualmachines/{uuid}/pull/';
+};
+
+export type AzureVirtualmachinesPullErrors = {
+    409: Detail;
+};
+
+export type AzureVirtualmachinesPullError = AzureVirtualmachinesPullErrors[keyof AzureVirtualmachinesPullErrors];
+
+export type AzureVirtualmachinesPullResponses = {
+    202: Detail;
+};
+
+export type AzureVirtualmachinesPullResponse = AzureVirtualmachinesPullResponses[keyof AzureVirtualmachinesPullResponses];
+
+export type AzureVirtualmachinesRestartData = {
+    body?: never;
+    path: {
+        uuid: string;
+    };
+    query?: never;
+    url: '/api/azure-virtualmachines/{uuid}/restart/';
+};
+
+export type AzureVirtualmachinesRestartResponses = {
+    202: Status;
+};
+
+export type AzureVirtualmachinesRestartResponse = AzureVirtualmachinesRestartResponses[keyof AzureVirtualmachinesRestartResponses];
+
+export type AzureVirtualmachinesSetErredData = {
+    body?: SetErredRequest;
+    path: {
+        uuid: string;
+    };
+    query?: never;
+    url: '/api/azure-virtualmachines/{uuid}/set_erred/';
+};
+
+export type AzureVirtualmachinesSetErredResponses = {
+    200: Detail;
+};
+
+export type AzureVirtualmachinesSetErredResponse = AzureVirtualmachinesSetErredResponses[keyof AzureVirtualmachinesSetErredResponses];
+
+export type AzureVirtualmachinesSetOkData = {
+    body?: never;
+    path: {
+        uuid: string;
+    };
+    query?: never;
+    url: '/api/azure-virtualmachines/{uuid}/set_ok/';
+};
+
+export type AzureVirtualmachinesSetOkResponses = {
+    200: Detail;
+};
+
+export type AzureVirtualmachinesSetOkResponse = AzureVirtualmachinesSetOkResponses[keyof AzureVirtualmachinesSetOkResponses];
+
+export type AzureVirtualmachinesStartData = {
+    body?: never;
+    path: {
+        uuid: string;
+    };
+    query?: never;
+    url: '/api/azure-virtualmachines/{uuid}/start/';
+};
+
+export type AzureVirtualmachinesStartResponses = {
+    202: Status;
+};
+
+export type AzureVirtualmachinesStartResponse = AzureVirtualmachinesStartResponses[keyof AzureVirtualmachinesStartResponses];
+
+export type AzureVirtualmachinesStopData = {
+    body?: never;
+    path: {
+        uuid: string;
+    };
+    query?: never;
+    url: '/api/azure-virtualmachines/{uuid}/stop/';
+};
+
+export type AzureVirtualmachinesStopResponses = {
+    202: Status;
+};
+
+export type AzureVirtualmachinesStopResponse = AzureVirtualmachinesStopResponses[keyof AzureVirtualmachinesStopResponses];
+
+export type AzureVirtualmachinesUnlinkData = {
+    body?: never;
+    path: {
+        uuid: string;
+    };
+    query?: never;
+    url: '/api/azure-virtualmachines/{uuid}/unlink/';
+};
+
+export type AzureVirtualmachinesUnlinkResponses = {
+    /**
+     * No response body
+     */
+    204: void;
+};
+
+export type AzureVirtualmachinesUnlinkResponse = AzureVirtualmachinesUnlinkResponses[keyof AzureVirtualmachinesUnlinkResponses];
 
 export type BackendResourceRequestsListData = {
     body?: never;
@@ -47509,16 +48992,6 @@ export type EventConsumersListData = {
     path?: never;
     query?: {
         /**
-         * Consumer is bound to no scope and therefore receives every event
-         */
-        is_global?: boolean;
-        /**
-         * Ordering
-         *
-         *
-         */
-        o?: Array<BackendResourceReqOEnum>;
-        /**
          * A page number within the paginated result set.
          */
         page?: number;
@@ -47526,11 +48999,6 @@ export type EventConsumersListData = {
          * Number of results to return per page.
          */
         page_size?: number;
-        user_username?: string;
-        /**
-         * Owner UUID
-         */
-        user_uuid?: string;
     };
     url: '/api/event-consumers/';
 };
@@ -47546,16 +49014,6 @@ export type EventConsumersCountData = {
     path?: never;
     query?: {
         /**
-         * Consumer is bound to no scope and therefore receives every event
-         */
-        is_global?: boolean;
-        /**
-         * Ordering
-         *
-         *
-         */
-        o?: Array<BackendResourceReqOEnum>;
-        /**
          * A page number within the paginated result set.
          */
         page?: number;
@@ -47563,11 +49021,6 @@ export type EventConsumersCountData = {
          * Number of results to return per page.
          */
         page_size?: number;
-        user_username?: string;
-        /**
-         * Owner UUID
-         */
-        user_uuid?: string;
     };
     url: '/api/event-consumers/';
 };
@@ -68999,233 +70452,6 @@ export type MarketplaceSectionsUpdateResponses = {
 
 export type MarketplaceSectionsUpdateResponse = MarketplaceSectionsUpdateResponses[keyof MarketplaceSectionsUpdateResponses];
 
-export type MarketplaceServiceProviderAccountsListData = {
-    body?: never;
-    path?: never;
-    query?: {
-        /**
-         * Created after
-         */
-        created?: string;
-        /**
-         * Created before
-         */
-        created_before?: string;
-        /**
-         * Provider organization UUID
-         */
-        customer_uuid?: string;
-        field?: Array<ServiceProviderAccountFieldEnum>;
-        /**
-         * Is restricted
-         */
-        is_restricted?: boolean;
-        /**
-         * Modified after
-         */
-        modified?: string;
-        /**
-         * Modified before
-         */
-        modified_before?: string;
-        /**
-         * Ordering
-         *
-         *
-         */
-        o?: Array<OfferingUserOEnum>;
-        /**
-         * A page number within the paginated result set.
-         */
-        page?: number;
-        /**
-         * Number of results to return per page.
-         */
-        page_size?: number;
-        /**
-         * Service provider UUID
-         */
-        provider_uuid?: string;
-        /**
-         * Search by username, user name, UID or primary GID
-         */
-        query?: string;
-        /**
-         * Account runtime state
-         *
-         *
-         */
-        runtime_state?: Array<RuntimeStateEnum>;
-        /**
-         * Account state
-         *
-         *
-         */
-        state?: Array<OfferingUserState>;
-        /**
-         * User username
-         */
-        user_username?: string;
-        /**
-         * User UUID
-         */
-        user_uuid?: string;
-    };
-    url: '/api/marketplace-service-provider-accounts/';
-};
-
-export type MarketplaceServiceProviderAccountsListResponses = {
-    200: Array<ServiceProviderAccount>;
-};
-
-export type MarketplaceServiceProviderAccountsListResponse = MarketplaceServiceProviderAccountsListResponses[keyof MarketplaceServiceProviderAccountsListResponses];
-
-export type MarketplaceServiceProviderAccountsCountData = {
-    body?: never;
-    path?: never;
-    query?: {
-        /**
-         * Created after
-         */
-        created?: string;
-        /**
-         * Created before
-         */
-        created_before?: string;
-        /**
-         * Provider organization UUID
-         */
-        customer_uuid?: string;
-        /**
-         * Is restricted
-         */
-        is_restricted?: boolean;
-        /**
-         * Modified after
-         */
-        modified?: string;
-        /**
-         * Modified before
-         */
-        modified_before?: string;
-        /**
-         * Ordering
-         *
-         *
-         */
-        o?: Array<OfferingUserOEnum>;
-        /**
-         * A page number within the paginated result set.
-         */
-        page?: number;
-        /**
-         * Number of results to return per page.
-         */
-        page_size?: number;
-        /**
-         * Service provider UUID
-         */
-        provider_uuid?: string;
-        /**
-         * Search by username, user name, UID or primary GID
-         */
-        query?: string;
-        /**
-         * Account runtime state
-         *
-         *
-         */
-        runtime_state?: Array<RuntimeStateEnum>;
-        /**
-         * Account state
-         *
-         *
-         */
-        state?: Array<OfferingUserState>;
-        /**
-         * User username
-         */
-        user_username?: string;
-        /**
-         * User UUID
-         */
-        user_uuid?: string;
-    };
-    url: '/api/marketplace-service-provider-accounts/';
-};
-
-export type MarketplaceServiceProviderAccountsCountResponses = {
-    /**
-     * No response body
-     */
-    200: unknown;
-};
-
-export type MarketplaceServiceProviderAccountsDestroyData = {
-    body?: never;
-    path: {
-        uuid: string;
-    };
-    query?: never;
-    url: '/api/marketplace-service-provider-accounts/{uuid}/';
-};
-
-export type MarketplaceServiceProviderAccountsDestroyResponses = {
-    /**
-     * No response body
-     */
-    204: void;
-};
-
-export type MarketplaceServiceProviderAccountsDestroyResponse = MarketplaceServiceProviderAccountsDestroyResponses[keyof MarketplaceServiceProviderAccountsDestroyResponses];
-
-export type MarketplaceServiceProviderAccountsRetrieveData = {
-    body?: never;
-    path: {
-        uuid: string;
-    };
-    query?: {
-        field?: Array<ServiceProviderAccountFieldEnum>;
-    };
-    url: '/api/marketplace-service-provider-accounts/{uuid}/';
-};
-
-export type MarketplaceServiceProviderAccountsRetrieveResponses = {
-    200: ServiceProviderAccount;
-};
-
-export type MarketplaceServiceProviderAccountsRetrieveResponse = MarketplaceServiceProviderAccountsRetrieveResponses[keyof MarketplaceServiceProviderAccountsRetrieveResponses];
-
-export type MarketplaceServiceProviderAccountsPartialUpdateData = {
-    body?: PatchedServiceProviderAccountRequest;
-    path: {
-        uuid: string;
-    };
-    query?: never;
-    url: '/api/marketplace-service-provider-accounts/{uuid}/';
-};
-
-export type MarketplaceServiceProviderAccountsPartialUpdateResponses = {
-    200: ServiceProviderAccount;
-};
-
-export type MarketplaceServiceProviderAccountsPartialUpdateResponse = MarketplaceServiceProviderAccountsPartialUpdateResponses[keyof MarketplaceServiceProviderAccountsPartialUpdateResponses];
-
-export type MarketplaceServiceProviderAccountsUpdateData = {
-    body?: ServiceProviderAccountRequest;
-    path: {
-        uuid: string;
-    };
-    query?: never;
-    url: '/api/marketplace-service-provider-accounts/{uuid}/';
-};
-
-export type MarketplaceServiceProviderAccountsUpdateResponses = {
-    200: ServiceProviderAccount;
-};
-
-export type MarketplaceServiceProviderAccountsUpdateResponse = MarketplaceServiceProviderAccountsUpdateResponses[keyof MarketplaceServiceProviderAccountsUpdateResponses];
-
 export type MarketplaceServiceProvidersListData = {
     body?: never;
     path?: never;
@@ -69617,6 +70843,10 @@ export type MarketplaceServiceProvidersCustomerProjectsListData = {
     };
     query: {
         /**
+         * Return projects that were active during the given period. Accepts a year (e.g. '2024') or year-month (e.g. '2024-03'). A project is considered active if its start (start_date, falling back to created date) is on or before the end of the period, and its end_date is on or after the start of the period (or has no end_date).
+         */
+        active_during?: string;
+        /**
          * Affiliation name
          */
         affiliation_name?: string;
@@ -69669,11 +70899,21 @@ export type MarketplaceServiceProvidersCustomerProjectsListData = {
          * Description
          */
         description?: string;
+        end_date_after?: string;
+        end_date_before?: string;
+        /**
+         * Filter by whether the project end_date has passed. ended=true returns projects whose end_date is set and in the past. ended=false returns projects with no end_date or a future end_date.
+         */
+        ended?: boolean;
         field?: Array<MarketplaceProviderCustomerProjectFieldEnum>;
         /**
          * Filter projects that have an affiliation.
          */
         has_affiliation?: boolean;
+        /**
+         * Filter by whether the project is currently in its grace period (end_date has passed but end_date + 30 days has not). in_grace=true returns projects currently in grace period. in_grace=false returns projects not in grace period.
+         */
+        in_grace?: boolean;
         /**
          * Is removed
          */
@@ -69728,6 +70968,12 @@ export type MarketplaceServiceProvidersCustomerProjectsListData = {
          * Slug
          */
         slug?: string;
+        start_date_after?: string;
+        start_date_before?: string;
+        /**
+         * Filter by whether the project has started. started=true returns projects whose start_date is in the past or unset. started=false returns projects with a future start_date.
+         */
+        started?: boolean;
         /**
          * Filter projects where the given user has a role.
          */
@@ -69749,6 +70995,10 @@ export type MarketplaceServiceProvidersCustomerProjectsCountData = {
     };
     query: {
         /**
+         * Return projects that were active during the given period. Accepts a year (e.g. '2024') or year-month (e.g. '2024-03'). A project is considered active if its start (start_date, falling back to created date) is on or before the end of the period, and its end_date is on or after the start of the period (or has no end_date).
+         */
+        active_during?: string;
+        /**
          * Affiliation name
          */
         affiliation_name?: string;
@@ -69801,10 +71051,20 @@ export type MarketplaceServiceProvidersCustomerProjectsCountData = {
          * Description
          */
         description?: string;
+        end_date_after?: string;
+        end_date_before?: string;
+        /**
+         * Filter by whether the project end_date has passed. ended=true returns projects whose end_date is set and in the past. ended=false returns projects with no end_date or a future end_date.
+         */
+        ended?: boolean;
         /**
          * Filter projects that have an affiliation.
          */
         has_affiliation?: boolean;
+        /**
+         * Filter by whether the project is currently in its grace period (end_date has passed but end_date + 30 days has not). in_grace=true returns projects currently in grace period. in_grace=false returns projects not in grace period.
+         */
+        in_grace?: boolean;
         /**
          * Is removed
          */
@@ -69859,6 +71119,12 @@ export type MarketplaceServiceProvidersCustomerProjectsCountData = {
          * Slug
          */
         slug?: string;
+        start_date_after?: string;
+        start_date_before?: string;
+        /**
+         * Filter by whether the project has started. started=true returns projects whose start_date is in the past or unset. started=false returns projects with a future start_date.
+         */
+        started?: boolean;
         /**
          * Filter projects where the given user has a role.
          */
@@ -71215,6 +72481,10 @@ export type MarketplaceServiceProvidersProjectsListData = {
     };
     query?: {
         /**
+         * Return projects that were active during the given period. Accepts a year (e.g. '2024') or year-month (e.g. '2024-03'). A project is considered active if its start (start_date, falling back to created date) is on or before the end of the period, and its end_date is on or after the start of the period (or has no end_date).
+         */
+        active_during?: string;
+        /**
          * Affiliation name
          */
         affiliation_name?: string;
@@ -71267,11 +72537,21 @@ export type MarketplaceServiceProvidersProjectsListData = {
          * Description
          */
         description?: string;
+        end_date_after?: string;
+        end_date_before?: string;
+        /**
+         * Filter by whether the project end_date has passed. ended=true returns projects whose end_date is set and in the past. ended=false returns projects with no end_date or a future end_date.
+         */
+        ended?: boolean;
         field?: Array<ProjectFieldEnum>;
         /**
          * Filter projects that have an affiliation.
          */
         has_affiliation?: boolean;
+        /**
+         * Filter by whether the project is currently in its grace period (end_date has passed but end_date + 30 days has not). in_grace=true returns projects currently in grace period. in_grace=false returns projects not in grace period.
+         */
+        in_grace?: boolean;
         /**
          * Is removed
          */
@@ -71322,6 +72602,12 @@ export type MarketplaceServiceProvidersProjectsListData = {
          * Slug
          */
         slug?: string;
+        start_date_after?: string;
+        start_date_before?: string;
+        /**
+         * Filter by whether the project has started. started=true returns projects whose start_date is in the past or unset. started=false returns projects with a future start_date.
+         */
+        started?: boolean;
         /**
          * Filter projects where the given user has a role.
          */
@@ -71343,6 +72629,10 @@ export type MarketplaceServiceProvidersProjectsCountData = {
     };
     query?: {
         /**
+         * Return projects that were active during the given period. Accepts a year (e.g. '2024') or year-month (e.g. '2024-03'). A project is considered active if its start (start_date, falling back to created date) is on or before the end of the period, and its end_date is on or after the start of the period (or has no end_date).
+         */
+        active_during?: string;
+        /**
          * Affiliation name
          */
         affiliation_name?: string;
@@ -71395,10 +72685,20 @@ export type MarketplaceServiceProvidersProjectsCountData = {
          * Description
          */
         description?: string;
+        end_date_after?: string;
+        end_date_before?: string;
+        /**
+         * Filter by whether the project end_date has passed. ended=true returns projects whose end_date is set and in the past. ended=false returns projects with no end_date or a future end_date.
+         */
+        ended?: boolean;
         /**
          * Filter projects that have an affiliation.
          */
         has_affiliation?: boolean;
+        /**
+         * Filter by whether the project is currently in its grace period (end_date has passed but end_date + 30 days has not). in_grace=true returns projects currently in grace period. in_grace=false returns projects not in grace period.
+         */
+        in_grace?: boolean;
         /**
          * Is removed
          */
@@ -71449,6 +72749,12 @@ export type MarketplaceServiceProvidersProjectsCountData = {
          * Slug
          */
         slug?: string;
+        start_date_after?: string;
+        start_date_before?: string;
+        /**
+         * Filter by whether the project has started. started=true returns projects whose start_date is in the past or unset. started=false returns projects with a future start_date.
+         */
+        started?: boolean;
         /**
          * Filter projects where the given user has a role.
          */
@@ -71935,21 +73241,6 @@ export type MarketplaceServiceProvidersAddUserResponses = {
 
 export type MarketplaceServiceProvidersAddUserResponse = MarketplaceServiceProvidersAddUserResponses[keyof MarketplaceServiceProvidersAddUserResponses];
 
-export type MarketplaceServiceProvidersAdoptProviderAccountsData = {
-    body?: AdoptProviderAccountsRequest;
-    path: {
-        uuid: string;
-    };
-    query?: never;
-    url: '/api/marketplace-service-providers/{uuid}/adopt_provider_accounts/';
-};
-
-export type MarketplaceServiceProvidersAdoptProviderAccountsResponses = {
-    200: AdoptProviderAccountsResponse;
-};
-
-export type MarketplaceServiceProvidersAdoptProviderAccountsResponse = MarketplaceServiceProvidersAdoptProviderAccountsResponses[keyof MarketplaceServiceProvidersAdoptProviderAccountsResponses];
-
 export type ServiceProviderApiSecretCodeRetrieveData = {
     body?: never;
     path: {
@@ -72265,64 +73556,6 @@ export type MarketplaceServiceProvidersUpdateUserResponses = {
 };
 
 export type MarketplaceServiceProvidersUpdateUserResponse = MarketplaceServiceProvidersUpdateUserResponses[keyof MarketplaceServiceProvidersUpdateUserResponses];
-
-export type MarketplaceServiceProvidersUsernameConflictsListData = {
-    body?: never;
-    path: {
-        uuid: string;
-    };
-    query?: {
-        /**
-         * Created after
-         */
-        created?: string;
-        /**
-         * Created before
-         */
-        created_before?: string;
-        /**
-         * Customer URL
-         */
-        customer?: string;
-        /**
-         * Customer keyword (name, abbreviation or native name)
-         */
-        customer_keyword?: string;
-        /**
-         * Customer UUID
-         */
-        customer_uuid?: string;
-        /**
-         * Modified after
-         */
-        modified?: string;
-        /**
-         * Modified before
-         */
-        modified_before?: string;
-        /**
-         * Ordering
-         *
-         *
-         */
-        o?: Array<CallManagingOrganisationOEnum>;
-        /**
-         * A page number within the paginated result set.
-         */
-        page?: number;
-        /**
-         * Number of results to return per page.
-         */
-        page_size?: number;
-    };
-    url: '/api/marketplace-service-providers/{uuid}/username_conflicts/';
-};
-
-export type MarketplaceServiceProvidersUsernameConflictsListResponses = {
-    200: Array<ProviderUsernameConflict>;
-};
-
-export type MarketplaceServiceProvidersUsernameConflictsListResponse = MarketplaceServiceProvidersUsernameConflictsListResponses[keyof MarketplaceServiceProvidersUsernameConflictsListResponses];
 
 export type MarketplaceSiteAgentConnectionStatsRetrieveData = {
     body?: never;
@@ -78590,7 +79823,12 @@ export type OpenportalAccountingSummaryListData = {
     path?: never;
     query?: {
         customer_uuid?: string;
+        /**
+         * If true, include the offering_names field listing the names of offerings currently attached to each project.
+         */
+        include_offering_names?: boolean;
         is_active?: boolean;
+        offering_name?: string;
         /**
          * A page number within the paginated result set.
          */
@@ -78615,7 +79853,12 @@ export type OpenportalAccountingSummaryCountData = {
     path?: never;
     query?: {
         customer_uuid?: string;
+        /**
+         * If true, include the offering_names field listing the names of offerings currently attached to each project.
+         */
+        include_offering_names?: boolean;
         is_active?: boolean;
+        offering_name?: string;
         /**
          * A page number within the paginated result set.
          */
@@ -79141,6 +80384,139 @@ export type OpenportalAssociationsRetrieveResponses = {
 
 export type OpenportalAssociationsRetrieveResponse = OpenportalAssociationsRetrieveResponses[keyof OpenportalAssociationsRetrieveResponses];
 
+export type OpenportalAwardProjectHistoryListData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Which field to use when ordering the results.
+         */
+        o?: string;
+        /**
+         * A page number within the paginated result set.
+         */
+        page?: number;
+        /**
+         * Number of results to return per page.
+         */
+        page_size?: number;
+    };
+    url: '/api/openportal-award-project-history/';
+};
+
+export type OpenportalAwardProjectHistoryListResponses = {
+    200: Array<ManagedProjectHistoryEntry>;
+};
+
+export type OpenportalAwardProjectHistoryListResponse = OpenportalAwardProjectHistoryListResponses[keyof OpenportalAwardProjectHistoryListResponses];
+
+export type OpenportalAwardProjectHistoryCountData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Which field to use when ordering the results.
+         */
+        o?: string;
+        /**
+         * A page number within the paginated result set.
+         */
+        page?: number;
+        /**
+         * Number of results to return per page.
+         */
+        page_size?: number;
+    };
+    url: '/api/openportal-award-project-history/';
+};
+
+export type OpenportalAwardProjectHistoryCountResponses = {
+    /**
+     * No response body
+     */
+    200: unknown;
+};
+
+export type OpenportalAwardProjectHistoryRetrieveData = {
+    body?: never;
+    path: {
+        /**
+         * A unique integer value identifying this Managed Project Attachment.
+         */
+        id: number;
+    };
+    query?: never;
+    url: '/api/openportal-award-project-history/{id}/';
+};
+
+export type OpenportalAwardProjectHistoryRetrieveResponses = {
+    200: ManagedProjectHistoryEntry;
+};
+
+export type OpenportalAwardProjectHistoryRetrieveResponse = OpenportalAwardProjectHistoryRetrieveResponses[keyof OpenportalAwardProjectHistoryRetrieveResponses];
+
+export type OpenportalManagedProjectAccountingSummaryListData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * A page number within the paginated result set.
+         */
+        page?: number;
+        /**
+         * Number of results to return per page.
+         */
+        page_size?: number;
+        project_uuid?: string;
+    };
+    url: '/api/openportal-managed-project-accounting-summary/';
+};
+
+export type OpenportalManagedProjectAccountingSummaryListResponses = {
+    200: Array<ManagedProjectAccountingSummary>;
+};
+
+export type OpenportalManagedProjectAccountingSummaryListResponse = OpenportalManagedProjectAccountingSummaryListResponses[keyof OpenportalManagedProjectAccountingSummaryListResponses];
+
+export type OpenportalManagedProjectAccountingSummaryCountData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * A page number within the paginated result set.
+         */
+        page?: number;
+        /**
+         * Number of results to return per page.
+         */
+        page_size?: number;
+        project_uuid?: string;
+    };
+    url: '/api/openportal-managed-project-accounting-summary/';
+};
+
+export type OpenportalManagedProjectAccountingSummaryCountResponses = {
+    /**
+     * No response body
+     */
+    200: unknown;
+};
+
+export type OpenportalManagedProjectAccountingSummaryRetrieveData = {
+    body?: never;
+    path: {
+        uuid: string;
+    };
+    query?: never;
+    url: '/api/openportal-managed-project-accounting-summary/{uuid}/';
+};
+
+export type OpenportalManagedProjectAccountingSummaryRetrieveResponses = {
+    200: ManagedProjectAccountingSummary;
+};
+
+export type OpenportalManagedProjectAccountingSummaryRetrieveResponse = OpenportalManagedProjectAccountingSummaryRetrieveResponses[keyof OpenportalManagedProjectAccountingSummaryRetrieveResponses];
+
 export type OpenportalManagedProjectAuditListData = {
     body?: never;
     path?: never;
@@ -79484,6 +80860,68 @@ export type OpenportalManagedProjectsRejectResponses = {
      */
     200: unknown;
 };
+
+export type OpenportalProjectAwardHistoryListData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * A page number within the paginated result set.
+         */
+        page?: number;
+        /**
+         * Number of results to return per page.
+         */
+        page_size?: number;
+        project_uuid?: string;
+    };
+    url: '/api/openportal-project-award-history/';
+};
+
+export type OpenportalProjectAwardHistoryListResponses = {
+    200: Array<ProjectAwardHistory>;
+};
+
+export type OpenportalProjectAwardHistoryListResponse = OpenportalProjectAwardHistoryListResponses[keyof OpenportalProjectAwardHistoryListResponses];
+
+export type OpenportalProjectAwardHistoryCountData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * A page number within the paginated result set.
+         */
+        page?: number;
+        /**
+         * Number of results to return per page.
+         */
+        page_size?: number;
+        project_uuid?: string;
+    };
+    url: '/api/openportal-project-award-history/';
+};
+
+export type OpenportalProjectAwardHistoryCountResponses = {
+    /**
+     * No response body
+     */
+    200: unknown;
+};
+
+export type OpenportalProjectAwardHistoryRetrieveData = {
+    body?: never;
+    path: {
+        uuid: string;
+    };
+    query?: never;
+    url: '/api/openportal-project-award-history/{uuid}/';
+};
+
+export type OpenportalProjectAwardHistoryRetrieveResponses = {
+    200: ProjectAwardHistory;
+};
+
+export type OpenportalProjectAwardHistoryRetrieveResponse = OpenportalProjectAwardHistoryRetrieveResponses[keyof OpenportalProjectAwardHistoryRetrieveResponses];
 
 export type OpenportalProjectStorageReportsListData = {
     body?: never;
@@ -80758,6 +82196,10 @@ export type OpenportalUnmanagedProjectsListData = {
          */
         accounting_is_running?: boolean;
         /**
+         * Return projects that were active during the given period. Accepts a year (e.g. '2024') or year-month (e.g. '2024-03'). A project is considered active if its start (start_date, falling back to created date) is on or before the end of the period, and its end_date is on or after the start of the period (or has no end_date).
+         */
+        active_during?: string;
+        /**
          * Affiliation name
          */
         affiliation_name?: string;
@@ -80810,11 +82252,21 @@ export type OpenportalUnmanagedProjectsListData = {
          * Description
          */
         description?: string;
+        end_date_after?: string;
+        end_date_before?: string;
+        /**
+         * Filter by whether the project end_date has passed. ended=true returns projects whose end_date is set and in the past. ended=false returns projects with no end_date or a future end_date.
+         */
+        ended?: boolean;
         field?: Array<ProjectFieldEnum>;
         /**
          * Filter projects that have an affiliation.
          */
         has_affiliation?: boolean;
+        /**
+         * Filter by whether the project is currently in its grace period (end_date has passed but end_date + 30 days has not). in_grace=true returns projects currently in grace period. in_grace=false returns projects not in grace period.
+         */
+        in_grace?: boolean;
         /**
          * Include soft-deleted (terminated) projects. Only available to staff and support users, or users with organizational roles who can see their terminated projects.
          */
@@ -80869,6 +82321,12 @@ export type OpenportalUnmanagedProjectsListData = {
          * Slug
          */
         slug?: string;
+        start_date_after?: string;
+        start_date_before?: string;
+        /**
+         * Filter by whether the project has started. started=true returns projects whose start_date is in the past or unset. started=false returns projects with a future start_date.
+         */
+        started?: boolean;
         /**
          * Filter by user UUID.
          */
@@ -80896,6 +82354,10 @@ export type OpenportalUnmanagedProjectsCountData = {
          */
         accounting_is_running?: boolean;
         /**
+         * Return projects that were active during the given period. Accepts a year (e.g. '2024') or year-month (e.g. '2024-03'). A project is considered active if its start (start_date, falling back to created date) is on or before the end of the period, and its end_date is on or after the start of the period (or has no end_date).
+         */
+        active_during?: string;
+        /**
          * Affiliation name
          */
         affiliation_name?: string;
@@ -80948,10 +82410,20 @@ export type OpenportalUnmanagedProjectsCountData = {
          * Description
          */
         description?: string;
+        end_date_after?: string;
+        end_date_before?: string;
+        /**
+         * Filter by whether the project end_date has passed. ended=true returns projects whose end_date is set and in the past. ended=false returns projects with no end_date or a future end_date.
+         */
+        ended?: boolean;
         /**
          * Filter projects that have an affiliation.
          */
         has_affiliation?: boolean;
+        /**
+         * Filter by whether the project is currently in its grace period (end_date has passed but end_date + 30 days has not). in_grace=true returns projects currently in grace period. in_grace=false returns projects not in grace period.
+         */
+        in_grace?: boolean;
         /**
          * Include soft-deleted (terminated) projects. Only available to staff and support users, or users with organizational roles who can see their terminated projects.
          */
@@ -81006,6 +82478,12 @@ export type OpenportalUnmanagedProjectsCountData = {
          * Slug
          */
         slug?: string;
+        start_date_after?: string;
+        start_date_before?: string;
+        /**
+         * Filter by whether the project has started. started=true returns projects whose start_date is in the past or unset. started=false returns projects with a future start_date.
+         */
+        started?: boolean;
         /**
          * Filter by user UUID.
          */
@@ -83839,21 +85317,6 @@ export type OpenstackInstancesConsoleLogRetrieveResponses = {
 
 export type OpenstackInstancesConsoleLogRetrieveResponse = OpenstackInstancesConsoleLogRetrieveResponses[keyof OpenstackInstancesConsoleLogRetrieveResponses];
 
-export type OpenstackInstancesConsoleLogData = {
-    body?: OpenStackConsoleLogRequest;
-    path: {
-        uuid: string;
-    };
-    query?: never;
-    url: '/api/openstack-instances/{uuid}/console_log/';
-};
-
-export type OpenstackInstancesConsoleLogResponses = {
-    200: string;
-};
-
-export type OpenstackInstancesConsoleLogResponse = OpenstackInstancesConsoleLogResponses[keyof OpenstackInstancesConsoleLogResponses];
-
 export type OpenstackInstancesDiagnoseConnectivityData = {
     body?: DiagnoseConnectivityRequestRequest;
     path: {
@@ -84006,21 +85469,6 @@ export type OpenstackInstancesSetErredResponses = {
 };
 
 export type OpenstackInstancesSetErredResponse = OpenstackInstancesSetErredResponses[keyof OpenstackInstancesSetErredResponses];
-
-export type OpenstackInstancesSetMetadataData = {
-    body: InstanceSetMetadataRequest;
-    path: {
-        uuid: string;
-    };
-    query?: never;
-    url: '/api/openstack-instances/{uuid}/set_metadata/';
-};
-
-export type OpenstackInstancesSetMetadataResponses = {
-    202: Status;
-};
-
-export type OpenstackInstancesSetMetadataResponse = OpenstackInstancesSetMetadataResponses[keyof OpenstackInstancesSetMetadataResponses];
 
 export type OpenstackInstancesSetOkData = {
     body?: never;
@@ -91245,6 +92693,10 @@ export type ProjectsListData = {
          */
         accounting_is_running?: boolean;
         /**
+         * Return projects that were active during the given period. Accepts a year (e.g. '2024') or year-month (e.g. '2024-03'). A project is considered active if its start (start_date, falling back to created date) is on or before the end of the period, and its end_date is on or after the start of the period (or has no end_date).
+         */
+        active_during?: string;
+        /**
          * Affiliation name
          */
         affiliation_name?: string;
@@ -91297,11 +92749,21 @@ export type ProjectsListData = {
          * Description
          */
         description?: string;
+        end_date_after?: string;
+        end_date_before?: string;
+        /**
+         * Filter by whether the project end_date has passed. ended=true returns projects whose end_date is set and in the past. ended=false returns projects with no end_date or a future end_date.
+         */
+        ended?: boolean;
         field?: Array<ProjectFieldEnum>;
         /**
          * Filter projects that have an affiliation.
          */
         has_affiliation?: boolean;
+        /**
+         * Filter by whether the project is currently in its grace period (end_date has passed but end_date + 30 days has not). in_grace=true returns projects currently in grace period. in_grace=false returns projects not in grace period.
+         */
+        in_grace?: boolean;
         /**
          * Include soft-deleted (terminated) projects. Only available to staff and support users, or users with organizational roles who can see their terminated projects.
          */
@@ -91356,6 +92818,12 @@ export type ProjectsListData = {
          * Slug
          */
         slug?: string;
+        start_date_after?: string;
+        start_date_before?: string;
+        /**
+         * Filter by whether the project has started. started=true returns projects whose start_date is in the past or unset. started=false returns projects with a future start_date.
+         */
+        started?: boolean;
         /**
          * Filter by user UUID.
          */
@@ -91383,6 +92851,10 @@ export type ProjectsCountData = {
          */
         accounting_is_running?: boolean;
         /**
+         * Return projects that were active during the given period. Accepts a year (e.g. '2024') or year-month (e.g. '2024-03'). A project is considered active if its start (start_date, falling back to created date) is on or before the end of the period, and its end_date is on or after the start of the period (or has no end_date).
+         */
+        active_during?: string;
+        /**
          * Affiliation name
          */
         affiliation_name?: string;
@@ -91435,10 +92907,20 @@ export type ProjectsCountData = {
          * Description
          */
         description?: string;
+        end_date_after?: string;
+        end_date_before?: string;
+        /**
+         * Filter by whether the project end_date has passed. ended=true returns projects whose end_date is set and in the past. ended=false returns projects with no end_date or a future end_date.
+         */
+        ended?: boolean;
         /**
          * Filter projects that have an affiliation.
          */
         has_affiliation?: boolean;
+        /**
+         * Filter by whether the project is currently in its grace period (end_date has passed but end_date + 30 days has not). in_grace=true returns projects currently in grace period. in_grace=false returns projects not in grace period.
+         */
+        in_grace?: boolean;
         /**
          * Include soft-deleted (terminated) projects. Only available to staff and support users, or users with organizational roles who can see their terminated projects.
          */
@@ -91493,6 +92975,12 @@ export type ProjectsCountData = {
          * Slug
          */
         slug?: string;
+        start_date_after?: string;
+        start_date_before?: string;
+        /**
+         * Filter by whether the project has started. started=true returns projects whose start_date is in the past or unset. started=false returns projects with a future start_date.
+         */
+        started?: boolean;
         /**
          * Filter by user UUID.
          */
@@ -96229,7 +97717,6 @@ export type ProviderTicketsListData = {
         page_size?: number;
         priority?: string;
         provider_assignee?: string;
-        provider_helpdesk_uuid?: string;
         sla_breached?: boolean;
         status?: string;
         summary?: string;
@@ -96264,7 +97751,6 @@ export type ProviderTicketsCountData = {
         page_size?: number;
         priority?: string;
         provider_assignee?: string;
-        provider_helpdesk_uuid?: string;
         sla_breached?: boolean;
         status?: string;
         summary?: string;
@@ -96403,12 +97889,7 @@ export type ProviderTicketsResolveResponse = ProviderTicketsResolveResponses[key
 export type ProviderTicketsStatsRetrieveData = {
     body?: never;
     path?: never;
-    query?: {
-        /**
-         * Count only the tickets routed to this helpdesk.
-         */
-        provider_helpdesk_uuid?: string;
-    };
+    query?: never;
     url: '/api/provider-tickets/stats/';
 };
 
@@ -96421,12 +97902,7 @@ export type ProviderTicketsStatsRetrieveResponse = ProviderTicketsStatsRetrieveR
 export type ProviderTicketsStatsCountData = {
     body?: never;
     path?: never;
-    query?: {
-        /**
-         * Count only the tickets routed to this helpdesk.
-         */
-        provider_helpdesk_uuid?: string;
-    };
+    query?: never;
     url: '/api/provider-tickets/stats/';
 };
 
@@ -101512,33 +102988,6 @@ export type RolesUpdateDescriptionsUpdateResponses = {
 };
 
 export type RolesUpdateDescriptionsUpdateResponse = RolesUpdateDescriptionsUpdateResponses[keyof RolesUpdateDescriptionsUpdateResponses];
-
-export type RolesHygieneReportRetrieveData = {
-    body?: never;
-    path?: never;
-    query?: never;
-    url: '/api/roles/hygiene_report/';
-};
-
-export type RolesHygieneReportRetrieveResponses = {
-    200: RoleHygieneReport;
-};
-
-export type RolesHygieneReportRetrieveResponse = RolesHygieneReportRetrieveResponses[keyof RolesHygieneReportRetrieveResponses];
-
-export type RolesHygieneReportCountData = {
-    body?: never;
-    path?: never;
-    query?: never;
-    url: '/api/roles/hygiene_report/';
-};
-
-export type RolesHygieneReportCountResponses = {
-    /**
-     * No response body
-     */
-    200: unknown;
-};
 
 export type ScienceDomainsListData = {
     body?: never;
@@ -109573,16 +111022,3 @@ export type VmwareVirtualMachineWebConsoleRetrieveResponses = {
 };
 
 export type VmwareVirtualMachineWebConsoleRetrieveResponse = VmwareVirtualMachineWebConsoleRetrieveResponses[keyof VmwareVirtualMachineWebConsoleRetrieveResponses];
-
-export type WebShellTicketData = {
-    body?: never;
-    path?: never;
-    query?: never;
-    url: '/api/web-shell-ticket/';
-};
-
-export type WebShellTicketResponses = {
-    200: WebShellTicket;
-};
-
-export type WebShellTicketResponse = WebShellTicketResponses[keyof WebShellTicketResponses];
