@@ -30479,6 +30479,13 @@ export type SetTokenQuotaRequest = {
     monthly_limit?: number | null;
 };
 
+export type SetUserShortnameRequest = {
+    /**
+     * A short, unique name for you. It will be used to form your local username on any systems. Should only contain lower-case letters and digits and must start with a letter.
+     */
+    shortname: string;
+};
+
 export type SettingsItem = {
     key: string;
     description: string;
@@ -80548,7 +80555,10 @@ export type OpenportalProjectinfoCreateResponse = OpenportalProjectinfoCreateRes
 export type OpenportalProjectinfoDestroyData = {
     body?: never;
     path: {
-        project: number;
+        /**
+         * UUID of the project
+         */
+        project: string;
     };
     query?: never;
     url: '/api/openportal-projectinfo/{project}/';
@@ -80566,7 +80576,10 @@ export type OpenportalProjectinfoDestroyResponse = OpenportalProjectinfoDestroyR
 export type OpenportalProjectinfoRetrieveData = {
     body?: never;
     path: {
-        project: number;
+        /**
+         * UUID of the project
+         */
+        project: string;
     };
     query?: never;
     url: '/api/openportal-projectinfo/{project}/';
@@ -80581,7 +80594,10 @@ export type OpenportalProjectinfoRetrieveResponse = OpenportalProjectinfoRetriev
 export type OpenportalProjectinfoPartialUpdateData = {
     body?: PatchedProjectInfoRequest;
     path: {
-        project: number;
+        /**
+         * UUID of the project
+         */
+        project: string;
     };
     query?: never;
     url: '/api/openportal-projectinfo/{project}/';
@@ -80596,7 +80612,10 @@ export type OpenportalProjectinfoPartialUpdateResponse = OpenportalProjectinfoPa
 export type OpenportalProjectinfoUpdateData = {
     body: ProjectInfoRequest;
     path: {
-        project: number;
+        /**
+         * UUID of the project
+         */
+        project: string;
     };
     query?: never;
     url: '/api/openportal-projectinfo/{project}/';
@@ -80611,7 +80630,10 @@ export type OpenportalProjectinfoUpdateResponse = OpenportalProjectinfoUpdateRes
 export type OpenportalProjectinfoSetAllowedDestinationsUpdateData = {
     body: ProjectInfoRequest;
     path: {
-        project: number;
+        /**
+         * UUID of the project
+         */
+        project: string;
     };
     query?: never;
     url: '/api/openportal-projectinfo/{project}/set_allowed_destinations/';
@@ -80626,7 +80648,10 @@ export type OpenportalProjectinfoSetAllowedDestinationsUpdateResponse = Openport
 export type OpenportalProjectinfoSetShortnameUpdateData = {
     body: ProjectInfoRequest;
     path: {
-        project: number;
+        /**
+         * UUID of the project
+         */
+        project: string;
     };
     query?: never;
     url: '/api/openportal-projectinfo/{project}/set_shortname/';
@@ -82292,7 +82317,10 @@ export type OpenportalUserinfoCreateResponse = OpenportalUserinfoCreateResponses
 export type OpenportalUserinfoDestroyData = {
     body?: never;
     path: {
-        user: number;
+        /**
+         * UUID of the user
+         */
+        user: string;
     };
     query?: never;
     url: '/api/openportal-userinfo/{user}/';
@@ -82310,7 +82338,10 @@ export type OpenportalUserinfoDestroyResponse = OpenportalUserinfoDestroyRespons
 export type OpenportalUserinfoRetrieveData = {
     body?: never;
     path: {
-        user: number;
+        /**
+         * UUID of the user
+         */
+        user: string;
     };
     query?: never;
     url: '/api/openportal-userinfo/{user}/';
@@ -82325,7 +82356,10 @@ export type OpenportalUserinfoRetrieveResponse = OpenportalUserinfoRetrieveRespo
 export type OpenportalUserinfoPartialUpdateData = {
     body?: PatchedUserInfoRequest;
     path: {
-        user: number;
+        /**
+         * UUID of the user
+         */
+        user: string;
     };
     query?: never;
     url: '/api/openportal-userinfo/{user}/';
@@ -82340,7 +82374,10 @@ export type OpenportalUserinfoPartialUpdateResponse = OpenportalUserinfoPartialU
 export type OpenportalUserinfoUpdateData = {
     body: UserInfoRequest;
     path: {
-        user: number;
+        /**
+         * UUID of the user
+         */
+        user: string;
     };
     query?: never;
     url: '/api/openportal-userinfo/{user}/';
@@ -82353,9 +82390,12 @@ export type OpenportalUserinfoUpdateResponses = {
 export type OpenportalUserinfoUpdateResponse = OpenportalUserinfoUpdateResponses[keyof OpenportalUserinfoUpdateResponses];
 
 export type OpenportalUserinfoSetShortnameUpdateData = {
-    body: UserInfoRequest;
+    body: SetUserShortnameRequest;
     path: {
-        user: number;
+        /**
+         * UUID of the user
+         */
+        user: string;
     };
     query?: never;
     url: '/api/openportal-userinfo/{user}/set_shortname/';
