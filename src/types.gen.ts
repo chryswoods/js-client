@@ -7433,7 +7433,7 @@ export type CustomerUser = {
      * Email address
      */
     email?: string;
-    slug: string;
+    slug?: string | null;
     readonly role_name: string | null;
     readonly projects: Array<NestedProjectPermission>;
     readonly expiration_time: string | null;
@@ -22283,7 +22283,7 @@ export type PatchedUserRequest = {
     /**
      * URL-friendly identifier. Only editable by staff users.
      */
-    slug?: string;
+    slug?: string | null;
     native_name?: string;
     job_title?: string;
     phone_number?: string;
@@ -22482,7 +22482,7 @@ export type Permission = {
     readonly uuid: string;
     readonly user_uuid: string;
     readonly user_name: string;
-    readonly user_slug: string;
+    readonly user_slug: string | null;
     readonly user_username: string;
     readonly user_email: string;
     readonly created: string;
@@ -32321,7 +32321,7 @@ export type User = {
     /**
      * URL-friendly identifier. Only editable by staff users.
      */
-    slug?: string;
+    slug?: string | null;
     readonly full_name: string;
     native_name?: string;
     job_title?: string;
@@ -32778,7 +32778,7 @@ export type UserMe = {
     /**
      * URL-friendly identifier. Only editable by staff users.
      */
-    slug?: string;
+    slug?: string | null;
     readonly full_name: string;
     native_name?: string;
     job_title?: string;
@@ -33027,7 +33027,7 @@ export type UserRequest = {
     /**
      * URL-friendly identifier. Only editable by staff users.
      */
-    slug?: string;
+    slug?: string | null;
     native_name?: string;
     job_title?: string;
     email: string;
@@ -33181,7 +33181,7 @@ export type UserRoleDetails = {
      * Required. 128 characters or fewer. Lowercase letters, numbers and @/./+/-/_ characters
      */
     readonly user_username: string;
-    readonly user_slug: string;
+    readonly user_slug: string | null;
     readonly user_uuid: string;
     readonly user_image: string;
     readonly created_by_full_name: string;
@@ -35803,7 +35803,7 @@ export type UserRequestForm = {
     /**
      * URL-friendly identifier. Only editable by staff users.
      */
-    slug?: string;
+    slug?: string | null;
     native_name?: string;
     job_title?: string;
     email: string;
@@ -35904,7 +35904,7 @@ export type UserRequestMultipart = {
     /**
      * URL-friendly identifier. Only editable by staff users.
      */
-    slug?: string;
+    slug?: string | null;
     native_name?: string;
     job_title?: string;
     email: string;
@@ -36005,7 +36005,7 @@ export type PatchedUserRequestForm = {
     /**
      * URL-friendly identifier. Only editable by staff users.
      */
-    slug?: string;
+    slug?: string | null;
     native_name?: string;
     job_title?: string;
     phone_number?: string;
@@ -36105,7 +36105,7 @@ export type PatchedUserRequestMultipart = {
     /**
      * URL-friendly identifier. Only editable by staff users.
      */
-    slug?: string;
+    slug?: string | null;
     native_name?: string;
     job_title?: string;
     phone_number?: string;
