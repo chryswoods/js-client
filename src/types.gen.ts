@@ -1286,6 +1286,218 @@ export type AnswerSubmitResponse = {
     completion: ChecklistCompletion;
 };
 
+export type ArchiveResolve = {
+    kind: ArchiveResolveKindEnum;
+    uuid: string;
+    name: string;
+};
+
+export type ArchiveResolveKindEnum = 'call' | 'round' | 'proposal';
+
+export type ArchivedCall = {
+    readonly uuid: string;
+    name: string;
+    slug?: string;
+    description?: string;
+    state?: string;
+    external_url?: string | null;
+    fixed_duration_in_days?: number | null;
+    reviewer_identity_visible_to_submitters?: boolean;
+    reviews_visible_to_submitters?: boolean;
+    customer_uuid?: string | null;
+    customer_name?: string;
+    created_by_uuid?: string | null;
+    created_by_username?: string;
+    created_by_full_name?: string;
+    readonly created: string;
+    readonly modified: string;
+};
+
+export type ArchivedCallDetail = {
+    readonly uuid: string;
+    name: string;
+    slug?: string;
+    description?: string;
+    state?: string;
+    external_url?: string | null;
+    fixed_duration_in_days?: number | null;
+    reviewer_identity_visible_to_submitters?: boolean;
+    reviews_visible_to_submitters?: boolean;
+    customer_uuid?: string | null;
+    customer_name?: string;
+    created_by_uuid?: string | null;
+    created_by_username?: string;
+    created_by_full_name?: string;
+    readonly created: string;
+    readonly modified: string;
+    readonly rounds: Array<ArchivedRound>;
+    readonly documents: Array<ArchivedCallDocument>;
+    readonly proposal_count: number;
+};
+
+export type ArchivedCallDocument = {
+    readonly uuid: string;
+    file?: string | null;
+    readonly file_name: string;
+    readonly file_size: number;
+    readonly created: string;
+    description?: string;
+};
+
+export type ArchivedMembership = {
+    readonly uuid: string;
+    scope_kind: ScopeKindEnum;
+    readonly call_uuid: string | null;
+    readonly proposal_uuid: string | null;
+    organisation_customer_uuid?: string | null;
+    organisation_customer_name?: string;
+    role_name: string;
+    role_description?: string;
+    user_uuid?: string | null;
+    user_username?: string;
+    user_full_name?: string;
+    is_active?: boolean | null;
+    expiration_time?: string | null;
+    granted_by_username?: string;
+    revoked_by_username?: string;
+    revoke_reason?: string;
+    readonly created: string;
+};
+
+export type ArchivedProposal = {
+    readonly uuid: string;
+    name: string;
+    slug?: string;
+    state?: string;
+    readonly call_uuid: string;
+    readonly call_name: string;
+    readonly round_uuid: string;
+    project_uuid?: string | null;
+    project_name?: string;
+    created_by_uuid?: string | null;
+    created_by_username?: string;
+    created_by_full_name?: string;
+    submitted_at?: string | null;
+    readonly created: string;
+    readonly modified: string;
+};
+
+export type ArchivedProposalDetail = {
+    readonly uuid: string;
+    name: string;
+    slug?: string;
+    state?: string;
+    readonly call_uuid: string;
+    readonly call_name: string;
+    readonly round_uuid: string;
+    project_uuid?: string | null;
+    project_name?: string;
+    created_by_uuid?: string | null;
+    created_by_username?: string;
+    created_by_full_name?: string;
+    submitted_at?: string | null;
+    readonly created: string;
+    readonly modified: string;
+    description?: string;
+    project_summary?: string;
+    project_duration?: number | null;
+    project_is_confidential?: boolean;
+    project_has_civilian_purpose?: boolean;
+    oecd_fos_2007_code?: string;
+    duration_in_days?: number | null;
+    allocation_comment?: string | null;
+    approved_by_uuid?: string | null;
+    approved_by_username?: string;
+    readonly requested_resources: Array<ArchivedRequestedResource>;
+    readonly documents: Array<ArchivedProposalDocument>;
+    readonly memberships: Array<ArchivedMembership>;
+};
+
+export type ArchivedProposalDocument = {
+    readonly uuid: string;
+    file?: string | null;
+    readonly file_name: string;
+    readonly file_size: number;
+    readonly created: string;
+};
+
+export type ArchivedProposalNotes = {
+    readonly uuid: string;
+    /**
+     * Call-manager notes: {timestamp, author, text}.
+     */
+    notes?: {
+        [key: string]: unknown;
+    };
+};
+
+export type ArchivedRequestedResource = {
+    readonly uuid: string;
+    offering_uuid?: string | null;
+    offering_name?: string;
+    plan_uuid?: string | null;
+    plan_name?: string;
+    template_name?: string;
+    attributes?: {
+        [key: string]: unknown;
+    };
+    limits?: {
+        [key: string]: unknown;
+    };
+    resource_uuid?: string | null;
+    created_by_username?: string;
+    readonly created: string;
+};
+
+export type ArchivedReview = {
+    readonly uuid: string;
+    readonly proposal_uuid: string;
+    readonly proposal_name: string;
+    state?: string;
+    summary_score?: number;
+    summary_public_comment?: string;
+    summary_private_comment?: string;
+    comment_project_title?: string | null;
+    comment_project_summary?: string | null;
+    comment_project_description?: string | null;
+    comment_project_duration?: string | null;
+    comment_project_is_confidential?: string | null;
+    comment_project_has_civilian_purpose?: string | null;
+    comment_project_supporting_documentation?: string | null;
+    comment_resource_requests?: string | null;
+    comment_team?: string | null;
+    reviewer_uuid?: string | null;
+    reviewer_username?: string;
+    reviewer_full_name?: string;
+    /**
+     * Review conversation: {created, message}.
+     */
+    comments?: {
+        [key: string]: unknown;
+    };
+    readonly created: string;
+    readonly modified: string;
+};
+
+export type ArchivedRound = {
+    readonly uuid: string;
+    slug?: string;
+    readonly call_uuid: string;
+    readonly call_name: string;
+    start_time?: string | null;
+    cutoff_time?: string | null;
+    review_strategy?: string;
+    deciding_entity?: string;
+    allocation_time?: string;
+    allocation_date?: string | null;
+    review_duration_in_days?: number | null;
+    fixed_review_end_date?: string | null;
+    minimum_number_of_reviewers?: number | null;
+    minimal_average_scoring?: string | null;
+    minimum_required_uploads?: number | null;
+    readonly created: string;
+};
+
 export type ArrowBillingLine = {
     vendor_name: string;
     subscription_reference: string;
@@ -29996,6 +30208,8 @@ export type ScimSyncAllResponse = {
     detail: string;
 };
 
+export type ScopeKindEnum = 'call' | 'proposal' | 'organisation';
+
 export type ScopedOffering = {
     uuid: string;
     name: string;
@@ -36474,6 +36688,16 @@ export type ProjectCreditOEnum = '-end_date' | '-expected_consumption' | '-proje
 export type CampaignOEnum = '-end_date' | '-start_date' | 'end_date' | 'start_date';
 
 export type CampaignStateEnum = 'Active' | 'Draft' | 'Terminated';
+
+export type ArchivedCallOEnum = '-created' | '-name' | '-state' | 'created' | 'name' | 'state';
+
+export type ArchivedMembershipOEnum = '-created' | '-role_name' | '-user_username' | 'created' | 'role_name' | 'user_username';
+
+export type ArchivedProposalOEnum = '-created' | '-name' | '-state' | '-submitted_at' | 'created' | 'name' | 'state' | 'submitted_at';
+
+export type ArchivedReviewOEnum = '-created' | '-state' | '-summary_score' | 'created' | 'state' | 'summary_score';
+
+export type ArchivedRoundOEnum = '-created' | '-cutoff_time' | '-start_time' | 'created' | 'cutoff_time' | 'start_time';
 
 export type UserRequestedResourceOEnum = '-call__name' | '-created' | '-offering__name' | '-proposal__name' | '-proposal__state' | '-resource__name' | '-resource__state' | 'call__name' | 'created' | 'offering__name' | 'proposal__name' | 'proposal__state' | 'resource__name' | 'resource__state';
 
@@ -93210,6 +93434,444 @@ export type PromotionsCampaignsTerminateResponses = {
      */
     200: unknown;
 };
+
+export type ProposalArchiveCallsListData = {
+    body?: never;
+    path?: never;
+    query?: {
+        customer_uuid?: string;
+        name?: string;
+        /**
+         * Ordering
+         *
+         *
+         */
+        o?: Array<ArchivedCallOEnum>;
+        /**
+         * A page number within the paginated result set.
+         */
+        page?: number;
+        /**
+         * Number of results to return per page.
+         */
+        page_size?: number;
+        state?: string;
+    };
+    url: '/api/proposal-archive-calls/';
+};
+
+export type ProposalArchiveCallsListResponses = {
+    200: Array<ArchivedCall>;
+};
+
+export type ProposalArchiveCallsListResponse = ProposalArchiveCallsListResponses[keyof ProposalArchiveCallsListResponses];
+
+export type ProposalArchiveCallsCountData = {
+    body?: never;
+    path?: never;
+    query?: {
+        customer_uuid?: string;
+        name?: string;
+        /**
+         * Ordering
+         *
+         *
+         */
+        o?: Array<ArchivedCallOEnum>;
+        /**
+         * A page number within the paginated result set.
+         */
+        page?: number;
+        /**
+         * Number of results to return per page.
+         */
+        page_size?: number;
+        state?: string;
+    };
+    url: '/api/proposal-archive-calls/';
+};
+
+export type ProposalArchiveCallsCountResponses = {
+    /**
+     * No response body
+     */
+    200: unknown;
+};
+
+export type ProposalArchiveCallsRetrieveData = {
+    body?: never;
+    path: {
+        uuid: string;
+    };
+    query?: never;
+    url: '/api/proposal-archive-calls/{uuid}/';
+};
+
+export type ProposalArchiveCallsRetrieveResponses = {
+    200: ArchivedCallDetail;
+};
+
+export type ProposalArchiveCallsRetrieveResponse = ProposalArchiveCallsRetrieveResponses[keyof ProposalArchiveCallsRetrieveResponses];
+
+export type ProposalArchiveMembershipsListData = {
+    body?: never;
+    path?: never;
+    query?: {
+        call_uuid?: string;
+        is_active?: boolean;
+        /**
+         * Ordering
+         *
+         *
+         */
+        o?: Array<ArchivedMembershipOEnum>;
+        /**
+         * A page number within the paginated result set.
+         */
+        page?: number;
+        /**
+         * Number of results to return per page.
+         */
+        page_size?: number;
+        proposal_uuid?: string;
+        role_name?: string;
+        scope_kind?: string;
+        user_username?: string;
+        user_uuid?: string;
+    };
+    url: '/api/proposal-archive-memberships/';
+};
+
+export type ProposalArchiveMembershipsListResponses = {
+    200: Array<ArchivedMembership>;
+};
+
+export type ProposalArchiveMembershipsListResponse = ProposalArchiveMembershipsListResponses[keyof ProposalArchiveMembershipsListResponses];
+
+export type ProposalArchiveMembershipsCountData = {
+    body?: never;
+    path?: never;
+    query?: {
+        call_uuid?: string;
+        is_active?: boolean;
+        /**
+         * Ordering
+         *
+         *
+         */
+        o?: Array<ArchivedMembershipOEnum>;
+        /**
+         * A page number within the paginated result set.
+         */
+        page?: number;
+        /**
+         * Number of results to return per page.
+         */
+        page_size?: number;
+        proposal_uuid?: string;
+        role_name?: string;
+        scope_kind?: string;
+        user_username?: string;
+        user_uuid?: string;
+    };
+    url: '/api/proposal-archive-memberships/';
+};
+
+export type ProposalArchiveMembershipsCountResponses = {
+    /**
+     * No response body
+     */
+    200: unknown;
+};
+
+export type ProposalArchiveMembershipsRetrieveData = {
+    body?: never;
+    path: {
+        uuid: string;
+    };
+    query?: never;
+    url: '/api/proposal-archive-memberships/{uuid}/';
+};
+
+export type ProposalArchiveMembershipsRetrieveResponses = {
+    200: ArchivedMembership;
+};
+
+export type ProposalArchiveMembershipsRetrieveResponse = ProposalArchiveMembershipsRetrieveResponses[keyof ProposalArchiveMembershipsRetrieveResponses];
+
+export type ProposalArchiveProposalsListData = {
+    body?: never;
+    path?: never;
+    query?: {
+        call_uuid?: string;
+        created_by_username?: string;
+        created_by_uuid?: string;
+        name?: string;
+        /**
+         * Ordering
+         *
+         *
+         */
+        o?: Array<ArchivedProposalOEnum>;
+        /**
+         * A page number within the paginated result set.
+         */
+        page?: number;
+        /**
+         * Number of results to return per page.
+         */
+        page_size?: number;
+        project_uuid?: string;
+        round_uuid?: string;
+        state?: string;
+        submitted_after?: string;
+        submitted_before?: string;
+    };
+    url: '/api/proposal-archive-proposals/';
+};
+
+export type ProposalArchiveProposalsListResponses = {
+    200: Array<ArchivedProposal>;
+};
+
+export type ProposalArchiveProposalsListResponse = ProposalArchiveProposalsListResponses[keyof ProposalArchiveProposalsListResponses];
+
+export type ProposalArchiveProposalsCountData = {
+    body?: never;
+    path?: never;
+    query?: {
+        call_uuid?: string;
+        created_by_username?: string;
+        created_by_uuid?: string;
+        name?: string;
+        /**
+         * Ordering
+         *
+         *
+         */
+        o?: Array<ArchivedProposalOEnum>;
+        /**
+         * A page number within the paginated result set.
+         */
+        page?: number;
+        /**
+         * Number of results to return per page.
+         */
+        page_size?: number;
+        project_uuid?: string;
+        round_uuid?: string;
+        state?: string;
+        submitted_after?: string;
+        submitted_before?: string;
+    };
+    url: '/api/proposal-archive-proposals/';
+};
+
+export type ProposalArchiveProposalsCountResponses = {
+    /**
+     * No response body
+     */
+    200: unknown;
+};
+
+export type ProposalArchiveProposalsRetrieveData = {
+    body?: never;
+    path: {
+        uuid: string;
+    };
+    query?: never;
+    url: '/api/proposal-archive-proposals/{uuid}/';
+};
+
+export type ProposalArchiveProposalsRetrieveResponses = {
+    200: ArchivedProposalDetail;
+};
+
+export type ProposalArchiveProposalsRetrieveResponse = ProposalArchiveProposalsRetrieveResponses[keyof ProposalArchiveProposalsRetrieveResponses];
+
+export type ProposalArchiveProposalsNotesRetrieveData = {
+    body?: never;
+    path: {
+        uuid: string;
+    };
+    query?: never;
+    url: '/api/proposal-archive-proposals/{uuid}/notes/';
+};
+
+export type ProposalArchiveProposalsNotesRetrieveResponses = {
+    200: ArchivedProposalNotes;
+};
+
+export type ProposalArchiveProposalsNotesRetrieveResponse = ProposalArchiveProposalsNotesRetrieveResponses[keyof ProposalArchiveProposalsNotesRetrieveResponses];
+
+export type ProposalArchiveResolveRetrieveData = {
+    body?: never;
+    path: {
+        uuid: string;
+    };
+    query?: never;
+    url: '/api/proposal-archive-resolve/{uuid}/';
+};
+
+export type ProposalArchiveResolveRetrieveResponses = {
+    200: ArchiveResolve;
+};
+
+export type ProposalArchiveResolveRetrieveResponse = ProposalArchiveResolveRetrieveResponses[keyof ProposalArchiveResolveRetrieveResponses];
+
+export type ProposalArchiveReviewsListData = {
+    body?: never;
+    path?: never;
+    query?: {
+        call_uuid?: string;
+        /**
+         * Ordering
+         *
+         *
+         */
+        o?: Array<ArchivedReviewOEnum>;
+        /**
+         * A page number within the paginated result set.
+         */
+        page?: number;
+        /**
+         * Number of results to return per page.
+         */
+        page_size?: number;
+        proposal_uuid?: string;
+        reviewer_uuid?: string;
+        state?: string;
+    };
+    url: '/api/proposal-archive-reviews/';
+};
+
+export type ProposalArchiveReviewsListResponses = {
+    200: Array<ArchivedReview>;
+};
+
+export type ProposalArchiveReviewsListResponse = ProposalArchiveReviewsListResponses[keyof ProposalArchiveReviewsListResponses];
+
+export type ProposalArchiveReviewsCountData = {
+    body?: never;
+    path?: never;
+    query?: {
+        call_uuid?: string;
+        /**
+         * Ordering
+         *
+         *
+         */
+        o?: Array<ArchivedReviewOEnum>;
+        /**
+         * A page number within the paginated result set.
+         */
+        page?: number;
+        /**
+         * Number of results to return per page.
+         */
+        page_size?: number;
+        proposal_uuid?: string;
+        reviewer_uuid?: string;
+        state?: string;
+    };
+    url: '/api/proposal-archive-reviews/';
+};
+
+export type ProposalArchiveReviewsCountResponses = {
+    /**
+     * No response body
+     */
+    200: unknown;
+};
+
+export type ProposalArchiveReviewsRetrieveData = {
+    body?: never;
+    path: {
+        uuid: string;
+    };
+    query?: never;
+    url: '/api/proposal-archive-reviews/{uuid}/';
+};
+
+export type ProposalArchiveReviewsRetrieveResponses = {
+    200: ArchivedReview;
+};
+
+export type ProposalArchiveReviewsRetrieveResponse = ProposalArchiveReviewsRetrieveResponses[keyof ProposalArchiveReviewsRetrieveResponses];
+
+export type ProposalArchiveRoundsListData = {
+    body?: never;
+    path?: never;
+    query?: {
+        call_uuid?: string;
+        /**
+         * Ordering
+         *
+         *
+         */
+        o?: Array<ArchivedRoundOEnum>;
+        /**
+         * A page number within the paginated result set.
+         */
+        page?: number;
+        /**
+         * Number of results to return per page.
+         */
+        page_size?: number;
+    };
+    url: '/api/proposal-archive-rounds/';
+};
+
+export type ProposalArchiveRoundsListResponses = {
+    200: Array<ArchivedRound>;
+};
+
+export type ProposalArchiveRoundsListResponse = ProposalArchiveRoundsListResponses[keyof ProposalArchiveRoundsListResponses];
+
+export type ProposalArchiveRoundsCountData = {
+    body?: never;
+    path?: never;
+    query?: {
+        call_uuid?: string;
+        /**
+         * Ordering
+         *
+         *
+         */
+        o?: Array<ArchivedRoundOEnum>;
+        /**
+         * A page number within the paginated result set.
+         */
+        page?: number;
+        /**
+         * Number of results to return per page.
+         */
+        page_size?: number;
+    };
+    url: '/api/proposal-archive-rounds/';
+};
+
+export type ProposalArchiveRoundsCountResponses = {
+    /**
+     * No response body
+     */
+    200: unknown;
+};
+
+export type ProposalArchiveRoundsRetrieveData = {
+    body?: never;
+    path: {
+        uuid: string;
+    };
+    query?: never;
+    url: '/api/proposal-archive-rounds/{uuid}/';
+};
+
+export type ProposalArchiveRoundsRetrieveResponses = {
+    200: ArchivedRound;
+};
+
+export type ProposalArchiveRoundsRetrieveResponse = ProposalArchiveRoundsRetrieveResponses[keyof ProposalArchiveRoundsRetrieveResponses];
 
 export type ProposalMyRequestedResourcesListData = {
     body?: never;
