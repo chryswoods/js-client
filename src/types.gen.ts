@@ -1338,8 +1338,8 @@ export type ArchivedCallDetail = {
 export type ArchivedCallDocument = {
     readonly uuid: string;
     file?: string | null;
-    readonly file_name: string;
-    readonly file_size: number;
+    readonly file_name: string | null;
+    readonly file_size: number | null;
     readonly created: string;
     description?: string;
 };
@@ -1416,8 +1416,8 @@ export type ArchivedProposalDetail = {
 export type ArchivedProposalDocument = {
     readonly uuid: string;
     file?: string | null;
-    readonly file_name: string;
-    readonly file_size: number;
+    readonly file_name: string | null;
+    readonly file_size: number | null;
     readonly created: string;
 };
 
@@ -27394,6 +27394,33 @@ export type RemoteProjectUpdateRequest = {
     old_is_industry?: boolean | null;
     new_is_industry?: boolean | null;
     created_by?: number | null;
+};
+
+export type RemoteProjectUsageReport = {
+    start: string | null;
+    end: string | null;
+    total_hours: number;
+    /**
+     * The combined OpenPortal ProjectUsageReport, as JSON.
+     */
+    report: {
+        [key: string]: unknown;
+    } | null;
+    windows: Array<RemoteProjectUsageWindow>;
+};
+
+export type RemoteProjectUsageWindow = {
+    project_uuid: string | null;
+    project_name: string | null;
+    start: string;
+    /**
+     * Inclusive. Null while still attached.
+     */
+    end: string | null;
+    /**
+     * The key this window's usage is cached under.
+     */
+    project_identifier: string | null;
 };
 
 export type RemoteResourceOrder = {
@@ -81702,6 +81729,30 @@ export type OpenportalRemoteProjectsTotalUsageRetrieveResponses = {
 };
 
 export type OpenportalRemoteProjectsTotalUsageRetrieveResponse = OpenportalRemoteProjectsTotalUsageRetrieveResponses[keyof OpenportalRemoteProjectsTotalUsageRetrieveResponses];
+
+export type OpenportalRemoteProjectsUsageReportRetrieveData = {
+    body?: never;
+    path: {
+        uuid: string;
+    };
+    query?: {
+        /**
+         * Last day to include. Defaults to today.
+         */
+        end?: string;
+        /**
+         * First day to include. Defaults to when the award was first attached.
+         */
+        start?: string;
+    };
+    url: '/api/openportal-remote-projects/{uuid}/usage-report/';
+};
+
+export type OpenportalRemoteProjectsUsageReportRetrieveResponses = {
+    200: RemoteProjectUsageReport;
+};
+
+export type OpenportalRemoteProjectsUsageReportRetrieveResponse = OpenportalRemoteProjectsUsageReportRetrieveResponses[keyof OpenportalRemoteProjectsUsageReportRetrieveResponses];
 
 export type OpenportalUnmanagedProjectsListData = {
     body?: never;
