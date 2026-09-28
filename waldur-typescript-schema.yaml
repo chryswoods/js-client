@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: Waldur API
-  version: 8.1.3-rc.15-openportal.5
+  version: 8.1.3-rc.15-openportal.6
 paths:
   /_matrix/app/v1/transactions/{txn_id}:
     put:
@@ -69950,6 +69950,47 @@ paths:
       responses:
         '202':
           description: No response body
+  /api/openportal-remote-projects/{uuid}/storage-report/:
+    get:
+      operationId: openportal_remote_projects_storage_report_retrieve
+      description: The award's storage snapshots over a date range, across every project
+        it has been attached to. Each attachment contributes only the snapshots taken
+        on the days it was attached, read from its own key. On a day the award moved,
+        the project it moved to claims the whole day. The report's top-level snapshot
+        is the latest in range.
+      summary: Storage report for an award
+      parameters:
+      - in: query
+        name: end
+        schema:
+          type: string
+          format: date
+        description: Last day to include. Defaults to today.
+      - in: query
+        name: start
+        schema:
+          type: string
+          format: date
+        description: First day to include. Defaults to when the award was first attached.
+      - in: path
+        name: uuid
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - openportal-remote-projects
+      security:
+      - waldurTokenAuth: []
+      - waldurPATAuth: []
+      - waldurOIDCAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RemoteProjectStorageReport'
+          description: ''
   /api/openportal-remote-projects/{uuid}/total-usage/:
     get:
       operationId: openportal_remote_projects_total_usage_retrieve
@@ -178555,6 +178596,39 @@ components:
       - deleted
       type: string
       description: ''
+    RemoteProjectStorageReport:
+      type: object
+      description: ''
+      properties:
+        start:
+          type: string
+          format: date
+          nullable: true
+        end:
+          type: string
+          format: date
+          nullable: true
+        latest:
+          type: string
+          format: date-time
+          nullable: true
+          description: When the latest snapshot in the range was taken. Null if none.
+        report:
+          allOf:
+          - $ref: '#/components/schemas/ProjectStorageReport'
+          nullable: true
+          description: The combined OpenPortal ProjectStorageReport, as JSON. The
+            latest snapshot is the top level; daily_reports holds the earlier ones.
+        windows:
+          type: array
+          items:
+            $ref: '#/components/schemas/RemoteProjectUsageWindow'
+      required:
+      - end
+      - latest
+      - report
+      - start
+      - windows
     RemoteProjectUpdateRequest:
       type: object
       properties:

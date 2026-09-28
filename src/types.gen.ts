@@ -27363,6 +27363,20 @@ export type RemoteProjectAuditEntryEventTypeEnum = 'award_attempted' | 'award_re
 
 export type RemoteProjectStateEnum = 'pending' | 'active' | 'stale' | 'error' | 'deleted';
 
+export type RemoteProjectStorageReport = {
+    start: string | null;
+    end: string | null;
+    /**
+     * When the latest snapshot in the range was taken. Null if none.
+     */
+    latest: string | null;
+    /**
+     * The combined OpenPortal ProjectStorageReport, as JSON. The latest snapshot is the top level; daily_reports holds the earlier ones.
+     */
+    report: ProjectStorageReport | null;
+    windows: Array<RemoteProjectUsageWindow>;
+};
+
 export type RemoteProjectUpdateRequest = {
     readonly uuid: string;
     readonly state: string;
@@ -81712,6 +81726,30 @@ export type OpenportalRemoteProjectsSetMembershipControlResponses = {
      */
     202: unknown;
 };
+
+export type OpenportalRemoteProjectsStorageReportRetrieveData = {
+    body?: never;
+    path: {
+        uuid: string;
+    };
+    query?: {
+        /**
+         * Last day to include. Defaults to today.
+         */
+        end?: string;
+        /**
+         * First day to include. Defaults to when the award was first attached.
+         */
+        start?: string;
+    };
+    url: '/api/openportal-remote-projects/{uuid}/storage-report/';
+};
+
+export type OpenportalRemoteProjectsStorageReportRetrieveResponses = {
+    200: RemoteProjectStorageReport;
+};
+
+export type OpenportalRemoteProjectsStorageReportRetrieveResponse = OpenportalRemoteProjectsStorageReportRetrieveResponses[keyof OpenportalRemoteProjectsStorageReportRetrieveResponses];
 
 export type OpenportalRemoteProjectsTotalUsageRetrieveData = {
     body?: never;
