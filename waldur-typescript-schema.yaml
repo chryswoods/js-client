@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: Waldur API
-  version: 8.1.3-rc.15-openportal.6
+  version: 8.1.3-rc.21-openportal.1
 paths:
   /_matrix/app/v1/transactions/{txn_id}:
     put:
@@ -149,10 +149,6 @@ paths:
                 description: Example of a valid request to obtain an authentication
                   token.
         required: true
-      security:
-      - waldurTokenAuth: []
-      - waldurPATAuth: []
-      - waldurOIDCAuth: []
       responses:
         '200':
           content:
@@ -8317,27 +8313,6 @@ paths:
           headers:
             x-result-count:
               $ref: '#/components/headers/XResultCount'
-    post:
-      operationId: call_assignment_configurations_create
-      tags:
-      - call-assignment-configurations
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CallAssignmentConfigurationRequest'
-        required: false
-      security:
-      - waldurTokenAuth: []
-      - waldurPATAuth: []
-      - waldurOIDCAuth: []
-      responses:
-        '201':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CallAssignmentConfiguration'
-          description: ''
     head:
       operationId: call_assignment_configurations_count
       parameters:
@@ -9751,6 +9726,37 @@ paths:
         scopes:
         - call
         - call.manager
+  /api/call-reviewer-pools/{uuid}/resend-invitation/:
+    post:
+      operationId: call_reviewer_pools_resend_invitation
+      description: Send a pending or expired pool invitation again. The invitation
+        returns to pending with a new expiry date from the call's assignment configuration,
+        and the invitee is emailed the link again.
+      parameters:
+      - in: path
+        name: uuid
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - call-reviewer-pools
+      security:
+      - waldurTokenAuth: []
+      - waldurPATAuth: []
+      - waldurOIDCAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CallReviewerPool'
+          description: ''
+      x-permissions:
+      - permission: PROPOSAL.MANAGE_REVIEW
+        scopes:
+        - call
+        - call.manager
   /api/call-rounds/:
     get:
       operationId: call_rounds_list
@@ -10185,6 +10191,224 @@ paths:
                     stats: null
                   summary: Response when no Celery workers are running
                   description: All fields are null when workers are offline or unreachable.
+          description: ''
+  /api/changelog-entries/:
+    get:
+      operationId: changelog_entries_retrieve
+      description: Returns a flat, paginated list of changelog entries for all pending
+        versions, or, with `release`, the entries that release introduced. Supports
+        filtering by type, risk, scope, version, and text search. Compatible with
+        the standard Waldur table component.
+      summary: List changelog entries
+      parameters:
+      - in: query
+        name: category
+        schema:
+          $ref: '#/components/schemas/ChangelogEntryListCategoryEnum'
+        description: Filter by category
+      - in: query
+        name: highlight
+        schema:
+          type: boolean
+        description: Filter highlighted entries only
+      - in: query
+        name: o
+        schema:
+          $ref: '#/components/schemas/ChangelogEntryListOEnum'
+        description: Sort by a field; prefix with - to reverse. Type and risk sort
+          most consequential first (breaking, high). Without it, relevant entries
+          come first, then by risk.
+      - $ref: '#/components/parameters/Page'
+      - $ref: '#/components/parameters/PageSize'
+      - in: query
+        name: release
+        schema:
+          type: string
+        description: List what this release introduced instead of the pending entries
+      - in: query
+        name: relevant_only
+        schema:
+          type: boolean
+        description: Show only relevant entries
+      - in: query
+        name: risk
+        schema:
+          $ref: '#/components/schemas/ChangelogEntryListRiskEnum'
+        description: Filter by risk level
+      - in: query
+        name: scope
+        schema:
+          $ref: '#/components/schemas/ChangelogEntryListScopeEnum'
+        description: Filter by scope
+      - in: query
+        name: search
+        schema:
+          type: string
+        description: Full-text search in title and description
+      - in: query
+        name: type
+        schema:
+          $ref: '#/components/schemas/ChangelogEntryListTypeEnum'
+        description: Filter by entry type
+      - in: query
+        name: version
+        schema:
+          type: string
+        description: Filter by release version
+      tags:
+      - changelog-entries
+      security:
+      - waldurTokenAuth: []
+      - waldurPATAuth: []
+      - waldurOIDCAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChangelogEntryList'
+          description: ''
+  /api/changelog-upgrade-report/:
+    get:
+      operationId: changelog_upgrade_report_retrieve
+      description: Returns a Markdown upgrade report, maintenance announcement text
+        and upgrade commands covering every changelog entry pending for this deployment,
+        regardless of any table filters or pagination.
+      summary: Get upgrade report
+      tags:
+      - changelog-upgrade-report
+      security:
+      - waldurTokenAuth: []
+      - waldurPATAuth: []
+      - waldurOIDCAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChangelogUpgradeReport'
+          description: ''
+  /api/changelog/{version}/:
+    get:
+      operationId: changelog_retrieve
+      description: Returns the full changelog for a specific release version.
+      summary: Get changelog for a specific version
+      parameters:
+      - in: path
+        name: version
+        schema:
+          type: string
+          pattern: ^[^/]+$
+        required: true
+      tags:
+      - changelog
+      security:
+      - waldurTokenAuth: []
+      - waldurPATAuth: []
+      - waldurOIDCAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChangelogRelease'
+          description: ''
+  /api/changelog/{version}/delta/:
+    get:
+      operationId: changelog_delta_retrieve
+      description: Returns only the incremental changes since the previous version
+        (since_previous entries).
+      summary: Get changelog delta for a version
+      parameters:
+      - in: path
+        name: version
+        schema:
+          type: string
+          pattern: ^[^/]+$
+        required: true
+      tags:
+      - changelog
+      security:
+      - waldurTokenAuth: []
+      - waldurPATAuth: []
+      - waldurOIDCAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChangelogRelease'
+          description: ''
+  /api/changelog/compare/{from_version}/{to_version}/:
+    get:
+      operationId: changelog_compare_retrieve
+      description: Returns merged delta entries between two arbitrary versions. Useful
+        for seeing what changed between e.g. rc.5 and rc.12.
+      summary: Compare changelog between two versions
+      parameters:
+      - in: path
+        name: from_version
+        schema:
+          type: string
+          pattern: ^[^/]+$
+        required: true
+      - in: path
+        name: to_version
+        schema:
+          type: string
+          pattern: ^[^/]+$
+        required: true
+      tags:
+      - changelog
+      security:
+      - waldurTokenAuth: []
+      - waldurPATAuth: []
+      - waldurOIDCAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChangelogPending'
+          description: ''
+  /api/changelog/pending/:
+    get:
+      operationId: changelog_pending_retrieve
+      description: Returns the changelog entries this deployment has not seen yet,
+        grouped by each newer version, with relevance matching and impact analysis
+        results.
+      summary: Get pending changelog
+      tags:
+      - changelog
+      security:
+      - waldurTokenAuth: []
+      - waldurPATAuth: []
+      - waldurOIDCAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChangelogPending'
+          description: ''
+  /api/changelog/releases/:
+    get:
+      operationId: changelog_releases_retrieve
+      description: Returns every release in the changelog index, newest first, each
+        marked as the release this deployment runs, pending (newer) or older.
+      summary: List changelog releases
+      tags:
+      - changelog
+      security:
+      - waldurTokenAuth: []
+      - waldurPATAuth: []
+      - waldurOIDCAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChangelogReleaseList'
           description: ''
   /api/chat-messages/:
     get:
@@ -13696,6 +13920,13 @@ paths:
       operationId: customer_quotas_list
       description: List customer quotas.
       parameters:
+      - in: query
+        name: customer_uuid
+        schema:
+          type: string
+          format: uuid
+        description: Limit results to the given organization
+        x-waldur-operation-id: customers_retrieve
       - $ref: '#/components/parameters/Page'
       - $ref: '#/components/parameters/PageSize'
       - in: query
@@ -13726,6 +13957,13 @@ paths:
       operationId: customer_quotas_count
       description: Get number of items in the collection matching the request parameters.
       parameters:
+      - in: query
+        name: customer_uuid
+        schema:
+          type: string
+          format: uuid
+        description: Limit results to the given organization
+        x-waldur-operation-id: customers_retrieve
       - $ref: '#/components/parameters/Page'
       - $ref: '#/components/parameters/PageSize'
       - in: query
@@ -27105,8 +27343,12 @@ paths:
       - waldurPATAuth: []
       - waldurOIDCAuth: []
       responses:
-        '204':
-          description: No response body
+        '202':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CourseAccount'
+          description: ''
       x-permissions:
       - permission: PROJECT.COURSE_ACCOUNT_MANAGE
         scopes:
@@ -29421,6 +29663,442 @@ paths:
         - '*'
         - customer
         - customer.serviceprovider
+  /api/marketplace-offering-merges/:
+    get:
+      operationId: marketplace_offering_merges_list
+      parameters:
+      - in: query
+        name: created
+        schema:
+          type: string
+          format: date-time
+        description: Created after
+      - in: query
+        name: created_before
+        schema:
+          type: string
+          format: date-time
+        description: Created before
+      - in: query
+        name: created_by_uuid
+        schema:
+          type: string
+          format: uuid
+        description: Created by UUID
+        x-waldur-operation-id: users_retrieve
+      - in: query
+        name: modified
+        schema:
+          type: string
+          format: date-time
+        description: Modified after
+      - in: query
+        name: modified_before
+        schema:
+          type: string
+          format: date-time
+        description: Modified before
+      - in: query
+        name: offering_uuid
+        schema:
+          type: string
+          format: uuid
+        description: Source or target offering UUID
+        x-waldur-operation-id: marketplace_provider_offerings_retrieve
+      - $ref: '#/components/parameters/Page'
+      - $ref: '#/components/parameters/PageSize'
+      - in: query
+        name: source_offering_uuid
+        schema:
+          type: string
+          format: uuid
+        description: Source offering UUID
+        x-waldur-operation-id: marketplace_provider_offerings_retrieve
+      - in: query
+        name: state
+        schema:
+          type: array
+          items:
+            $ref: '#/components/schemas/OfferingMergeStateEnum'
+        explode: true
+        style: form
+      - in: query
+        name: target_offering_uuid
+        schema:
+          type: string
+          format: uuid
+        description: Target offering UUID
+        x-waldur-operation-id: marketplace_provider_offerings_retrieve
+      tags:
+      - marketplace-offering-merges
+      security:
+      - waldurTokenAuth: []
+      - waldurPATAuth: []
+      - waldurOIDCAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OfferingMerge'
+                description: ''
+          description: ''
+          headers:
+            x-result-count:
+              $ref: '#/components/headers/XResultCount'
+    post:
+      operationId: marketplace_offering_merges_create
+      tags:
+      - marketplace-offering-merges
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OfferingMergeRequest'
+        required: true
+      security:
+      - waldurTokenAuth: []
+      - waldurPATAuth: []
+      - waldurOIDCAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OfferingMerge'
+          description: ''
+    head:
+      operationId: marketplace_offering_merges_count
+      parameters:
+      - in: query
+        name: created
+        schema:
+          type: string
+          format: date-time
+        description: Created after
+      - in: query
+        name: created_before
+        schema:
+          type: string
+          format: date-time
+        description: Created before
+      - in: query
+        name: created_by_uuid
+        schema:
+          type: string
+          format: uuid
+        description: Created by UUID
+        x-waldur-operation-id: users_retrieve
+      - in: query
+        name: modified
+        schema:
+          type: string
+          format: date-time
+        description: Modified after
+      - in: query
+        name: modified_before
+        schema:
+          type: string
+          format: date-time
+        description: Modified before
+      - in: query
+        name: offering_uuid
+        schema:
+          type: string
+          format: uuid
+        description: Source or target offering UUID
+        x-waldur-operation-id: marketplace_provider_offerings_retrieve
+      - $ref: '#/components/parameters/Page'
+      - $ref: '#/components/parameters/PageSize'
+      - in: query
+        name: source_offering_uuid
+        schema:
+          type: string
+          format: uuid
+        description: Source offering UUID
+        x-waldur-operation-id: marketplace_provider_offerings_retrieve
+      - in: query
+        name: state
+        schema:
+          type: array
+          items:
+            $ref: '#/components/schemas/OfferingMergeStateEnum'
+        explode: true
+        style: form
+      - in: query
+        name: target_offering_uuid
+        schema:
+          type: string
+          format: uuid
+        description: Target offering UUID
+        x-waldur-operation-id: marketplace_provider_offerings_retrieve
+      tags:
+      - marketplace-offering-merges
+      security:
+      - waldurTokenAuth: []
+      - waldurPATAuth: []
+      - waldurOIDCAuth: []
+      responses:
+        '200':
+          description: No response body
+      description: Get number of items in the collection matching the request parameters.
+  /api/marketplace-offering-merges/{uuid}/:
+    get:
+      operationId: marketplace_offering_merges_retrieve
+      parameters:
+      - in: path
+        name: uuid
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - marketplace-offering-merges
+      security:
+      - waldurTokenAuth: []
+      - waldurPATAuth: []
+      - waldurOIDCAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OfferingMerge'
+          description: ''
+    patch:
+      operationId: marketplace_offering_merges_partial_update
+      parameters:
+      - in: path
+        name: uuid
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - marketplace-offering-merges
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedOfferingMergeRequest'
+        required: false
+      security:
+      - waldurTokenAuth: []
+      - waldurPATAuth: []
+      - waldurOIDCAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OfferingMerge'
+          description: ''
+    delete:
+      operationId: marketplace_offering_merges_destroy
+      parameters:
+      - in: path
+        name: uuid
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - marketplace-offering-merges
+      security:
+      - waldurTokenAuth: []
+      - waldurPATAuth: []
+      - waldurOIDCAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/marketplace-offering-merges/{uuid}/affected/:
+    get:
+      operationId: marketplace_offering_merges_affected_list
+      description: |-
+        List the rows one preview entry changes, newest first.
+
+        Staff and support; nothing is written. A merge that has not run yet
+        recomputes its plan, so the listing is what the executor would do
+        rather than a stored copy of it. A merge that has run, or has been
+        undone, is described from its journal: what was actually written.
+      parameters:
+      - in: query
+        name: entry
+        schema:
+          type: string
+        description: 'Coverage registry entry, as reported by the preview: marketplace.Resource.offering,
+          invoices.InvoiceItem.details, and so on.'
+        required: true
+      - $ref: '#/components/parameters/Page'
+      - $ref: '#/components/parameters/PageSize'
+      - in: path
+        name: uuid
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - marketplace-offering-merges
+      security:
+      - waldurTokenAuth: []
+      - waldurPATAuth: []
+      - waldurOIDCAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OfferingMergeAffectedRow'
+                description: ''
+          description: ''
+          headers:
+            x-result-count:
+              $ref: '#/components/headers/XResultCount'
+  /api/marketplace-offering-merges/{uuid}/execute/:
+    post:
+      operationId: marketplace_offering_merges_execute
+      description: |-
+        Queue a previewed merge for execution.
+
+        Refused with 400 if the stored preview has blockers or a warning code
+        is missing from ``acknowledged_warnings``, and with 409 unless the
+        merge is ``previewed``, which also refuses a second request.
+      parameters:
+      - in: path
+        name: uuid
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - marketplace-offering-merges
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OfferingMergeExecuteRequest'
+        required: false
+      security:
+      - waldurTokenAuth: []
+      - waldurPATAuth: []
+      - waldurOIDCAuth: []
+      responses:
+        '202':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OfferingMerge'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OfferingMergeRefusal'
+          description: ''
+        '409':
+          description: The merge is not previewed.
+  /api/marketplace-offering-merges/{uuid}/preview/:
+    post:
+      operationId: marketplace_offering_merges_preview
+      description: |-
+        Compute the merge preview: counts, blockers and warnings.
+
+        Staff store it on the record, which moves to ``previewed``. Support
+        receive the same preview without it being stored.
+      parameters:
+      - in: path
+        name: uuid
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - marketplace-offering-merges
+      security:
+      - waldurTokenAuth: []
+      - waldurPATAuth: []
+      - waldurOIDCAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OfferingMergePreview'
+          description: ''
+        '409':
+          description: The merge is not in a previewable state.
+  /api/marketplace-offering-merges/{uuid}/undo/:
+    post:
+      operationId: marketplace_offering_merges_undo
+      description: |-
+        Queue the undo of a completed merge.
+
+        The engine's preconditions are checked first: if the undo would be
+        refused, the answer is 400 with the blockers and nothing is queued.
+      parameters:
+      - in: path
+        name: uuid
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - marketplace-offering-merges
+      security:
+      - waldurTokenAuth: []
+      - waldurPATAuth: []
+      - waldurOIDCAuth: []
+      responses:
+        '202':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OfferingMerge'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OfferingMergeRefusal'
+          description: ''
+        '409':
+          description: The merge is not done.
+  /api/marketplace-offering-merges/suggest_mapping/:
+    get:
+      operationId: marketplace_offering_merges_suggest_mapping_retrieve
+      description: Suggest plan mappings by name and component mappings by type.
+      parameters:
+      - in: query
+        name: sources
+        schema:
+          type: string
+        description: Source offering UUIDs, comma-separated or repeated.
+        required: true
+      - in: query
+        name: target
+        schema:
+          type: string
+          format: uuid
+        description: Target offering UUID.
+        required: true
+        x-waldur-operation-id: marketplace_provider_offerings_list
+      tags:
+      - marketplace-offering-merges
+      security:
+      - waldurTokenAuth: []
+      - waldurPATAuth: []
+      - waldurOIDCAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OfferingMergeSuggestedMapping'
+          description: ''
   /api/marketplace-offering-permissions/:
     get:
       operationId: marketplace_offering_permissions_list
@@ -31351,6 +32029,11 @@ paths:
           format: uuid
         description: User UUID
         x-waldur-operation-id: users_retrieve
+      - in: query
+        name: username
+        schema:
+          type: string
+        description: Username
       tags:
       - marketplace-offering-users
       security:
@@ -31549,6 +32232,11 @@ paths:
           format: uuid
         description: User UUID
         x-waldur-operation-id: users_retrieve
+      - in: query
+        name: username
+        schema:
+          type: string
+        description: Username
       tags:
       - marketplace-offering-users
       security:
@@ -32002,6 +32690,11 @@ paths:
           format: uuid
         description: User UUID
         x-waldur-operation-id: users_retrieve
+      - in: query
+        name: username
+        schema:
+          type: string
+        description: Username
       - in: path
         name: uuid
         schema:
@@ -32170,6 +32863,11 @@ paths:
           format: uuid
         description: User UUID
         x-waldur-operation-id: users_retrieve
+      - in: query
+        name: username
+        schema:
+          type: string
+        description: Username
       - in: path
         name: uuid
         schema:
@@ -32326,7 +33024,8 @@ paths:
     post:
       operationId: marketplace_offering_users_set_ok
       description: Manually sets the offering user state to 'OK'. This can be used
-        to recover from an error state or to complete a manual creation process.
+        to recover from an error state or to complete a manual creation process. This
+        clears any service provider comments.
       summary: Set state to OK
       parameters:
       - in: path
@@ -32832,6 +33531,11 @@ paths:
           format: uuid
         required: true
         x-waldur-operation-id: users_retrieve
+      - in: query
+        name: username
+        schema:
+          type: string
+        description: Username
       tags:
       - marketplace-offering-users
       security:
@@ -32992,6 +33696,11 @@ paths:
           format: uuid
         required: true
         x-waldur-operation-id: users_retrieve
+      - in: query
+        name: username
+        schema:
+          type: string
+        description: Username
       tags:
       - marketplace-offering-users
       security:
@@ -33071,31 +33780,6 @@ paths:
         '200':
           description: No response body
       description: Get number of items in the collection matching the request parameters.
-  /api/marketplace-openstack-duplicate-offerings/remediate/:
-    post:
-      operationId: marketplace_openstack_duplicate_offerings_remediate
-      description: Collapse one duplicate per-tenant offering group onto its keeper.
-        Previews by default; pass dry_run=false to apply. Refuses to run when history
-        (billing periods, usage records) cannot be re-pointed.
-      tags:
-      - marketplace-openstack-duplicate-offerings
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/DuplicateOfferingRemediateRequest'
-        required: true
-      security:
-      - waldurTokenAuth: []
-      - waldurPATAuth: []
-      - waldurOIDCAuth: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/DuplicateOfferingRemediation'
-          description: ''
   /api/marketplace-orders/:
     get:
       operationId: marketplace_orders_list
@@ -38474,6 +39158,11 @@ paths:
           headers:
             x-result-count:
               $ref: '#/components/headers/XResultCount'
+      x-permissions:
+      - permission: SERVICE_PROVIDER.GET_STATISTICS
+        scopes:
+        - customer
+        - customer.serviceprovider
   /api/marketplace-provider-offerings/{uuid}/costs/:
     get:
       operationId: marketplace_provider_offerings_costs_list
@@ -38801,6 +39490,11 @@ paths:
           headers:
             x-result-count:
               $ref: '#/components/headers/XResultCount'
+      x-permissions:
+      - permission: SERVICE_PROVIDER.GET_REVENUE
+        scopes:
+        - customer
+        - customer.serviceprovider
   /api/marketplace-provider-offerings/{uuid}/create_offering_component/:
     post:
       operationId: marketplace_provider_offerings_create_offering_component
@@ -39153,6 +39847,11 @@ paths:
           headers:
             x-result-count:
               $ref: '#/components/headers/XResultCount'
+      x-permissions:
+      - permission: SERVICE_PROVIDER.LIST_CUSTOMERS
+        scopes:
+        - customer
+        - customer.serviceprovider
   /api/marketplace-provider-offerings/{uuid}/delete-user-attribute-config/:
     delete:
       operationId: marketplace_provider_offerings_delete_user_attribute_config_destroy
@@ -41656,6 +42355,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/OfferingStateCounters'
           description: ''
+      x-permissions:
+      - permission: SERVICE_PROVIDER.GET_STATISTICS
+        scopes:
+        - customer
+        - customer.serviceprovider
   /api/marketplace-provider-offerings/{uuid}/stats/:
     get:
       operationId: marketplace_provider_offerings_stats_retrieve
@@ -41687,6 +42391,11 @@ paths:
                   customers_count:
                     type: integer
           description: ''
+      x-permissions:
+      - permission: SERVICE_PROVIDER.GET_STATISTICS
+        scopes:
+        - customer
+        - customer.serviceprovider
   /api/marketplace-provider-offerings/{uuid}/switch_billing_mode/:
     post:
       operationId: marketplace_provider_offerings_switch_billing_mode
@@ -45625,6 +46334,52 @@ paths:
       - permission: RESOURCE.SET_STATE
         scopes:
         - offering.customer
+  /api/marketplace-provider-resources/{uuid}/robot_account_users/:
+    get:
+      operationId: marketplace_provider_resources_robot_account_users_list
+      description: Returns the project and organization users of this resource that
+        a robot account may link as users or as the responsible user. When ENFORCE_USER_CONSENT_FOR_OFFERINGS
+        is enabled and the offering has active Terms of Service, only users with active
+        consent are returned, for every caller.
+      summary: List users a robot account on this resource may link
+      parameters:
+      - in: query
+        name: full_name
+        schema:
+          type: string
+        description: Filter by full name.
+      - $ref: '#/components/parameters/Page'
+      - $ref: '#/components/parameters/PageSize'
+      - in: query
+        name: user_keyword
+        schema:
+          type: string
+        description: Filter by full name, username or email.
+      - in: path
+        name: uuid
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - marketplace-provider-resources
+      security:
+      - waldurTokenAuth: []
+      - waldurPATAuth: []
+      - waldurOIDCAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BasicUser'
+                description: ''
+          description: ''
+          headers:
+            x-result-count:
+              $ref: '#/components/headers/XResultCount'
   /api/marketplace-provider-resources/{uuid}/set_as_erred/:
     post:
       operationId: marketplace_provider_resources_set_as_erred
@@ -52888,6 +53643,11 @@ paths:
           format: uuid
         description: User UUID
         x-waldur-operation-id: users_retrieve
+      - in: query
+        name: username
+        schema:
+          type: string
+        description: Username
       tags:
       - marketplace-service-provider-accounts
       security:
@@ -53007,6 +53767,11 @@ paths:
           format: uuid
         description: User UUID
         x-waldur-operation-id: users_retrieve
+      - in: query
+        name: username
+        schema:
+          type: string
+        description: Username
       tags:
       - marketplace-service-provider-accounts
       security:
@@ -53141,6 +53906,498 @@ paths:
         scopes:
         - service_provider
         - service_provider.customer
+  /api/marketplace-service-provider-project-groups/:
+    get:
+      operationId: marketplace_service_provider_project_groups_list
+      parameters:
+      - in: query
+        name: created
+        schema:
+          type: string
+          format: date-time
+        description: Created after
+      - in: query
+        name: created_before
+        schema:
+          type: string
+          format: date-time
+        description: Created before
+      - in: query
+        name: customer_uuid
+        schema:
+          type: string
+          format: uuid
+        description: UUID of the project's organization
+        x-waldur-operation-id: customers_retrieve
+      - in: query
+        name: gid
+        schema:
+          type: integer
+      - in: query
+        name: in_use
+        schema:
+          type: boolean
+        description: In use
+      - in: query
+        name: modified
+        schema:
+          type: string
+          format: date-time
+        description: Modified after
+      - in: query
+        name: modified_before
+        schema:
+          type: string
+          format: date-time
+        description: Modified before
+      - in: query
+        name: name
+        schema:
+          type: string
+      - in: query
+        name: o
+        schema:
+          type: array
+          items:
+            $ref: '#/components/schemas/ServiceProviderProjectGroupOEnum'
+        description: |+
+          Ordering
+
+        explode: false
+        style: form
+      - in: query
+        name: offering_uuid
+        schema:
+          type: string
+          format: uuid
+        description: Groups of projects with a non-terminated resource on this offering
+        x-waldur-operation-id: marketplace_provider_offerings_retrieve
+      - $ref: '#/components/parameters/Page'
+      - $ref: '#/components/parameters/PageSize'
+      - in: query
+        name: project_uuid
+        schema:
+          type: string
+          format: uuid
+        description: Project UUID
+        x-waldur-operation-id: projects_retrieve
+      - in: query
+        name: provider_offering_uuid
+        schema:
+          type: string
+          format: uuid
+        description: Every group of the service provider that owns this offering
+        x-waldur-operation-id: marketplace_provider_offerings_retrieve
+      - in: query
+        name: query
+        schema:
+          type: string
+        description: Search by group name, project name or slug, organization name
+          or GID
+      - in: query
+        name: service_provider_uuid
+        schema:
+          type: string
+          format: uuid
+        description: Service provider UUID
+        x-waldur-operation-id: marketplace_service_providers_retrieve
+      tags:
+      - marketplace-service-provider-project-groups
+      security:
+      - waldurTokenAuth: []
+      - waldurPATAuth: []
+      - waldurOIDCAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ServiceProviderProjectGroup'
+                description: ''
+          description: ''
+          headers:
+            x-result-count:
+              $ref: '#/components/headers/XResultCount'
+    post:
+      operationId: marketplace_service_provider_project_groups_create
+      description: Create the service provider's group for a project, pinned to a
+        GID the directory already uses. Works for a project that has no resource at
+        the provider yet; the allocator never hands the GID out afterwards. Refused
+        with 400 when the project already has a group (use set_gid), when another
+        consumer in the provider's pools holds the GID, or when the GID is outside
+        the range project groups draw from and allow_outside_range is not set.
+      summary: Adopt a POSIX project group with a given GID
+      tags:
+      - marketplace-service-provider-project-groups
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ServiceProviderProjectGroupCreateRequest'
+        required: true
+      security:
+      - waldurTokenAuth: []
+      - waldurPATAuth: []
+      - waldurOIDCAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceProviderProjectGroup'
+          description: ''
+    head:
+      operationId: marketplace_service_provider_project_groups_count
+      parameters:
+      - in: query
+        name: created
+        schema:
+          type: string
+          format: date-time
+        description: Created after
+      - in: query
+        name: created_before
+        schema:
+          type: string
+          format: date-time
+        description: Created before
+      - in: query
+        name: customer_uuid
+        schema:
+          type: string
+          format: uuid
+        description: UUID of the project's organization
+        x-waldur-operation-id: customers_retrieve
+      - in: query
+        name: gid
+        schema:
+          type: integer
+      - in: query
+        name: in_use
+        schema:
+          type: boolean
+        description: In use
+      - in: query
+        name: modified
+        schema:
+          type: string
+          format: date-time
+        description: Modified after
+      - in: query
+        name: modified_before
+        schema:
+          type: string
+          format: date-time
+        description: Modified before
+      - in: query
+        name: name
+        schema:
+          type: string
+      - in: query
+        name: o
+        schema:
+          type: array
+          items:
+            $ref: '#/components/schemas/ServiceProviderProjectGroupOEnum'
+        description: |+
+          Ordering
+
+        explode: false
+        style: form
+      - in: query
+        name: offering_uuid
+        schema:
+          type: string
+          format: uuid
+        description: Groups of projects with a non-terminated resource on this offering
+        x-waldur-operation-id: marketplace_provider_offerings_retrieve
+      - $ref: '#/components/parameters/Page'
+      - $ref: '#/components/parameters/PageSize'
+      - in: query
+        name: project_uuid
+        schema:
+          type: string
+          format: uuid
+        description: Project UUID
+        x-waldur-operation-id: projects_retrieve
+      - in: query
+        name: provider_offering_uuid
+        schema:
+          type: string
+          format: uuid
+        description: Every group of the service provider that owns this offering
+        x-waldur-operation-id: marketplace_provider_offerings_retrieve
+      - in: query
+        name: query
+        schema:
+          type: string
+        description: Search by group name, project name or slug, organization name
+          or GID
+      - in: query
+        name: service_provider_uuid
+        schema:
+          type: string
+          format: uuid
+        description: Service provider UUID
+        x-waldur-operation-id: marketplace_service_providers_retrieve
+      tags:
+      - marketplace-service-provider-project-groups
+      security:
+      - waldurTokenAuth: []
+      - waldurPATAuth: []
+      - waldurOIDCAuth: []
+      responses:
+        '200':
+          description: No response body
+      description: Get number of items in the collection matching the request parameters.
+  /api/marketplace-service-provider-project-groups/{uuid}/:
+    get:
+      operationId: marketplace_service_provider_project_groups_retrieve
+      parameters:
+      - in: path
+        name: uuid
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - marketplace-service-provider-project-groups
+      security:
+      - waldurTokenAuth: []
+      - waldurPATAuth: []
+      - waldurOIDCAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceProviderProjectGroup'
+          description: ''
+  /api/marketplace-service-provider-project-groups/{uuid}/set_gid/:
+    post:
+      operationId: marketplace_service_provider_project_groups_set_gid
+      description: Move the group to another GID, e.g. one assigned outside Waldur.
+        The previous GID is released but never handed out again automatically, since
+        files may still carry it; renumbering them is the operator's job. Refused
+        with 400 on the same conditions as adopting a group. Recorded as an event
+        with both GIDs.
+      summary: Set the GID of a POSIX project group
+      parameters:
+      - in: path
+        name: uuid
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - marketplace-service-provider-project-groups
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProjectGroupGidRequest'
+        required: true
+      security:
+      - waldurTokenAuth: []
+      - waldurPATAuth: []
+      - waldurOIDCAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceProviderProjectGroup'
+          description: ''
+  /api/marketplace-service-provider-project-groups/adoptable_projects/:
+    get:
+      operationId: marketplace_service_provider_project_groups_adoptable_projects_list
+      description: 'Projects with a resource or an order, in any state, on an offering
+        of the service provider: the projects its owners may adopt a group for. Staff
+        may adopt for any project. Filter by name, slug or organization name with
+        query.'
+      summary: Projects a group can be adopted for
+      parameters:
+      - $ref: '#/components/parameters/Page'
+      - $ref: '#/components/parameters/PageSize'
+      - in: query
+        name: query
+        schema:
+          type: string
+      - in: query
+        name: service_provider_uuid
+        schema:
+          type: string
+        required: true
+        x-waldur-operation-id: marketplace_service_providers_retrieve
+      tags:
+      - marketplace-service-provider-project-groups
+      security:
+      - waldurTokenAuth: []
+      - waldurPATAuth: []
+      - waldurOIDCAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AdoptableProject'
+                description: ''
+          description: ''
+          headers:
+            x-result-count:
+              $ref: '#/components/headers/XResultCount'
+    head:
+      operationId: marketplace_service_provider_project_groups_adoptable_projects_count
+      description: Get number of items in the collection matching the request parameters.
+      summary: Projects a group can be adopted for
+      parameters:
+      - $ref: '#/components/parameters/Page'
+      - $ref: '#/components/parameters/PageSize'
+      - in: query
+        name: query
+        schema:
+          type: string
+      - in: query
+        name: service_provider_uuid
+        schema:
+          type: string
+        required: true
+        x-waldur-operation-id: marketplace_service_providers_retrieve
+      tags:
+      - marketplace-service-provider-project-groups
+      security:
+      - waldurTokenAuth: []
+      - waldurPATAuth: []
+      - waldurOIDCAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/marketplace-service-provider-project-groups/import_groups/:
+    post:
+      operationId: marketplace_service_provider_project_groups_import_groups
+      description: 'Pin the groups of several projects in one step, e.g. the groups
+        a directory held before Waldur managed it. A project without a group gets
+        one; a project with a group has its GID set. All or nothing: any refused entry
+        leaves every group unchanged.'
+      summary: Adopt several POSIX project groups at once
+      parameters:
+      - in: query
+        name: created
+        schema:
+          type: string
+          format: date-time
+        description: Created after
+      - in: query
+        name: created_before
+        schema:
+          type: string
+          format: date-time
+        description: Created before
+      - in: query
+        name: customer_uuid
+        schema:
+          type: string
+          format: uuid
+        description: UUID of the project's organization
+        x-waldur-operation-id: customers_retrieve
+      - in: query
+        name: gid
+        schema:
+          type: integer
+      - in: query
+        name: in_use
+        schema:
+          type: boolean
+        description: In use
+      - in: query
+        name: modified
+        schema:
+          type: string
+          format: date-time
+        description: Modified after
+      - in: query
+        name: modified_before
+        schema:
+          type: string
+          format: date-time
+        description: Modified before
+      - in: query
+        name: name
+        schema:
+          type: string
+      - in: query
+        name: o
+        schema:
+          type: array
+          items:
+            $ref: '#/components/schemas/ServiceProviderProjectGroupOEnum'
+        description: |+
+          Ordering
+
+        explode: false
+        style: form
+      - in: query
+        name: offering_uuid
+        schema:
+          type: string
+          format: uuid
+        description: Groups of projects with a non-terminated resource on this offering
+        x-waldur-operation-id: marketplace_provider_offerings_retrieve
+      - $ref: '#/components/parameters/Page'
+      - $ref: '#/components/parameters/PageSize'
+      - in: query
+        name: project_uuid
+        schema:
+          type: string
+          format: uuid
+        description: Project UUID
+        x-waldur-operation-id: projects_retrieve
+      - in: query
+        name: provider_offering_uuid
+        schema:
+          type: string
+          format: uuid
+        description: Every group of the service provider that owns this offering
+        x-waldur-operation-id: marketplace_provider_offerings_retrieve
+      - in: query
+        name: query
+        schema:
+          type: string
+        description: Search by group name, project name or slug, organization name
+          or GID
+      - in: query
+        name: service_provider_uuid
+        schema:
+          type: string
+          format: uuid
+        description: Service provider UUID
+        x-waldur-operation-id: marketplace_service_providers_retrieve
+      tags:
+      - marketplace-service-provider-project-groups
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ServiceProviderProjectGroupImportRequest'
+        required: true
+      security:
+      - waldurTokenAuth: []
+      - waldurPATAuth: []
+      - waldurOIDCAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ServiceProviderProjectGroup'
+                description: ''
+          description: ''
   /api/marketplace-service-providers/:
     get:
       operationId: marketplace_service_providers_list
@@ -59856,6 +61113,41 @@ paths:
       responses:
         '204':
           description: No response body
+  /api/marketplace-software-catalogs/{uuid}/cpu_targets/:
+    get:
+      operationId: marketplace_software_catalogs_cpu_targets_list
+      description: Returns CPU family and microarchitecture choices for this catalog's
+        version, taken from metadata.architectures_map. cpu_microarchitecture matches
+        SoftwareTarget.target_subtype and the cpu_microarchitecture package filter,
+        including vendor-prefixed paths such as intel/sapphirerapids. Does not scan
+        package targets. Catalogs without an architectures map (for example Spack)
+        return an empty list.
+      summary: List CPU targets for a software catalog
+      parameters:
+      - in: path
+        name: uuid
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - marketplace-software-catalogs
+      security:
+      - waldurTokenAuth: []
+      - waldurPATAuth: []
+      - waldurOIDCAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SoftwareCatalogCpuTarget'
+          description: ''
+          headers:
+            x-result-count:
+              $ref: '#/components/headers/XResultCount'
   /api/marketplace-software-catalogs/{uuid}/update_catalog/:
     post:
       operationId: marketplace_software_catalogs_update_catalog
@@ -60056,15 +61348,23 @@ paths:
       - in: query
         name: cpu_family
         schema:
-          type: string
-        description: Filter packages available for specific CPU family (e.g., x86_64,
-          aarch64)
+          type: array
+          items:
+            type: string
+        description: Filter packages available for any of the given CPU families (e.g.,
+          x86_64, aarch64)
+        explode: true
+        style: form
       - in: query
         name: cpu_microarchitecture
         schema:
-          type: string
-        description: Filter packages available for specific CPU microarchitecture
-          (e.g., generic, zen2, haswell)
+          type: array
+          items:
+            type: string
+        description: Filter packages available for any of the given CPU microarchitectures
+          (e.g., generic, amd/zen3, intel/sapphirerapids)
+        explode: true
+        style: form
       - in: query
         name: description
         schema:
@@ -60240,15 +61540,23 @@ paths:
       - in: query
         name: cpu_family
         schema:
-          type: string
-        description: Filter packages available for specific CPU family (e.g., x86_64,
-          aarch64)
+          type: array
+          items:
+            type: string
+        description: Filter packages available for any of the given CPU families (e.g.,
+          x86_64, aarch64)
+        explode: true
+        style: form
       - in: query
         name: cpu_microarchitecture
         schema:
-          type: string
-        description: Filter packages available for specific CPU microarchitecture
-          (e.g., generic, zen2, haswell)
+          type: array
+          items:
+            type: string
+        description: Filter packages available for any of the given CPU microarchitectures
+          (e.g., generic, amd/zen3, intel/sapphirerapids)
+        explode: true
+        style: form
       - in: query
         name: description
         schema:
@@ -60475,11 +61783,19 @@ paths:
       - in: query
         name: cpu_family
         schema:
-          type: string
+          type: array
+          items:
+            type: string
+        explode: true
+        style: form
       - in: query
         name: cpu_microarchitecture
         schema:
-          type: string
+          type: array
+          items:
+            type: string
+        explode: true
+        style: form
       - in: query
         name: gpu_arch
         schema:
@@ -60591,11 +61907,19 @@ paths:
       - in: query
         name: cpu_family
         schema:
-          type: string
+          type: array
+          items:
+            type: string
+        explode: true
+        style: form
       - in: query
         name: cpu_microarchitecture
         schema:
-          type: string
+          type: array
+          items:
+            type: string
+        explode: true
+        style: form
       - in: query
         name: gpu_arch
         schema:
@@ -60783,11 +62107,19 @@ paths:
       - in: query
         name: cpu_family
         schema:
-          type: string
+          type: array
+          items:
+            type: string
+        explode: true
+        style: form
       - in: query
         name: cpu_microarchitecture
         schema:
-          type: string
+          type: array
+          items:
+            type: string
+        explode: true
+        style: form
       - in: query
         name: gpu_arch
         schema:
@@ -60921,11 +62253,19 @@ paths:
       - in: query
         name: cpu_family
         schema:
-          type: string
+          type: array
+          items:
+            type: string
+        explode: true
+        style: form
       - in: query
         name: cpu_microarchitecture
         schema:
-          type: string
+          type: array
+          items:
+            type: string
+        explode: true
+        style: form
       - in: query
         name: gpu_arch
         schema:
@@ -64529,9 +65869,10 @@ paths:
   /api/matrix/rooms/eligible_projects/:
     get:
       operationId: matrix_rooms_eligible_projects_list
-      description: Returns projects where the caller is customer owner (staff sees
-        all) and no MatrixRoom row exists yet. Existing archived rooms still block
-        creation, so projects with any room are excluded.
+      description: Returns projects where the caller holds MATRIX_ROOM.CREATE on the
+        project or its organization (staff and support see all) and no MatrixRoom
+        row exists yet. Existing archived rooms still block creation, so projects
+        with any room are excluded.
       summary: List projects the caller can create a Matrix room for
       parameters:
       - in: query
@@ -66391,7 +67732,7 @@ paths:
       - in: query
         name: validation_method
         schema:
-          $ref: '#/components/schemas/ValidationMethodEnum'
+          $ref: '#/components/schemas/OnboardingValidationEnum'
         description: Validation method identifier
         required: true
       tags:
@@ -86124,6 +87465,13 @@ paths:
       operationId: project_quotas_list
       description: List project quotas.
       parameters:
+      - in: query
+        name: customer_uuid
+        schema:
+          type: string
+          format: uuid
+        description: Limit results to the given organization
+        x-waldur-operation-id: customers_retrieve
       - $ref: '#/components/parameters/Page'
       - $ref: '#/components/parameters/PageSize'
       - in: query
@@ -86154,6 +87502,13 @@ paths:
       operationId: project_quotas_count
       description: Get number of items in the collection matching the request parameters.
       parameters:
+      - in: query
+        name: customer_uuid
+        schema:
+          type: string
+          format: uuid
+        description: Limit results to the given organization
+        x-waldur-operation-id: customers_retrieve
       - $ref: '#/components/parameters/Page'
       - $ref: '#/components/parameters/PageSize'
       - in: query
@@ -89149,6 +90504,13 @@ paths:
       operationId: proposal_proposals_list
       parameters:
       - in: query
+        name: as_role
+        schema:
+          $ref: '#/components/schemas/ResponsibleRoleEnum'
+        description: |+
+          Only proposals the current user holds this role on
+
+      - in: query
         name: call_uuid
         schema:
           type: string
@@ -89255,6 +90617,13 @@ paths:
     head:
       operationId: proposal_proposals_count
       parameters:
+      - in: query
+        name: as_role
+        schema:
+          $ref: '#/components/schemas/ResponsibleRoleEnum'
+        description: |+
+          Only proposals the current user holds this role on
+
       - in: query
         name: call_uuid
         schema:
@@ -90242,6 +91611,13 @@ paths:
         and comment.
       parameters:
       - in: query
+        name: as_role
+        schema:
+          $ref: '#/components/schemas/ResponsibleRoleEnum'
+        description: |+
+          Only proposals the current user holds this role on
+
+      - in: query
         name: call_uuid
         schema:
           type: string
@@ -90535,6 +91911,13 @@ paths:
       operationId: proposal_proposals_workflow_states_list
       description: List all workflow step instances for this proposal.
       parameters:
+      - in: query
+        name: as_role
+        schema:
+          $ref: '#/components/schemas/ResponsibleRoleEnum'
+        description: |+
+          Only proposals the current user holds this role on
+
       - in: query
         name: call_uuid
         schema:
@@ -91583,6 +92966,173 @@ paths:
       x-permissions:
       - permission: CALL.CREATE
         scopes:
+        - manager
+  /api/proposal-protected-calls/{uuid}/export-proposals/:
+    get:
+      operationId: proposal_protected_calls_export_proposals
+      description: Download the call's proposals as CSV, one row per proposal, with
+        one column per requested offering component. The column set is derived from
+        the call, so it is the same for every row and between exports of the same
+        call.
+      parameters:
+      - in: query
+        name: created_by_uuid
+        schema:
+          type: string
+          format: uuid
+        description: Limit the export to one applicant.
+        x-waldur-operation-id: users_list
+      - in: query
+        name: proposal_name
+        schema:
+          type: string
+        description: Limit the export to proposals whose name contains this text —
+          the list's search box. Named proposal_name because a bare `name` is read
+          by the call's own filterset.
+      - in: query
+        name: proposal_state
+        schema:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProposalStates'
+        description: Limit the export to proposals in these states.
+      - in: query
+        name: round_uuid
+        schema:
+          type: string
+          format: uuid
+        description: Limit the export to one round.
+        x-waldur-operation-id: proposal_protected_calls_rounds_list
+      - in: path
+        name: uuid
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - proposal-protected-calls
+      security:
+      - waldurTokenAuth: []
+      - waldurPATAuth: []
+      - waldurOIDCAuth: []
+      responses:
+        '200':
+          content:
+            text/csv:
+              schema:
+                type: string
+                format: binary
+          description: ''
+      x-permissions:
+      - permission: CALL.UPDATE
+        scopes:
+        - '*'
+        - manager
+  /api/proposal-protected-calls/{uuid}/export-reviews/:
+    get:
+      operationId: proposal_protected_calls_export_reviews
+      description: 'Download the call''s reviews as CSV, one row per review. The reviewer''s
+        private comment is never included: the export is open to call managers, and
+        the review API keeps that field from them.'
+      parameters:
+      - in: query
+        name: proposal_name
+        schema:
+          type: string
+        description: Limit the export to proposals whose name contains this text —
+          the list's search box. Named proposal_name because a bare `name` is read
+          by the call's own filterset.
+      - in: query
+        name: proposal_uuid
+        schema:
+          type: string
+          format: uuid
+        description: Limit the export to one proposal.
+        x-waldur-operation-id: proposal_proposals_list
+      - in: query
+        name: review_state
+        schema:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProposalReviewStateEnum'
+        description: Limit the export to reviews in these states.
+      - in: query
+        name: reviewer_uuid
+        schema:
+          type: string
+          format: uuid
+        description: Limit the export to one reviewer.
+        x-waldur-operation-id: users_list
+      - in: query
+        name: round_uuid
+        schema:
+          type: string
+          format: uuid
+        description: Limit the export to one round.
+        x-waldur-operation-id: proposal_protected_calls_rounds_list
+      - in: path
+        name: uuid
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - proposal-protected-calls
+      security:
+      - waldurTokenAuth: []
+      - waldurPATAuth: []
+      - waldurOIDCAuth: []
+      responses:
+        '200':
+          content:
+            text/csv:
+              schema:
+                type: string
+                format: binary
+          description: ''
+      x-permissions:
+      - permission: CALL.UPDATE
+        scopes:
+        - '*'
+        - manager
+  /api/proposal-protected-calls/{uuid}/export_call/:
+    post:
+      operationId: proposal_protected_calls_export_call
+      description: Export the call's configuration as a portable document that import_call
+        can recreate on another portal. Offerings, plans, checklists and roles are
+        referenced by name. Proposals, reviews, reviewer pools, assignments and user
+        references are never exported.
+      summary: Export call configuration
+      parameters:
+      - in: path
+        name: uuid
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - proposal-protected-calls
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CallExportParametersRequest'
+        required: false
+      security:
+      - waldurTokenAuth: []
+      - waldurPATAuth: []
+      - waldurOIDCAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CallExportResponse'
+          description: ''
+      x-permissions:
+      - permission: CALL.UPDATE
+        scopes:
+        - '*'
         - manager
   /api/proposal-protected-calls/{uuid}/generate-assignments/:
     post:
@@ -93651,7 +95201,8 @@ paths:
     get:
       operationId: proposal_protected_calls_dashboard_stats_retrieve
       description: 'Returns counts for the call manager dashboard: pending assessments,
-        active calls managed by the user, and overdue reviews on calls they manage.'
+        active calls managed by the user, and reviews on calls they manage that are
+        due within the next few days.'
       summary: Get call manager dashboard stats
       tags:
       - proposal-protected-calls
@@ -93665,6 +95216,33 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DashboardCallManagerStats'
+          description: ''
+  /api/proposal-protected-calls/import_call/:
+    post:
+      operationId: proposal_protected_calls_import_call
+      description: Create a draft call under the given call managing organisation
+        from a document produced by export_call. References that cannot be resolved
+        by name on this portal are skipped and reported in warnings. The import is
+        atomic.
+      summary: Import call configuration
+      tags:
+      - proposal-protected-calls
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CallImportParametersRequest'
+        required: true
+      security:
+      - waldurTokenAuth: []
+      - waldurPATAuth: []
+      - waldurOIDCAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CallImportResponse'
           description: ''
   /api/proposal-protected-calls/step_checklists/:
     get:
@@ -94523,6 +96101,18 @@ paths:
           format: uuid
         x-waldur-operation-id: proposal_public_calls_retrieve
       - in: query
+        name: due_within_days
+        schema:
+          type: number
+        description: Only reviews in progress whose deadline is at most this many
+          days away, including ones already past it. Implies state=in_review.
+      - in: query
+        name: managed_calls_only
+        schema:
+          type: boolean
+        description: Only reviews on calls where the current user is call manager,
+          the same scope as the call manager dashboard.
+      - in: query
         name: o
         schema:
           type: array
@@ -94626,6 +96216,18 @@ paths:
           type: string
           format: uuid
         x-waldur-operation-id: proposal_public_calls_retrieve
+      - in: query
+        name: due_within_days
+        schema:
+          type: number
+        description: Only reviews in progress whose deadline is at most this many
+          days away, including ones already past it. Implies state=in_review.
+      - in: query
+        name: managed_calls_only
+        schema:
+          type: boolean
+        description: Only reviews on calls where the current user is call manager,
+          the same scope as the call manager dashboard.
       - in: query
         name: o
         schema:
@@ -116339,38 +117941,12 @@ components:
       enum:
       - project_slug
       description: ''
-    AccountOptions:
-      type: object
-      description: ''
-      properties:
-        account_scope:
-          description: 'Where accounts are held: ''offering'' keeps one account per
-            offering (the historical behaviour); ''provider'' shares one account per
-            user across the provider''s offerings.'
-          oneOf:
-          - $ref: '#/components/schemas/AccountScope'
-          - $ref: '#/components/schemas/BlankEnum'
-        username_generation_policy:
-          description: How the usernames of offering users are generated.
-          oneOf:
-          - $ref: '#/components/schemas/UsernameGenerationPolicyEnum'
-          - $ref: '#/components/schemas/BlankEnum'
-        username_anonymized_prefix:
-          type: string
-          description: Prefix for anonymized usernames; the name is the prefix followed
-            by the account's POSIX UID.
-        homedir_prefix:
-          type: string
-          description: Prefix of each account's home directory; the username follows.
-        login_shell:
-          type: string
-          description: Login shell assigned to GLAuth/LDAP accounts.
     AccountOptionsChangeRequest:
       type: object
       properties:
         account_options:
           allOf:
-          - $ref: '#/components/schemas/AccountOptionsRequest'
+          - $ref: '#/components/schemas/ProviderAccountOptionsRequest'
           description: Changes to the provider's account options, merged into the
             current ones key by key; a blank value removes a setting.
       required:
@@ -116381,6 +117957,11 @@ components:
       properties:
         account_options:
           $ref: '#/components/schemas/AccountOptionsVersions'
+        warnings:
+          type: array
+          items:
+            type: string
+          description: Things to settle before saving, e.g. a missing group range.
         offerings:
           type: array
           items:
@@ -116402,40 +117983,15 @@ components:
       - provider_accounts_kept
       - renamed
       - username_conflicts
+      - warnings
       description: ''
-    AccountOptionsRequest:
-      type: object
-      description: ''
-      properties:
-        account_scope:
-          description: 'Where accounts are held: ''offering'' keeps one account per
-            offering (the historical behaviour); ''provider'' shares one account per
-            user across the provider''s offerings.'
-          oneOf:
-          - $ref: '#/components/schemas/AccountScope'
-          - $ref: '#/components/schemas/BlankEnum'
-        username_generation_policy:
-          description: How the usernames of offering users are generated.
-          oneOf:
-          - $ref: '#/components/schemas/UsernameGenerationPolicyEnum'
-          - $ref: '#/components/schemas/BlankEnum'
-        username_anonymized_prefix:
-          type: string
-          description: Prefix for anonymized usernames; the name is the prefix followed
-            by the account's POSIX UID.
-        homedir_prefix:
-          type: string
-          description: Prefix of each account's home directory; the username follows.
-        login_shell:
-          type: string
-          description: Login shell assigned to GLAuth/LDAP accounts.
     AccountOptionsVersions:
       type: object
       properties:
         current:
-          $ref: '#/components/schemas/AccountOptions'
+          $ref: '#/components/schemas/ProviderAccountOptions'
         proposed:
-          $ref: '#/components/schemas/AccountOptions'
+          $ref: '#/components/schemas/ProviderAccountOptions'
       required:
       - current
       - proposed
@@ -116524,6 +118080,23 @@ components:
       - provider
       - default
       type: string
+      description: ''
+    Action:
+      type: object
+      properties:
+        type:
+          type: string
+        description:
+          type: string
+        automatic:
+          type: boolean
+          default: false
+        deadline:
+          type: string
+          nullable: true
+      required:
+      - description
+      - type
       description: ''
     ActionOnUsageLimitEnum:
       enum:
@@ -116822,6 +118395,33 @@ components:
       - adopted
       - backed
       description: ''
+    AdoptableProject:
+      type: object
+      properties:
+        uuid:
+          type: string
+          format: uuid
+        name:
+          type: string
+        slug:
+          type: string
+        customer_uuid:
+          type: string
+          format: uuid
+        customer_name:
+          type: string
+        group_name:
+          type: string
+          nullable: true
+          description: The project's group at the provider, if it has one.
+      required:
+      - customer_name
+      - customer_uuid
+      - group_name
+      - name
+      - slug
+      - uuid
+      description: ''
     AffiliateEarnings:
       type: object
       properties:
@@ -117115,6 +118715,26 @@ components:
       - keyword
       - tfidf
       - combined
+      type: string
+      description: ''
+    AgentCompatibility:
+      type: object
+      properties:
+        status:
+          $ref: '#/components/schemas/AgentCompatibilityStatusEnum'
+        minimum_required:
+          type: string
+        message:
+          type: string
+      required:
+      - message
+      - status
+      description: ''
+    AgentCompatibilityStatusEnum:
+      enum:
+      - unknown
+      - incompatible
+      - compatible
       type: string
       description: ''
     AgentConnectionInfo:
@@ -117415,7 +119035,12 @@ components:
           items:
             $ref: '#/components/schemas/NestedAgentService'
           readOnly: true
+        compatibility:
+          allOf:
+          - $ref: '#/components/schemas/AgentCompatibility'
+          readOnly: true
       required:
+      - compatibility
       - created
       - created_by
       - modified
@@ -118289,6 +119914,12 @@ components:
       - 5k_10k
       - 10k_50k
       - over_50k
+      type: string
+      description: ''
+    AnnouncementTypeEnum:
+      enum:
+      - information
+      - warning
       type: string
       description: ''
     AnonymousChatBudgetSnapshot:
@@ -125154,6 +126785,135 @@ components:
           type: string
           maxLength: 4096
       description: ''
+    CallExportParametersRequest:
+      type: object
+      description: ''
+      properties:
+        include_documents:
+          type: boolean
+          default: true
+        include_rounds:
+          type: boolean
+          default: true
+        include_offerings:
+          type: boolean
+          default: true
+          description: Requested offerings together with their resource templates.
+        include_workflow_steps:
+          type: boolean
+          default: true
+          description: Workflow steps with their notification rules and criteria.
+        include_field_configs:
+          type: boolean
+          default: true
+          description: Proposal field and applicant visibility configuration.
+        include_review_configs:
+          type: boolean
+          default: true
+          description: COI, reviewer matching and assignment configuration.
+        include_role_mappings:
+          type: boolean
+          default: true
+        include_compliance_checklist:
+          type: boolean
+          default: true
+    CallExportResponse:
+      type: object
+      properties:
+        call_uuid:
+          type: string
+          format: uuid
+        call_name:
+          type: string
+        export_data:
+          type: object
+          additionalProperties: true
+        exported_sections:
+          type: array
+          items:
+            type: string
+        export_timestamp:
+          type: string
+          format: date-time
+        warnings:
+          type: array
+          items:
+            type: string
+          description: Parts that could not be exported, such as unreadable documents.
+      required:
+      - call_name
+      - call_uuid
+      - export_data
+      - export_timestamp
+      - exported_sections
+      - warnings
+      description: ''
+    CallImportParametersRequest:
+      type: object
+      description: ''
+      properties:
+        manager:
+          type: string
+          format: uuid
+          description: Call managing organisation that will own the imported call.
+        name:
+          type: string
+          minLength: 1
+          description: Name for the imported call. Defaults to the exported name.
+          maxLength: 150
+        call_data:
+          type: object
+          additionalProperties: true
+          description: Exported call document, as a mapping or a YAML string.
+        import_documents:
+          type: boolean
+          default: true
+        import_rounds:
+          type: boolean
+          default: true
+        import_offerings:
+          type: boolean
+          default: true
+        import_workflow_steps:
+          type: boolean
+          default: true
+        import_field_configs:
+          type: boolean
+          default: true
+        import_review_configs:
+          type: boolean
+          default: true
+        import_role_mappings:
+          type: boolean
+          default: true
+        import_compliance_checklist:
+          type: boolean
+          default: true
+      required:
+      - call_data
+      - manager
+    CallImportResponse:
+      type: object
+      properties:
+        call_uuid:
+          type: string
+          format: uuid
+        call_name:
+          type: string
+        imported_sections:
+          type: array
+          items:
+            type: string
+        warnings:
+          type: array
+          items:
+            type: string
+      required:
+      - call_name
+      - call_uuid
+      - imported_sections
+      - warnings
+      description: ''
     CallManagingOrganisation:
       type: object
       description: ''
@@ -125557,6 +127317,9 @@ components:
         current_assignments:
           type: integer
           readOnly: true
+          description: 'Number of the reviewer''s open assignments in this call: pending
+            or accepted assignment items whose review is not finished, plus reviews
+            in progress created without an assignment item.'
         expertise_match_score:
           type: number
           format: double
@@ -126376,8 +128139,12 @@ components:
           maxLength: 50
         description:
           type: string
+        supports_cpu_target_restrictions:
+          type: boolean
+          readOnly: true
       required:
       - name
+      - supports_cpu_target_restrictions
       - uuid
       - version
     CatalogSummaryRequest:
@@ -127078,6 +128845,284 @@ components:
       - rusage
       - total
       - uptime
+    ChangelogEntry:
+      type: object
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+        category:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        scope:
+          type: string
+        component:
+          type: array
+          items:
+            type: string
+        highlight:
+          type: boolean
+          default: false
+        impact:
+          $ref: '#/components/schemas/Impact'
+        security:
+          allOf:
+          - $ref: '#/components/schemas/SecurityDetail'
+          nullable: true
+        actions:
+          type: array
+          items:
+            $ref: '#/components/schemas/Action'
+        relevant_when:
+          $ref: '#/components/schemas/RelevantWhen'
+        relevant:
+          type: boolean
+        relevance_reasons:
+          type: array
+          items:
+            type: string
+        affected_resources_count:
+          type: integer
+        affected_users_count:
+          type: integer
+        settings_analysis:
+          type: object
+          additionalProperties: {}
+        plugin_analysis:
+          type: object
+          additionalProperties: {}
+      required:
+      - category
+      - component
+      - description
+      - id
+      - impact
+      - scope
+      - title
+      - type
+      description: ''
+    ChangelogEntryList:
+      type: object
+      description: ''
+      properties:
+        count:
+          type: integer
+        current_version:
+          type: string
+        latest_version:
+          type: string
+        versions_behind:
+          type: integer
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChangelogFlatEntry'
+      required:
+      - count
+      - current_version
+      - latest_version
+      - results
+      - versions_behind
+    ChangelogFlatEntry:
+      type: object
+      description: ''
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+        category:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        scope:
+          type: string
+        component:
+          type: array
+          items:
+            type: string
+        highlight:
+          type: boolean
+          default: false
+        impact:
+          $ref: '#/components/schemas/Impact'
+        security:
+          allOf:
+          - $ref: '#/components/schemas/SecurityDetail'
+          nullable: true
+        actions:
+          type: array
+          items:
+            $ref: '#/components/schemas/Action'
+        relevant_when:
+          $ref: '#/components/schemas/RelevantWhen'
+        relevant:
+          type: boolean
+        relevance_reasons:
+          type: array
+          items:
+            type: string
+        affected_resources_count:
+          type: integer
+        affected_users_count:
+          type: integer
+        settings_analysis:
+          type: object
+          additionalProperties: {}
+        plugin_analysis:
+          type: object
+          additionalProperties: {}
+        version:
+          type: string
+        release_date:
+          type: string
+        release_type:
+          type: string
+      required:
+      - category
+      - component
+      - description
+      - id
+      - impact
+      - release_date
+      - release_type
+      - scope
+      - title
+      - type
+      - version
+    ChangelogPending:
+      type: object
+      properties:
+        current_version:
+          type: string
+        latest_version:
+          type: string
+        versions_behind:
+          type: integer
+        impact_analysis_status:
+          type: string
+        impact_analysis_computed_at:
+          type: string
+          format: date-time
+        releases:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChangelogRelease'
+      required:
+      - current_version
+      - latest_version
+      - releases
+      - versions_behind
+      description: ''
+    ChangelogRelease:
+      type: object
+      properties:
+        version:
+          type: string
+        date:
+          type: string
+        type:
+          type: string
+        summary:
+          type: string
+        entries:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChangelogEntry'
+        since_previous:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChangelogEntry'
+        component_activity:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/ComponentActivity'
+      required:
+      - date
+      - entries
+      - summary
+      - type
+      - version
+      description: ''
+    ChangelogReleaseList:
+      type: object
+      properties:
+        current_version:
+          type: string
+        releases:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChangelogReleaseSummary'
+      required:
+      - current_version
+      - releases
+      description: ''
+    ChangelogReleaseSummary:
+      type: object
+      properties:
+        version:
+          type: string
+        date:
+          type: string
+        type:
+          type: string
+        status:
+          allOf:
+          - $ref: '#/components/schemas/ChangelogReleaseSummaryStatusEnum'
+          description: Relative to the version this deployment runs
+        has_breaking:
+          type: boolean
+        has_security:
+          type: boolean
+        max_security_urgency:
+          type: string
+          nullable: true
+      required:
+      - status
+      - type
+      - version
+      description: ''
+    ChangelogReleaseSummaryStatusEnum:
+      enum:
+      - running
+      - pending
+      - older
+      type: string
+      description: ''
+    ChangelogUpgradeReport:
+      type: object
+      description: ''
+      properties:
+        current_version:
+          type: string
+        latest_version:
+          type: string
+        entry_count:
+          type: integer
+        commands:
+          $ref: '#/components/schemas/UpgradeCommands'
+        report:
+          type: string
+          description: Markdown upgrade report
+        announcement:
+          type: string
+          description: Markdown text for a maintenance announcement
+        announcement_type:
+          $ref: '#/components/schemas/AnnouncementTypeEnum'
+      required:
+      - announcement
+      - announcement_type
+      - commands
+      - current_version
+      - entry_count
+      - latest_version
+      - report
     ChatRequestModeEnum:
       enum:
       - reload
@@ -128011,6 +130056,70 @@ components:
       - projects_requiring_review
       - projects_with_completions
       - total_projects
+    ComponentActivity:
+      type: object
+      properties:
+        commits_since_base:
+          type: integer
+        commits_since_previous:
+          type: integer
+        compare_url_base:
+          type: string
+        compare_url_previous:
+          type: string
+      description: ''
+    ComponentFormulaConfig:
+      type: object
+      properties:
+        targets:
+          type: array
+          items:
+            $ref: '#/components/schemas/ComponentFormulaTarget'
+          description: Limit components set from the value the customer enters.
+      required:
+      - targets
+      description: ''
+    ComponentFormulaConfigRequest:
+      type: object
+      properties:
+        targets:
+          type: array
+          items:
+            $ref: '#/components/schemas/ComponentFormulaTargetRequest'
+          description: Limit components set from the value the customer enters.
+      required:
+      - targets
+      description: ''
+    ComponentFormulaTarget:
+      type: object
+      properties:
+        component_type:
+          type: string
+        formula:
+          type: string
+          description: Expression over input, numbers, + - * / and parentheses, for
+            example input * 2 * 0.25.
+          maxLength: 255
+      required:
+      - component_type
+      - formula
+      description: ''
+    ComponentFormulaTargetRequest:
+      type: object
+      properties:
+        component_type:
+          type: string
+          minLength: 1
+        formula:
+          type: string
+          minLength: 1
+          description: Expression over input, numbers, + - * / and parentheses, for
+            example input * 2 * 0.25.
+          maxLength: 255
+      required:
+      - component_type
+      - formula
+      description: ''
     ComponentMultiplierConfig:
       type: object
       properties:
@@ -128164,6 +130273,38 @@ components:
       - offering_uuid
       - type
       - usage
+      description: ''
+    ComponentSumConfig:
+      type: object
+      properties:
+        target_component:
+          type: string
+          description: Limit component whose quantity is the sum.
+        components:
+          type: array
+          items:
+            type: string
+          description: Limit components added together.
+      required:
+      - components
+      - target_component
+      description: ''
+    ComponentSumConfigRequest:
+      type: object
+      properties:
+        target_component:
+          type: string
+          minLength: 1
+          description: Limit component whose quantity is the sum.
+        components:
+          type: array
+          items:
+            type: string
+            minLength: 1
+          description: Limit components added together.
+      required:
+      - components
+      - target_component
       description: ''
     ComponentUsage:
       type: object
@@ -128976,6 +131117,10 @@ components:
           type: string
         DISCLAIMER_AREA_TEXT:
           type: string
+        ABOUT_US_PAGE_ENABLED:
+          type: boolean
+        ABOUT_US_PAGE_CONTENT:
+          type: string
         SITE_ADDRESS:
           type: string
         SITE_EMAIL:
@@ -129024,6 +131169,8 @@ components:
           type: string
         TELEMETRY_VERSION:
           type: integer
+        TELEMETRY_DEPLOYMENT_ID:
+          type: string
         CHECK_FOR_UPDATES:
           type: boolean
         SCRIPT_RUN_MODE:
@@ -129302,6 +131449,8 @@ components:
         ENABLE_MOCK_COURSE_ACCOUNT_BACKEND:
           type: boolean
         PROPOSAL_REVIEW_DURATION:
+          type: integer
+        PROPOSAL_DASHBOARD_REVIEWS_DUE_WITHIN_DAYS:
           type: integer
         ORCID_CLIENT_ID:
           type: string
@@ -129717,6 +131866,8 @@ components:
           type: boolean
         MATRIX_ENABLED:
           type: boolean
+        MATRIX_AUTO_CREATE_PROJECT_ROOMS:
+          type: boolean
         MATRIX_HOMESERVER_URL:
           type: string
           format: uri
@@ -129778,6 +131929,10 @@ components:
         DISCLAIMER_AREA_TEXT:
           type: string
           minLength: 1
+        ABOUT_US_PAGE_ENABLED:
+          type: boolean
+        ABOUT_US_PAGE_CONTENT:
+          type: string
         SITE_ADDRESS:
           type: string
         SITE_EMAIL:
@@ -129826,6 +131981,8 @@ components:
           type: string
         TELEMETRY_VERSION:
           type: integer
+        TELEMETRY_DEPLOYMENT_ID:
+          type: string
         CHECK_FOR_UPDATES:
           type: boolean
         SCRIPT_RUN_MODE:
@@ -130113,6 +132270,8 @@ components:
           type: boolean
         PROPOSAL_REVIEW_DURATION:
           type: integer
+        PROPOSAL_DASHBOARD_REVIEWS_DUE_WITHIN_DAYS:
+          type: integer
         ORCID_CLIENT_ID:
           type: string
         ORCID_CLIENT_SECRET:
@@ -130537,6 +132696,8 @@ components:
         AFFILIATES_ENABLED:
           type: boolean
         MATRIX_ENABLED:
+          type: boolean
+        MATRIX_AUTO_CREATE_PROJECT_ROOMS:
           type: boolean
         MATRIX_HOMESERVER_URL:
           type: string
@@ -131816,6 +133977,11 @@ components:
         manager_notes:
           type: string
           description: Optional notes about this assignment
+        override_workload_limit:
+          type: boolean
+          default: false
+          description: Assign even if this takes the reviewer above their maximum
+            number of open assignments. The override is logged.
       required:
       - proposal_uuids
       - reviewer_pool_entry_uuid
@@ -133802,13 +135968,17 @@ components:
         active_calls:
           type: integer
           readOnly: true
-        overdue_reviews:
+        reviews_due_soon:
+          type: integer
+          readOnly: true
+        reviews_due_within_days:
           type: integer
           readOnly: true
       required:
       - active_calls
-      - overdue_reviews
       - pending_assessments
+      - reviews_due_soon
+      - reviews_due_within_days
       description: ''
     DashboardGeneralStats:
       type: object
@@ -135747,6 +137917,31 @@ components:
           type: string
         recommended_keeper_id:
           type: integer
+        keeper_uuid:
+          type: string
+          format: uuid
+          description: 'The recommended keeper: the target of the merge that resolves
+            the group.'
+        duplicate_uuids:
+          type: array
+          items:
+            type: string
+            format: uuid
+          description: 'Every other offering of the group: the sources of that merge.'
+        suggested_mapping:
+          allOf:
+          - $ref: '#/components/schemas/OfferingMergeSuggestedMapping'
+          description: Plan and component mappings suggested by name and type.
+        blockers:
+          type: array
+          items:
+            $ref: '#/components/schemas/OfferingMergeIssue'
+          description: What would refuse that merge with the suggested mapping.
+        warnings:
+          type: array
+          items:
+            $ref: '#/components/schemas/OfferingMergeIssue'
+          description: What that merge would ask staff to acknowledge.
         orphan_count:
           type: integer
         candidates:
@@ -135754,106 +137949,20 @@ components:
           items:
             $ref: '#/components/schemas/DuplicateOfferingCandidate'
       required:
+      - blockers
       - candidates
       - customer_name
       - customer_uuid
+      - duplicate_uuids
+      - keeper_uuid
       - offering_type
       - orphan_count
       - recommended_keeper_id
+      - suggested_mapping
       - tenant_id
       - tenant_name
       - tenant_uuid
-    DuplicateOfferingMergePlan:
-      type: object
-      description: ''
-      properties:
-        duplicate_id:
-          type: integer
-        duplicate_name:
-          type: string
-        keeper_id:
-          type: integer
-        keeper_name:
-          type: string
-        action:
-          type: string
-          description: delete (nothing attached), merge, or skip.
-        is_empty:
-          type: boolean
-        resource_count:
-          type: integer
-        order_count:
-          type: integer
-        plan_period_count:
-          type: integer
-        component_usage_count:
-          type: integer
-        component_quota_count:
-          type: integer
-        blockers:
-          type: array
-          items:
-            type: string
-      required:
-      - action
-      - blockers
-      - component_quota_count
-      - component_usage_count
-      - duplicate_id
-      - duplicate_name
-      - is_empty
-      - keeper_id
-      - keeper_name
-      - order_count
-      - plan_period_count
-      - resource_count
-    DuplicateOfferingRemediateRequest:
-      type: object
-      description: ''
-      properties:
-        tenant_id:
-          type: integer
-        offering_type:
-          type: string
-          minLength: 1
-        dry_run:
-          type: boolean
-          default: true
-          description: Preview the changes without applying them. Mirrors the dry-run-by-default
-            behaviour of the dedupe_tenant_offerings command.
-      required:
-      - offering_type
-      - tenant_id
-    DuplicateOfferingRemediation:
-      type: object
-      description: ''
-      properties:
-        tenant_id:
-          type: integer
-        offering_type:
-          type: string
-        keeper_id:
-          type: integer
-        keeper_name:
-          type: string
-        dry_run:
-          type: boolean
-        duplicates:
-          type: array
-          items:
-            $ref: '#/components/schemas/DuplicateOfferingMergePlan'
-        blockers:
-          type: array
-          items:
-            type: string
-      required:
-      - blockers
-      - dry_run
-      - duplicates
-      - keeper_id
-      - keeper_name
-      - offering_type
-      - tenant_id
+      - warnings
     ENABLEDREPORTINGSCREENSEnum:
       enum:
       - resource-usage
@@ -136362,6 +138471,12 @@ components:
       - IPv6
       type: string
       description: ''
+    EvaluationStartEnum:
+      enum:
+      - on_submission
+      - at_cutoff
+      type: string
+      description: ''
     Event:
       type: object
       description: ''
@@ -136651,6 +138766,11 @@ components:
               - marketplace_offering_component_deleted
               - marketplace_offering_component_updated
               - marketplace_offering_created
+              - marketplace_offering_merge_created
+              - marketplace_offering_merge_executed
+              - marketplace_offering_merge_failed
+              - marketplace_offering_merge_undone
+              - marketplace_offering_merge_verification_failed
               - marketplace_offering_updated
               - marketplace_offering_options_updated
               - marketplace_offering_resource_options_updated
@@ -136658,6 +138778,7 @@ components:
               - marketplace_offering_user_updated
               - marketplace_offering_user_deleted
               - marketplace_offering_user_restriction_updated
+              - marketplace_provider_project_group_gid_updated
               - marketplace_order_approved
               - marketplace_order_completed
               - marketplace_order_created
@@ -136899,7 +139020,16 @@ components:
               - resource_update_succeeded
               - restrict_members
               - review_canceled
+              - reviewer_workload_limit_overridden
+              - role_cloned
+              - role_concealed
+              - role_definition_created
+              - role_definition_deleted
+              - role_definition_updated
+              - role_disabled
+              - role_enabled
               - role_granted
+              - role_revealed
               - role_revoked
               - role_updated
               - roll_back_customer_credit
@@ -137227,6 +139357,11 @@ components:
       - marketplace_offering_component_deleted
       - marketplace_offering_component_updated
       - marketplace_offering_created
+      - marketplace_offering_merge_created
+      - marketplace_offering_merge_executed
+      - marketplace_offering_merge_failed
+      - marketplace_offering_merge_undone
+      - marketplace_offering_merge_verification_failed
       - marketplace_offering_updated
       - marketplace_offering_options_updated
       - marketplace_offering_resource_options_updated
@@ -137234,6 +139369,7 @@ components:
       - marketplace_offering_user_updated
       - marketplace_offering_user_deleted
       - marketplace_offering_user_restriction_updated
+      - marketplace_provider_project_group_gid_updated
       - marketplace_order_approved
       - marketplace_order_completed
       - marketplace_order_created
@@ -137475,7 +139611,16 @@ components:
       - resource_update_succeeded
       - restrict_members
       - review_canceled
+      - reviewer_workload_limit_overridden
+      - role_cloned
+      - role_concealed
+      - role_definition_created
+      - role_definition_deleted
+      - role_definition_updated
+      - role_disabled
+      - role_enabled
       - role_granted
+      - role_revealed
       - role_revoked
       - role_updated
       - roll_back_customer_credit
@@ -139192,6 +141337,7 @@ components:
     GlauthGroupKind:
       enum:
       - project
+      - provider_project
       - resource_role
       - resource_project_role
       - personal
@@ -139516,11 +141662,12 @@ components:
             can modify this field. '
         account_options:
           allOf:
-          - $ref: '#/components/schemas/AccountOptions'
+          - $ref: '#/components/schemas/ProviderAccountOptions'
           description: 'Account settings for this provider''s offerings, under the
             same keys as an offering''s plugin options. Each applies to every offering
-            that does not set its own. Updated key by key: an omitted key is kept,
-            and a blank value removes it.'
+            that does not set its own; project_groups_enabled is the provider''s own.
+            Updated key by key: an omitted key is kept, and a blank value removes
+            it.'
         calendar_token:
           type: string
           readOnly: true
@@ -140837,6 +142984,22 @@ components:
       required:
       - message
       - status
+      description: ''
+    Impact:
+      type: object
+      properties:
+        risk:
+          type: string
+        affected_scope:
+          type: string
+        affected_resources:
+          type: object
+          additionalProperties: {}
+        affected_users:
+          type: object
+          additionalProperties: {}
+      required:
+      - risk
       description: ''
     ImpactLevelDisplayEnum:
       enum:
@@ -142181,6 +144344,12 @@ components:
           type: string
           format: date-time
           description: Date and time when item usage has ended.
+      description: ''
+    InvoicePolicyEnum:
+      enum:
+      - open_month
+      - all_months
+      type: string
       description: ''
     InvoicePriceSourceEnum:
       enum:
@@ -145539,6 +147708,12 @@ components:
         service_provider_can_create_offering_user:
           type: boolean
           description: Service provider can create offering user
+        uses_robot_accounts:
+          type: boolean
+          description: This offering's identity model is per-resource robot accounts
+            rather than automatic offering users. Unset means false. Cannot be combined
+            with service_provider_can_create_offering_user. Does not block creating
+            robot accounts on offerings that use offering users.
         offering_user_auto_deletion:
           type: boolean
           default: false
@@ -145661,6 +147836,11 @@ components:
           description: 'Enable per-member sync status reporting by the site agent:
             team views show whether each role grant has propagated to the provider
             backend, and providers can trigger a resync.'
+        enable_scim_entitlements:
+          type: boolean
+          description: Include this offering in outbound SCIM user entitlement sync.
+            When unset or false, SSH access endpoints on this offering are not pushed
+            to the remote SCIM service even if SCIM_MEMBERSHIP_SYNC_ENABLED is on.
         enable_resource_access_subnets:
           type: boolean
           description: If set to True, an Access subnets tab is shown on resource
@@ -146015,6 +148195,12 @@ components:
         service_provider_can_create_offering_user:
           type: boolean
           description: Service provider can create offering user
+        uses_robot_accounts:
+          type: boolean
+          description: This offering's identity model is per-resource robot accounts
+            rather than automatic offering users. Unset means false. Cannot be combined
+            with service_provider_can_create_offering_user. Does not block creating
+            robot accounts on offerings that use offering users.
         offering_user_auto_deletion:
           type: boolean
           default: false
@@ -146141,6 +148327,11 @@ components:
           description: 'Enable per-member sync status reporting by the site agent:
             team views show whether each role grant has propagated to the provider
             backend, and providers can trigger a resync.'
+        enable_scim_entitlements:
+          type: boolean
+          description: Include this offering in outbound SCIM user entitlement sync.
+            When unset or false, SSH access endpoints on this offering are not pushed
+            to the remote SCIM service even if SCIM_MEMBERSHIP_SYNC_ENABLED is on.
         enable_resource_access_subnets:
           type: boolean
           description: If set to True, an Access subnets tab is shown on resource
@@ -149608,6 +151799,8 @@ components:
       - user_ssh_key
       - user_lifecycle
       - service_provider_account
+      - call
+      - proposal
       type: string
       description: ''
     ObtainAuthTokenRequest:
@@ -149998,6 +152191,11 @@ components:
           type: string
           format: uri
           nullable: true
+        compliance_checklist_details:
+          allOf:
+          - $ref: '#/components/schemas/OfferingComplianceChecklist'
+          readOnly: true
+          nullable: true
         profile_uuid:
           type: string
           format: uuid
@@ -150047,6 +152245,7 @@ components:
       - category_title
       - category_uuid
       - citation_count
+      - compliance_checklist_details
       - components
       - created
       - customer_name
@@ -150258,6 +152457,28 @@ components:
           type: object
           additionalProperties: true
       description: ''
+    OfferingComplianceChecklist:
+      type: object
+      description: ''
+      properties:
+        uuid:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          readOnly: true
+        description:
+          type: string
+          readOnly: true
+        questions_count:
+          type: integer
+          readOnly: true
+      required:
+      - description
+      - name
+      - questions_count
+      - uuid
     OfferingComplianceChecklistUpdateRequest:
       type: object
       properties:
@@ -151449,6 +153670,643 @@ components:
           nullable: true
       required:
       - '*'
+      description: ''
+    OfferingMerge:
+      type: object
+      description: ''
+      properties:
+        url:
+          type: string
+          format: uri
+          readOnly: true
+        uuid:
+          type: string
+          format: uuid
+          readOnly: true
+        created:
+          type: string
+          format: date-time
+          readOnly: true
+        modified:
+          type: string
+          format: date-time
+          readOnly: true
+        state:
+          allOf:
+          - $ref: '#/components/schemas/OfferingMergeStateEnum'
+          readOnly: true
+        sources:
+          type: array
+          items:
+            type: string
+            format: uuid
+          description: Offerings whose resources and history move to the target.
+        target:
+          type: string
+          format: uuid
+        source_offerings:
+          type: array
+          items:
+            $ref: '#/components/schemas/OfferingMergeOffering'
+          readOnly: true
+        target_offering:
+          allOf:
+          - $ref: '#/components/schemas/OfferingMergeOffering'
+          readOnly: true
+        created_by:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        created_by_full_name:
+          type: string
+          readOnly: true
+          nullable: true
+        plan_mapping:
+          type: object
+          additionalProperties:
+            type: string
+          description: Source plan UUID to target plan UUID.
+        component_mapping:
+          type: object
+          additionalProperties:
+            type: object
+            additionalProperties:
+              type: string
+          description: 'Per source offering UUID: source component type to target
+            component type.'
+        attribute_key_mapping:
+          type: object
+          additionalProperties:
+            type: string
+          description: 'Order and resource answer key renames: old key to new key.'
+        invoice_policy:
+          $ref: '#/components/schemas/InvoicePolicyEnum'
+        preview:
+          allOf:
+          - $ref: '#/components/schemas/OfferingMergePreview'
+          nullable: true
+          readOnly: true
+        verification:
+          allOf:
+          - $ref: '#/components/schemas/OfferingMergeVerification'
+          nullable: true
+          readOnly: true
+        progress:
+          allOf:
+          - $ref: '#/components/schemas/OfferingMergeProgress'
+          nullable: true
+          readOnly: true
+        error_message:
+          type: string
+          readOnly: true
+      required:
+      - created
+      - created_by
+      - created_by_full_name
+      - error_message
+      - modified
+      - preview
+      - progress
+      - source_offerings
+      - sources
+      - state
+      - target
+      - target_offering
+      - url
+      - uuid
+      - verification
+    OfferingMergeAffectedRow:
+      type: object
+      description: ''
+      properties:
+        id:
+          type: integer
+          description: Primary key of the row.
+        uuid:
+          type: string
+          nullable: true
+          description: The object's UUID, when it has one.
+        model:
+          type: string
+          description: Model label of the row.
+        field:
+          type: string
+          description: Column the merge writes.
+        description:
+          type: string
+          description: The object described in names rather than primary keys.
+        old_value:
+          type: string
+          nullable: true
+          description: The current value, resolved to a name.
+        new_value:
+          type: string
+          nullable: true
+          description: The value after the merge; null when the row does not change.
+        kept_on_source:
+          type: boolean
+          description: Whether the row stays with the archived source instead of moving.
+      required:
+      - description
+      - field
+      - id
+      - kept_on_source
+      - model
+      - new_value
+      - old_value
+      - uuid
+    OfferingMergeAreaEnum:
+      enum:
+      - resources_and_orders
+      - billing_history
+      - invoices
+      - accounts_and_access
+      - offering_configuration
+      type: string
+      description: ''
+    OfferingMergeCheck:
+      type: object
+      properties:
+        code:
+          type: string
+        passed:
+          type: boolean
+        details:
+          type: object
+          additionalProperties: {}
+      required:
+      - code
+      - details
+      - passed
+      description: ''
+    OfferingMergeEffectEnum:
+      enum:
+      - moved
+      - rewritten
+      - recomputed
+      - deduplicated
+      - kept_on_source
+      type: string
+      description: ''
+    OfferingMergeEntry:
+      type: object
+      description: ''
+      properties:
+        label:
+          type: string
+          description: Coverage registry entry, as model.Field label.
+        area:
+          allOf:
+          - $ref: '#/components/schemas/OfferingMergeAreaEnum'
+          description: Part of the service the rows belong to.
+        area_title:
+          type: string
+          description: The area, for a human reader.
+        effect:
+          allOf:
+          - $ref: '#/components/schemas/OfferingMergeEffectEnum'
+          description: What the merge does to the rows.
+        effect_title:
+          type: string
+          description: The effect, for a human reader.
+        count:
+          type: integer
+          description: Rows the entry covers.
+        left_on_source:
+          type: integer
+          description: Of those, rows that stay on a source because the target has
+            them already.
+        can_list_rows:
+          type: boolean
+          description: Whether the affected endpoint can list the rows one by one.
+      required:
+      - area
+      - area_title
+      - can_list_rows
+      - count
+      - effect
+      - effect_title
+      - label
+      - left_on_source
+    OfferingMergeExecuteInvoiceReport:
+      type: object
+      properties:
+        policy:
+          type: string
+          description: The merge's invoice_policy.
+        to_rewrite:
+          type: integer
+          description: Invoice items whose snapshot the chosen policy rewrites.
+        to_rewrite_by_policy:
+          type: object
+          additionalProperties:
+            type: integer
+          description: Invoice items each policy would rewrite.
+        on_closed_invoices:
+          type: integer
+        kept_on_closed_invoices:
+          type: integer
+        rewritten:
+          type: integer
+        last_item_id:
+          type: integer
+          description: The newest invoice item at the merge; undo moves back later
+            ones.
+      required:
+      - kept_on_closed_invoices
+      - last_item_id
+      - on_closed_invoices
+      - policy
+      - rewritten
+      - to_rewrite
+      - to_rewrite_by_policy
+      description: ''
+    OfferingMergeExecuteReport:
+      type: object
+      properties:
+        passed:
+          type: boolean
+        checked_at:
+          type: string
+          format: date-time
+        checks:
+          type: array
+          items:
+            $ref: '#/components/schemas/OfferingMergeCheck'
+        invoice_items:
+          $ref: '#/components/schemas/OfferingMergeExecuteInvoiceReport'
+      required:
+      - checked_at
+      - checks
+      - invoice_items
+      - passed
+      description: ''
+    OfferingMergeExecuteRequest:
+      type: object
+      properties:
+        acknowledged_warnings:
+          type: array
+          items:
+            type: string
+            minLength: 1
+          description: Codes of every warning in the stored preview.
+      description: ''
+    OfferingMergeInvoicePreview:
+      type: object
+      properties:
+        policy:
+          type: string
+          description: The merge's invoice_policy.
+        to_rewrite:
+          type: integer
+          description: Invoice items whose snapshot the chosen policy rewrites.
+        to_rewrite_by_policy:
+          type: object
+          additionalProperties:
+            type: integer
+          description: Invoice items each policy would rewrite.
+        on_closed_invoices:
+          type: integer
+        kept_on_closed_invoices:
+          type: integer
+      required:
+      - kept_on_closed_invoices
+      - on_closed_invoices
+      - policy
+      - to_rewrite
+      - to_rewrite_by_policy
+      description: ''
+    OfferingMergeIssue:
+      type: object
+      properties:
+        code:
+          type: string
+          description: Machine-readable reason.
+        message:
+          type: string
+        details:
+          type: object
+          additionalProperties: {}
+          description: 'Issue-specific details: offerings, plans, keys or counts.'
+      required:
+      - code
+      - details
+      - message
+      description: ''
+    OfferingMergeOffering:
+      type: object
+      properties:
+        uuid:
+          type: string
+          format: uuid
+        name:
+          type: string
+        state:
+          type: string
+      required:
+      - name
+      - state
+      - uuid
+      description: ''
+    OfferingMergeOfferingRequest:
+      type: object
+      properties:
+        uuid:
+          type: string
+          format: uuid
+        name:
+          type: string
+          minLength: 1
+        state:
+          type: string
+          minLength: 1
+      required:
+      - name
+      - state
+      - uuid
+      description: ''
+    OfferingMergePreview:
+      type: object
+      properties:
+        target:
+          type: string
+          description: Target offering UUID.
+        sources:
+          type: array
+          items:
+            type: string
+          description: Source offering UUIDs.
+        counts:
+          type: object
+          additionalProperties:
+            type: integer
+          description: Rows per coverage registry entry (model.Field label).
+        entries:
+          type: array
+          items:
+            $ref: '#/components/schemas/OfferingMergeEntry'
+          description: The same counts, grouped by area and classified by effect.
+        left_on_source:
+          type: object
+          additionalProperties:
+            type: integer
+          description: Rows that stay on a source because the target has them already.
+        summaries_to_recompute:
+          $ref: '#/components/schemas/OfferingMergeSummaries'
+        invoice_items:
+          $ref: '#/components/schemas/OfferingMergeInvoicePreview'
+        blockers:
+          type: array
+          items:
+            $ref: '#/components/schemas/OfferingMergeIssue'
+        warnings:
+          type: array
+          items:
+            $ref: '#/components/schemas/OfferingMergeIssue'
+      required:
+      - blockers
+      - counts
+      - entries
+      - invoice_items
+      - left_on_source
+      - sources
+      - summaries_to_recompute
+      - target
+      - warnings
+      description: ''
+    OfferingMergeProgress:
+      type: object
+      properties:
+        step:
+          type: string
+          description: Registry entry label or phase being run, or 'done'.
+        steps_done:
+          type: integer
+        steps_total:
+          type: integer
+        rows_done:
+          type: integer
+        rows_total:
+          type: integer
+        updated_at:
+          type: string
+          format: date-time
+      required:
+      - rows_done
+      - rows_total
+      - step
+      - steps_done
+      - steps_total
+      - updated_at
+      description: ''
+    OfferingMergeRefusal:
+      type: object
+      properties:
+        detail:
+          type: string
+        missing_acknowledgements:
+          type: array
+          items:
+            type: string
+        blockers:
+          type: array
+          items:
+            $ref: '#/components/schemas/OfferingMergeIssue'
+      required:
+      - detail
+      description: ''
+    OfferingMergeRequest:
+      type: object
+      description: ''
+      properties:
+        sources:
+          type: array
+          items:
+            type: string
+            format: uuid
+          description: Offerings whose resources and history move to the target.
+        target:
+          type: string
+          format: uuid
+        plan_mapping:
+          type: object
+          additionalProperties:
+            type: string
+            minLength: 1
+          description: Source plan UUID to target plan UUID.
+        component_mapping:
+          type: object
+          additionalProperties:
+            type: object
+            additionalProperties:
+              type: string
+              minLength: 1
+          description: 'Per source offering UUID: source component type to target
+            component type.'
+        attribute_key_mapping:
+          type: object
+          additionalProperties:
+            type: string
+            minLength: 1
+          description: 'Order and resource answer key renames: old key to new key.'
+        invoice_policy:
+          $ref: '#/components/schemas/InvoicePolicyEnum'
+      required:
+      - sources
+      - target
+    OfferingMergeSkippedInvoiceItem:
+      type: object
+      properties:
+        id:
+          type: integer
+        reason:
+          type: string
+      required:
+      - id
+      - reason
+      description: ''
+    OfferingMergeStateEnum:
+      enum:
+      - draft
+      - previewed
+      - queued
+      - running
+      - done
+      - failed
+      - undoing
+      - undone
+      type: string
+      description: ''
+    OfferingMergeSuggestedMapping:
+      type: object
+      properties:
+        plan_mapping:
+          type: object
+          additionalProperties:
+            type: string
+          description: Source plan UUID to the target plan with the same name.
+        component_mapping:
+          type: object
+          additionalProperties:
+            type: object
+            additionalProperties:
+              type: string
+          description: 'Per source offering UUID: source component type to the target
+            component of the same type, else the same name.'
+        unmatched_plans:
+          type: array
+          items:
+            $ref: '#/components/schemas/OfferingMergeUnmatchedPlan'
+        unmatched_components:
+          type: array
+          items:
+            $ref: '#/components/schemas/OfferingMergeUnmatchedComponent'
+      required:
+      - component_mapping
+      - plan_mapping
+      - unmatched_components
+      - unmatched_plans
+      description: ''
+    OfferingMergeSummaries:
+      type: object
+      properties:
+        components:
+          type: integer
+          description: Components whose monthly usage summaries are recomputed.
+        periods:
+          type: array
+          items:
+            type: string
+          description: Months recomputed, as YYYY-MM.
+      required:
+      - components
+      - periods
+      description: ''
+    OfferingMergeUndoInvoiceReport:
+      type: object
+      properties:
+        policy:
+          type: string
+          description: The merge's invoice_policy.
+        restored:
+          type: integer
+        moved_back:
+          type: integer
+        skipped:
+          type: array
+          items:
+            $ref: '#/components/schemas/OfferingMergeSkippedInvoiceItem'
+      required:
+      - moved_back
+      - policy
+      - restored
+      - skipped
+      description: ''
+    OfferingMergeUndoReport:
+      type: object
+      properties:
+        passed:
+          type: boolean
+        checked_at:
+          type: string
+          format: date-time
+        checks:
+          type: array
+          items:
+            $ref: '#/components/schemas/OfferingMergeCheck'
+        invoice_items:
+          $ref: '#/components/schemas/OfferingMergeUndoInvoiceReport'
+      required:
+      - checked_at
+      - checks
+      - invoice_items
+      - passed
+      description: ''
+    OfferingMergeUnmatchedComponent:
+      type: object
+      properties:
+        offering_uuid:
+          type: string
+        type:
+          type: string
+        name:
+          type: string
+      required:
+      - name
+      - offering_uuid
+      - type
+      description: ''
+    OfferingMergeUnmatchedPlan:
+      type: object
+      properties:
+        offering_uuid:
+          type: string
+        plan_uuid:
+          type: string
+        name:
+          type: string
+      required:
+      - name
+      - offering_uuid
+      - plan_uuid
+      description: ''
+    OfferingMergeVerification:
+      type: object
+      properties:
+        stage:
+          allOf:
+          - $ref: '#/components/schemas/StageEnum'
+          description: The latest verified stage; passed follows it.
+        passed:
+          type: boolean
+        execute:
+          $ref: '#/components/schemas/OfferingMergeExecuteReport'
+        undo:
+          $ref: '#/components/schemas/OfferingMergeUndoReport'
+      required:
+      - passed
+      - stage
       description: ''
     OfferingOptions:
       type: object
@@ -153418,6 +156276,14 @@ components:
       type: object
       description: ''
       properties:
+        kind:
+          $ref: '#/components/schemas/OfferingUserPosixGroupKindEnum'
+        group_name:
+          type: string
+          nullable: true
+        service_provider_name:
+          type: string
+          nullable: true
         gid:
           type: integer
         offering_name:
@@ -153446,12 +156312,21 @@ components:
       - customer_name
       - customer_uuid
       - gid
+      - group_name
+      - kind
       - offering_name
       - pool_scope
       - pool_uuid
       - project_accessible
       - project_name
       - project_uuid
+      - service_provider_name
+    OfferingUserPosixGroupKindEnum:
+      enum:
+      - project_group
+      - provider_project_group
+      type: string
+      description: ''
     OfferingUserPosixUpdateResponse:
       type: object
       description: ''
@@ -153878,6 +156753,7 @@ components:
       - ariregister
       - wirtschaftscompass
       - bolagsverket
+      - breg
       - dnb_se
       - dnb_no
       - dnb_dk
@@ -160131,6 +163007,10 @@ components:
           $ref: '#/components/schemas/CascadeConfig'
         component_multiplier_config:
           $ref: '#/components/schemas/ComponentMultiplierConfig'
+        component_formula_config:
+          $ref: '#/components/schemas/ComponentFormulaConfig'
+        component_sum_config:
+          $ref: '#/components/schemas/ComponentSumConfig'
         storage_folder_config:
           $ref: '#/components/schemas/StorageFolderConfig'
         default_configs:
@@ -160143,6 +163023,21 @@ components:
           allOf:
           - $ref: '#/components/schemas/OptionVisibleIf'
           description: Show this option only when another option has a given value.
+        unique:
+          type: boolean
+          description: The value must not be used by another non-terminated resource
+            of this offering. Only for string, text, integer and select_string options.
+        pattern:
+          type: string
+          description: Regular expression the whole value must match. Only for string
+            and text options. Use syntax common to Python and JavaScript, so the order
+            form can check it too; \w, \d, \s and \b match ASCII characters only.
+            Blank means no pattern.
+          maxLength: 500
+        pattern_error:
+          type: string
+          description: Error shown when the value does not match the pattern.
+          maxLength: 255
       required:
       - label
       - type
@@ -160177,6 +163072,10 @@ components:
           $ref: '#/components/schemas/CascadeConfigRequest'
         component_multiplier_config:
           $ref: '#/components/schemas/ComponentMultiplierConfigRequest'
+        component_formula_config:
+          $ref: '#/components/schemas/ComponentFormulaConfigRequest'
+        component_sum_config:
+          $ref: '#/components/schemas/ComponentSumConfigRequest'
         storage_folder_config:
           $ref: '#/components/schemas/StorageFolderConfigRequest'
         default_configs:
@@ -160189,6 +163088,21 @@ components:
           allOf:
           - $ref: '#/components/schemas/OptionVisibleIfRequest'
           description: Show this option only when another option has a given value.
+        unique:
+          type: boolean
+          description: The value must not be used by another non-terminated resource
+            of this offering. Only for string, text, integer and select_string options.
+        pattern:
+          type: string
+          description: Regular expression the whole value must match. Only for string
+            and text options. Use syntax common to Python and JavaScript, so the order
+            form can check it too; \w, \d, \s and \b match ASCII characters only.
+            Blank means no pattern.
+          maxLength: 500
+        pattern_error:
+          type: string
+          description: Error shown when the value does not match the pattern.
+          maxLength: 255
       required:
       - label
       - type
@@ -160211,6 +163125,8 @@ components:
       - time
       - conditional_cascade
       - component_multiplier
+      - component_formula
+      - component_sum
       - single_datacenter_k8s_config
       - multi_datacenter_k8s_config
       - storage_folder_manager
@@ -160342,6 +163258,14 @@ components:
           type: string
           format: binary
           nullable: true
+      description: ''
+    OrderAuthorEnum:
+      enum:
+      - applicant
+      - project_manager
+      - call_manager
+      - specific_user
+      type: string
       description: ''
     OrderBackendIDRequest:
       type: object
@@ -163053,6 +165977,42 @@ components:
           type: string
           format: binary
           nullable: true
+    PatchedOfferingMergeRequest:
+      type: object
+      description: ''
+      properties:
+        sources:
+          type: array
+          items:
+            type: string
+            format: uuid
+          description: Offerings whose resources and history move to the target.
+        target:
+          type: string
+          format: uuid
+        plan_mapping:
+          type: object
+          additionalProperties:
+            type: string
+            minLength: 1
+          description: Source plan UUID to target plan UUID.
+        component_mapping:
+          type: object
+          additionalProperties:
+            type: object
+            additionalProperties:
+              type: string
+              minLength: 1
+          description: 'Per source offering UUID: source component type to target
+            component type.'
+        attribute_key_mapping:
+          type: object
+          additionalProperties:
+            type: string
+            minLength: 1
+          description: 'Order and resource answer key renames: old key to new key.'
+        invoice_policy:
+          $ref: '#/components/schemas/InvoicePolicyEnum'
     PatchedOfferingPartitionUpdateRequest:
       type: object
       description: ''
@@ -163826,6 +166786,21 @@ components:
           minimum: -9223372036854775808
           format: int64
           nullable: true
+        min_group_gid:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: -9223372036854775808
+          format: int64
+          nullable: true
+          description: First GID of the range reserved for provider project groups.
+            Without it, project groups draw from the GID range.
+        max_group_gid:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: -9223372036854775808
+          format: int64
+          nullable: true
+          description: Last GID of the range reserved for project groups.
     PatchedProjectCreditRequest:
       type: object
       properties:
@@ -164164,10 +167139,6 @@ components:
           type: string
           nullable: true
           maxLength: 255
-        comment_project_duration:
-          type: string
-          nullable: true
-          maxLength: 255
         comment_project_supporting_documentation:
           type: string
           nullable: true
@@ -164180,6 +167151,12 @@ components:
           type: string
           nullable: true
           maxLength: 255
+        override_workload_limit:
+          type: boolean
+          writeOnly: true
+          description: Create the review even if this takes the reviewer above their
+            maximum number of open assignments in the call's reviewer pool. The override
+            is logged.
     PatchedProtectedCallRequest:
       type: object
       description: ''
@@ -164216,6 +167193,12 @@ components:
           description: Whether proposal applicants can see review comments and scores
         proposal_field_config:
           $ref: '#/components/schemas/CallProposalFieldConfigRequest'
+        evaluation_start:
+          allOf:
+          - $ref: '#/components/schemas/EvaluationStartEnum'
+          description: 'When a submitted proposal''s evaluation starts: on submission,
+            or for all proposals of a round together at its cut-off. Cannot be changed
+            while the call has proposals submitted or in review.'
         created_by:
           type: string
           format: uri
@@ -164280,16 +167263,17 @@ components:
           allOf:
           - $ref: '#/components/schemas/CallApplicantVisibilityConfigRequest'
           nullable: true
-        support_ticket_caller:
+        order_author:
           allOf:
-          - $ref: '#/components/schemas/SupportTicketCallerEnum'
-          description: Who helpdesk tickets for granted resources are raised for.
-        support_ticket_caller_user:
+          - $ref: '#/components/schemas/OrderAuthorEnum'
+          description: Whose name the orders for resources granted by this call carry.
+        order_author_user:
           type: string
           format: uuid
           nullable: true
-          description: The person tickets go to when the caller is a named contact.
-            Must hold a role on this call or on the organisation managing it.
+          description: The person orders are attributed to when the author is a named
+            contact. Must hold a role on this call or on the organisation managing
+            it.
     PatchedProtectedRoundRequest:
       type: object
       description: ''
@@ -165452,11 +168436,12 @@ components:
             can modify this field. '
         account_options:
           allOf:
-          - $ref: '#/components/schemas/AccountOptionsRequest'
+          - $ref: '#/components/schemas/ProviderAccountOptionsRequest'
           description: 'Account settings for this provider''s offerings, under the
             same keys as an offering''s plugin options. Each applies to every offering
-            that does not set its own. Updated key by key: an omitted key is kept,
-            and a blank value removes it.'
+            that does not set its own; project_groups_enabled is the provider''s own.
+            Updated key by key: an omitted key is kept, and a blank value removes
+            it.'
     PatchedSlurmPeriodicUsagePolicyRequest:
       type: object
       description: ''
@@ -166468,6 +169453,7 @@ components:
             - SERVICE_PROVIDER.GET_ROBOT_ACCOUNT_CUSTOMERS
             - SERVICE_PROVIDER.GET_ROBOT_ACCOUNT_PROJECTS
             - SERVICE_PROVIDER.MANAGE_MAINTENANCE_ANNOUNCEMENT
+            - MATRIX_ROOM.CREATE
             - PROJECT.CREATE_PERMISSION
             - CUSTOMER.CREATE_PERMISSION
             - OFFERING.CREATE_PERMISSION
@@ -166612,6 +169598,7 @@ components:
             - SERVICE_PROVIDER.GET_ROBOT_ACCOUNT_CUSTOMERS
             - SERVICE_PROVIDER.GET_ROBOT_ACCOUNT_PROJECTS
             - SERVICE_PROVIDER.MANAGE_MAINTENANCE_ANNOUNCEMENT
+            - MATRIX_ROOM.CREATE
             - PROJECT.CREATE_PERMISSION
             - CUSTOMER.CREATE_PERMISSION
             - OFFERING.CREATE_PERMISSION
@@ -167181,6 +170168,25 @@ components:
           type: integer
           readOnly: true
           nullable: true
+        min_group_gid:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: -9223372036854775808
+          format: int64
+          nullable: true
+          description: First GID of the range reserved for provider project groups.
+            Without it, project groups draw from the GID range.
+        max_group_gid:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: -9223372036854775808
+          format: int64
+          nullable: true
+          description: Last GID of the range reserved for project groups.
+        next_group_gid:
+          type: integer
+          readOnly: true
+          nullable: true
         customer_uuid:
           type: string
           format: uuid
@@ -167197,6 +170203,9 @@ components:
         gid_used:
           type: integer
           readOnly: true
+        group_gid_used:
+          type: integer
+          readOnly: true
         uid_utilization:
           type: number
           format: double
@@ -167207,13 +170216,21 @@ components:
           format: double
           nullable: true
           readOnly: true
+        group_gid_utilization:
+          type: number
+          format: double
+          nullable: true
+          readOnly: true
       required:
       - created
       - customer_name
       - customer_uuid
       - gid_used
       - gid_utilization
+      - group_gid_used
+      - group_gid_utilization
       - next_gid
+      - next_group_gid
       - next_uid
       - scope
       - uid_used
@@ -167371,6 +170388,21 @@ components:
           minimum: -9223372036854775808
           format: int64
           nullable: true
+        min_group_gid:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: -9223372036854775808
+          format: int64
+          nullable: true
+          description: First GID of the range reserved for provider project groups.
+            Without it, project groups draw from the GID range.
+        max_group_gid:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: -9223372036854775808
+          format: int64
+          nullable: true
+          description: Last GID of the range reserved for project groups.
     PosixIdPoolStats:
       type: object
       description: ''
@@ -167383,10 +170415,16 @@ components:
           allOf:
           - $ref: '#/components/schemas/PosixIdPoolNamespaceStats'
           nullable: true
+        group_gid:
+          allOf:
+          - $ref: '#/components/schemas/PosixIdPoolNamespaceStats'
+          nullable: true
+          description: The range reserved for provider project groups, if any.
         utilization_threshold:
           type: integer
       required:
       - gid
+      - group_gid
       - uid
       - utilization_threshold
     PosixIdSourceEnum:
@@ -168823,6 +171861,44 @@ components:
       - actions
       - limit_cost
       - scope
+    ProjectGroupEntryRequest:
+      type: object
+      properties:
+        project:
+          type: string
+          minLength: 1
+          description: Project UUID, or its slug when exactly one project with that
+            slug has a resource or order at the service provider.
+        gid:
+          type: integer
+          maximum: 4294967294
+          minimum: 1000
+          format: int64
+        name:
+          type: string
+          minLength: 1
+          description: Group name, matching ^[a-z_][a-z0-9_-]{0,31}$; derived from
+            the project slug when omitted.
+      required:
+      - gid
+      - project
+      description: ''
+    ProjectGroupGidRequest:
+      type: object
+      properties:
+        gid:
+          type: integer
+          maximum: 4294967294
+          minimum: 1000
+          format: int64
+        allow_outside_range:
+          type: boolean
+          default: false
+          description: Accept a GID outside the range project groups draw from, e.g.
+            one a directory assigned before Waldur managed it.
+      required:
+      - gid
+      description: ''
     ProjectHyperlinkRequest:
       type: object
       properties:
@@ -169202,10 +172278,13 @@ components:
           $ref: '#/components/schemas/ProjectPosixGroupKindEnum'
         gid:
           type: integer
+          nullable: true
         offering_uuid:
           type: string
+          nullable: true
         offering_name:
           type: string
+          nullable: true
         provider_name:
           type: string
         role:
@@ -169219,6 +172298,29 @@ components:
           nullable: true
         scope_uuid:
           type: string
+          nullable: true
+        group_uuid:
+          type: string
+          nullable: true
+        group_name:
+          type: string
+          nullable: true
+        service_provider_uuid:
+          type: string
+          nullable: true
+        in_use:
+          type: boolean
+          nullable: true
+        offerings:
+          type: array
+          items:
+            $ref: '#/components/schemas/ServiceProviderProjectGroupOffering'
+        members:
+          type: array
+          items:
+            type: string
+        member_count:
+          type: integer
           nullable: true
       required:
       - gid
@@ -169234,6 +172336,7 @@ components:
       enum:
       - project_group
       - role_group
+      - provider_project_group
       type: string
       description: ''
     ProjectQuotas:
@@ -170443,6 +173546,13 @@ components:
         review_end_date:
           type: string
           format: date-time
+          nullable: true
+          description: |-
+            When the review is due, or None if the round sets no review duration.
+
+            A review created by accepting an assignment is also due no earlier than
+            its assignment batch's deadline, so extending the batch deadline moves
+            the deadline of the reviews accepted from it.
           readOnly: true
         summary_score:
           type: integer
@@ -170493,10 +173603,6 @@ components:
           nullable: true
           maxLength: 255
         comment_project_description:
-          type: string
-          nullable: true
-          maxLength: 255
-        comment_project_duration:
           type: string
           nullable: true
           maxLength: 255
@@ -170590,10 +173696,6 @@ components:
           type: string
           nullable: true
           maxLength: 255
-        comment_project_duration:
-          type: string
-          nullable: true
-          maxLength: 255
         comment_project_supporting_documentation:
           type: string
           nullable: true
@@ -170606,6 +173708,12 @@ components:
           type: string
           nullable: true
           maxLength: 255
+        override_workload_limit:
+          type: boolean
+          writeOnly: true
+          description: Create the review even if this takes the reviewer above their
+            maximum number of open assignments in the call's reviewer pool. The override
+            is logged.
       required:
       - proposal
     ProposalReviewStateEnum:
@@ -170944,6 +174052,12 @@ components:
           readOnly: true
         proposal_field_config:
           $ref: '#/components/schemas/CallProposalFieldConfig'
+        evaluation_start:
+          allOf:
+          - $ref: '#/components/schemas/EvaluationStartEnum'
+          description: 'When a submitted proposal''s evaluation starts: on submission,
+            or for all proposals of a round together at its cut-off. Cannot be changed
+            while the call has proposals submitted or in review.'
         created_by:
           type: string
           format: uri
@@ -171023,22 +174137,23 @@ components:
           readOnly: true
           description: Whether any proposal has been submitted to this call. Used
             by the frontend to gate slug-template and checklist fields.
-        support_ticket_caller:
+        order_author:
           allOf:
-          - $ref: '#/components/schemas/SupportTicketCallerEnum'
-          description: Who helpdesk tickets for granted resources are raised for.
-        support_ticket_caller_user:
+          - $ref: '#/components/schemas/OrderAuthorEnum'
+          description: Whose name the orders for resources granted by this call carry.
+        order_author_user:
           type: string
           format: uuid
           nullable: true
-          description: The person tickets go to when the caller is a named contact.
-            Must hold a role on this call or on the organisation managing it.
-        support_ticket_caller_user_uuid:
+          description: The person orders are attributed to when the author is a named
+            contact. Must hold a role on this call or on the organisation managing
+            it.
+        order_author_user_uuid:
           type: string
           format: uuid
           readOnly: true
           nullable: true
-        support_ticket_caller_user_name:
+        order_author_user_name:
           type: string
           readOnly: true
           nullable: true
@@ -171056,6 +174171,8 @@ components:
       - max_prepaid_duration_months
       - name
       - offerings
+      - order_author_user_name
+      - order_author_user_uuid
       - panel_chair_name
       - panel_chair_uuid
       - proposal_field_metadata
@@ -171063,8 +174180,6 @@ components:
       - rounds
       - start_date
       - state
-      - support_ticket_caller_user_name
-      - support_ticket_caller_user_uuid
       - url
       - uuid
     ProtectedCallRequest:
@@ -171106,6 +174221,12 @@ components:
           description: Whether proposal applicants can see review comments and scores
         proposal_field_config:
           $ref: '#/components/schemas/CallProposalFieldConfigRequest'
+        evaluation_start:
+          allOf:
+          - $ref: '#/components/schemas/EvaluationStartEnum'
+          description: 'When a submitted proposal''s evaluation starts: on submission,
+            or for all proposals of a round together at its cut-off. Cannot be changed
+            while the call has proposals submitted or in review.'
         created_by:
           type: string
           format: uri
@@ -171170,16 +174291,17 @@ components:
           allOf:
           - $ref: '#/components/schemas/CallApplicantVisibilityConfigRequest'
           nullable: true
-        support_ticket_caller:
+        order_author:
           allOf:
-          - $ref: '#/components/schemas/SupportTicketCallerEnum'
-          description: Who helpdesk tickets for granted resources are raised for.
-        support_ticket_caller_user:
+          - $ref: '#/components/schemas/OrderAuthorEnum'
+          description: Whose name the orders for resources granted by this call carry.
+        order_author_user:
           type: string
           format: uuid
           nullable: true
-          description: The person tickets go to when the caller is a named contact.
-            Must hold a role on this call or on the organisation managing it.
+          description: The person orders are attributed to when the author is a named
+            contact. Must hold a role on this call or on the organisation managing
+            it.
       required:
       - manager
       - name
@@ -171313,6 +174435,70 @@ components:
       required:
       - cutoff_time
       - start_time
+    ProviderAccountOptions:
+      type: object
+      description: ''
+      properties:
+        account_scope:
+          description: 'Where accounts are held: ''offering'' keeps one account per
+            offering (the historical behaviour); ''provider'' shares one account per
+            user across the provider''s offerings.'
+          oneOf:
+          - $ref: '#/components/schemas/AccountScope'
+          - $ref: '#/components/schemas/BlankEnum'
+        username_generation_policy:
+          description: How the usernames of offering users are generated.
+          oneOf:
+          - $ref: '#/components/schemas/UsernameGenerationPolicyEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+        username_anonymized_prefix:
+          type: string
+          description: Prefix for anonymized usernames; the name is the prefix followed
+            by the account's POSIX UID.
+        homedir_prefix:
+          type: string
+          description: Prefix of each account's home directory; the username follows.
+        login_shell:
+          type: string
+          description: Login shell assigned to GLAuth/LDAP accounts.
+        project_groups_enabled:
+          type: boolean
+          description: Give every project with a resource on this provider's offerings
+            one POSIX group, with a GID from the provider's POSIX ID pool (its group
+            GID range when set). Turning it on also creates the groups of projects
+            already using the provider.
+    ProviderAccountOptionsRequest:
+      type: object
+      description: ''
+      properties:
+        account_scope:
+          description: 'Where accounts are held: ''offering'' keeps one account per
+            offering (the historical behaviour); ''provider'' shares one account per
+            user across the provider''s offerings.'
+          oneOf:
+          - $ref: '#/components/schemas/AccountScope'
+          - $ref: '#/components/schemas/BlankEnum'
+        username_generation_policy:
+          description: How the usernames of offering users are generated.
+          oneOf:
+          - $ref: '#/components/schemas/UsernameGenerationPolicyEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+        username_anonymized_prefix:
+          type: string
+          description: Prefix for anonymized usernames; the name is the prefix followed
+            by the account's POSIX UID.
+        homedir_prefix:
+          type: string
+          description: Prefix of each account's home directory; the username follows.
+        login_shell:
+          type: string
+          description: Login shell assigned to GLAuth/LDAP accounts.
+        project_groups_enabled:
+          type: boolean
+          description: Give every project with a resource on this provider's offerings
+            one POSIX group, with a GID from the provider's POSIX ID pool (its group
+            GID range when set). Turning it on also creates the groups of projects
+            already using the provider.
     ProviderAssignRequest:
       type: object
       properties:
@@ -172095,6 +175281,11 @@ components:
           type: string
           format: uri
           nullable: true
+        compliance_checklist_details:
+          allOf:
+          - $ref: '#/components/schemas/OfferingComplianceChecklist'
+          readOnly: true
+          nullable: true
         profile_uuid:
           type: string
           format: uuid
@@ -172145,6 +175336,7 @@ components:
       - category_title
       - category_uuid
       - citation_count
+      - compliance_checklist_details
       - components
       - created
       - customer_name
@@ -173186,6 +176378,12 @@ components:
           allOf:
           - $ref: '#/components/schemas/CallProposalFieldConfig'
           readOnly: true
+        evaluation_start:
+          allOf:
+          - $ref: '#/components/schemas/EvaluationStartEnum'
+          description: 'When a submitted proposal''s evaluation starts: at once on
+            submission, or for every proposal of a round together at the round''s
+            cut-off. Cannot be changed while proposals are submitted or in review.'
       required:
       - created
       - customer_name
@@ -173219,6 +176417,10 @@ components:
           readOnly: true
         invitation_status:
           type: string
+          readOnly: true
+        invited_at:
+          type: string
+          format: date-time
           readOnly: true
         expires_at:
           type: string
@@ -173274,6 +176476,7 @@ components:
       - coi_types
       - expires_at
       - invitation_status
+      - invited_at
       - invited_by_name
       - is_expired
       - max_assignments
@@ -173691,6 +176894,11 @@ components:
           type: string
           format: uri
           nullable: true
+        compliance_checklist_details:
+          allOf:
+          - $ref: '#/components/schemas/OfferingComplianceChecklist'
+          readOnly: true
+          nullable: true
         profile_uuid:
           type: string
           format: uuid
@@ -173755,6 +176963,7 @@ components:
       - category_title
       - category_uuid
       - citation_count
+      - compliance_checklist_details
       - components
       - config_drive_default
       - created
@@ -177920,6 +181129,22 @@ components:
       - gifts
       - other
       type: string
+      description: ''
+    RelevantWhen:
+      type: object
+      properties:
+        plugins:
+          type: array
+          items:
+            type: string
+        feature_flags:
+          type: array
+          items:
+            type: string
+        settings:
+          type: array
+          items:
+            type: string
       description: ''
     RemoteAllocation:
       type: object
@@ -184869,6 +188094,32 @@ components:
       - key
       - title
       description: ''
+    SecurityDetail:
+      type: object
+      properties:
+        urgency:
+          type: string
+        cve:
+          type: string
+          nullable: true
+        ghsa:
+          type: string
+          nullable: true
+        affected_versions:
+          type: string
+        exploitability:
+          type: string
+        mitigation:
+          type: string
+        advisory_url:
+          type: string
+          nullable: true
+      required:
+      - affected_versions
+      - exploitability
+      - mitigation
+      - urgency
+      description: ''
     SecurityGroupRuleDirectionEnum:
       enum:
       - ingress
@@ -185060,11 +188311,12 @@ components:
             can modify this field. '
         account_options:
           allOf:
-          - $ref: '#/components/schemas/AccountOptions'
+          - $ref: '#/components/schemas/ProviderAccountOptions'
           description: 'Account settings for this provider''s offerings, under the
             same keys as an offering''s plugin options. Each applies to every offering
-            that does not set its own. Updated key by key: an omitted key is kept,
-            and a blank value removes it.'
+            that does not set its own; project_groups_enabled is the provider''s own.
+            Updated key by key: an omitted key is kept, and a blank value removes
+            it.'
       required:
       - created
       - customer
@@ -185399,6 +188651,159 @@ components:
       - 10
       type: integer
       description: ''
+    ServiceProviderProjectGroup:
+      type: object
+      description: ''
+      properties:
+        url:
+          type: string
+          format: uri
+          readOnly: true
+        uuid:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          readOnly: true
+        gid:
+          type: integer
+          readOnly: true
+          nullable: true
+        in_use:
+          type: boolean
+          readOnly: true
+          description: The project has a non-terminated resource on an offering of
+            the provider. An unused group keeps its GID.
+        service_provider_uuid:
+          type: string
+          format: uuid
+          readOnly: true
+        service_provider_name:
+          type: string
+          readOnly: true
+        project_uuid:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        project_name:
+          type: string
+          readOnly: true
+          nullable: true
+        project_slug:
+          type: string
+          readOnly: true
+          nullable: true
+        customer_uuid:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        customer_name:
+          type: string
+          readOnly: true
+          nullable: true
+        offerings:
+          type: array
+          items:
+            $ref: '#/components/schemas/ServiceProviderProjectGroupOffering'
+          readOnly: true
+          description: The provider's offerings where the project has a non-terminated
+            resource.
+        members:
+          type: array
+          items:
+            type: string
+          readOnly: true
+          description: Sorted usernames of the live accounts at the provider of the
+            users holding an active role in the project.
+        created:
+          type: string
+          format: date-time
+          readOnly: true
+        modified:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created
+      - customer_name
+      - customer_uuid
+      - gid
+      - in_use
+      - members
+      - modified
+      - name
+      - offerings
+      - project_name
+      - project_slug
+      - project_uuid
+      - service_provider_name
+      - service_provider_uuid
+      - url
+      - uuid
+    ServiceProviderProjectGroupCreateRequest:
+      type: object
+      properties:
+        project:
+          type: string
+          minLength: 1
+          description: Project UUID, or its slug when exactly one project with that
+            slug has a resource or order at the service provider.
+        gid:
+          type: integer
+          maximum: 4294967294
+          minimum: 1000
+          format: int64
+        name:
+          type: string
+          minLength: 1
+          description: Group name, matching ^[a-z_][a-z0-9_-]{0,31}$; derived from
+            the project slug when omitted.
+        service_provider:
+          type: string
+          format: uuid
+        allow_outside_range:
+          type: boolean
+          default: false
+          description: Accept a GID outside the range project groups draw from, e.g.
+            one a directory assigned before Waldur managed it.
+      required:
+      - gid
+      - project
+      - service_provider
+      description: ''
+    ServiceProviderProjectGroupImportRequest:
+      type: object
+      properties:
+        service_provider:
+          type: string
+          format: uuid
+        groups:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProjectGroupEntryRequest'
+        allow_outside_range:
+          type: boolean
+          default: false
+          description: Accept a GID outside the range project groups draw from, e.g.
+            one a directory assigned before Waldur managed it.
+      required:
+      - groups
+      - service_provider
+      description: ''
+    ServiceProviderProjectGroupOffering:
+      type: object
+      properties:
+        uuid:
+          type: string
+        name:
+          type: string
+      required:
+      - name
+      - uuid
+      description: ''
     ServiceProviderRequest:
       type: object
       description: ''
@@ -185424,11 +188829,12 @@ components:
             can modify this field. '
         account_options:
           allOf:
-          - $ref: '#/components/schemas/AccountOptionsRequest'
+          - $ref: '#/components/schemas/ProviderAccountOptionsRequest'
           description: 'Account settings for this provider''s offerings, under the
             same keys as an offering''s plugin options. Each applies to every offering
-            that does not set its own. Updated key by key: an omitted key is kept,
-            and a blank value removes it.'
+            that does not set its own; project_groups_enabled is the provider''s own.
+            Updated key by key: an omitted key is kept, and a blank value removes
+            it.'
       required:
       - customer
     ServiceProviderRevenues:
@@ -186754,6 +190160,9 @@ components:
         catalog_type_display:
           type: string
           readOnly: true
+        supports_cpu_target_restrictions:
+          type: boolean
+          readOnly: true
         source_url:
           type: string
           format: uri
@@ -186799,11 +190208,26 @@ components:
       - modified
       - name
       - package_count
+      - supports_cpu_target_restrictions
       - target_count
       - url
       - uuid
       - version
       - version_count
+    SoftwareCatalogCpuTarget:
+      type: object
+      description: ''
+      properties:
+        cpu_family:
+          type: string
+        cpu_microarchitecture:
+          type: string
+        full_arch:
+          type: string
+      required:
+      - cpu_family
+      - cpu_microarchitecture
+      - full_arch
     SoftwareCatalogDiscover:
       type: object
       description: ''
@@ -187504,6 +190928,12 @@ components:
           maxLength: 2000
       required:
       - public_key
+    StageEnum:
+      enum:
+      - execute
+      - undo
+      type: string
+      description: ''
     StateTransitionError:
       type: object
       properties:
@@ -187800,14 +191230,6 @@ components:
       - closed_this_month_count
       - open_issues_count
       - recent_broadcasts_count
-      description: ''
-    SupportTicketCallerEnum:
-      enum:
-      - applicant
-      - project_manager
-      - call_manager
-      - specific_user
-      type: string
       description: ''
     SupportUser:
       type: object
@@ -189687,6 +193109,17 @@ components:
           minLength: 1
       required:
       - name
+      description: ''
+    UpgradeCommands:
+      type: object
+      properties:
+        helm:
+          type: string
+        docker_compose:
+          type: string
+      required:
+      - docker_compose
+      - helm
       description: ''
     UrgencyEnum:
       enum:
@@ -191736,6 +195169,7 @@ components:
       - SERVICE_PROVIDER.GET_ROBOT_ACCOUNT_CUSTOMERS
       - SERVICE_PROVIDER.GET_ROBOT_ACCOUNT_PROJECTS
       - SERVICE_PROVIDER.MANAGE_MAINTENANCE_ANNOUNCEMENT
+      - MATRIX_ROOM.CREATE
       - PROJECT.CREATE_PERMISSION
       - CUSTOMER.CREATE_PERMISSION
       - OFFERING.CREATE_PERMISSION
@@ -191832,6 +195266,11 @@ components:
           type: string
           description: Latest available version from GitHub. Only included for staff
             or support users when update checks are enabled.
+        changelog_summary:
+          type: object
+          additionalProperties: {}
+          description: Compact changelog summary with version count, risk info, and
+            security alerts.
       required:
       - version
       description: ''
@@ -192014,14 +195453,16 @@ components:
           maxLength: 255
         capacity:
           type: integer
-          maximum: 2147483647
+          maximum: 9223372036854775807
           minimum: 0
+          format: int64
           nullable: true
           description: Capacity, in MB.
         free_space:
           type: integer
-          maximum: 2147483647
+          maximum: 9223372036854775807
           minimum: 0
+          format: int64
           nullable: true
           description: Available space, in MB.
       required:
@@ -193858,6 +197299,15 @@ components:
           type: string
           format: uri
           nullable: true
+        folder:
+          type: string
+          format: uri
+          nullable: true
+        networks:
+          type: array
+          items:
+            $ref: '#/components/schemas/VmwareNestedNetworkRequest'
+          writeOnly: true
       required:
       - name
       - project
@@ -195536,11 +198986,12 @@ components:
             can modify this field. '
         account_options:
           allOf:
-          - $ref: '#/components/schemas/AccountOptionsRequest'
+          - $ref: '#/components/schemas/ProviderAccountOptionsRequest'
           description: 'Account settings for this provider''s offerings, under the
             same keys as an offering''s plugin options. Each applies to every offering
-            that does not set its own. Updated key by key: an omitted key is kept,
-            and a blank value removes it.'
+            that does not set its own; project_groups_enabled is the provider''s own.
+            Updated key by key: an omitted key is kept, and a blank value removes
+            it.'
       required:
       - customer
     ServiceProviderRequestMultipart:
@@ -195568,11 +199019,12 @@ components:
             can modify this field. '
         account_options:
           allOf:
-          - $ref: '#/components/schemas/AccountOptionsRequest'
+          - $ref: '#/components/schemas/ProviderAccountOptionsRequest'
           description: 'Account settings for this provider''s offerings, under the
             same keys as an offering''s plugin options. Each applies to every offering
-            that does not set its own. Updated key by key: an omitted key is kept,
-            and a blank value removes it.'
+            that does not set its own; project_groups_enabled is the provider''s own.
+            Updated key by key: an omitted key is kept, and a blank value removes
+            it.'
       required:
       - customer
     PatchedServiceProviderRequestForm:
@@ -195597,11 +199049,12 @@ components:
             can modify this field. '
         account_options:
           allOf:
-          - $ref: '#/components/schemas/AccountOptionsRequest'
+          - $ref: '#/components/schemas/ProviderAccountOptionsRequest'
           description: 'Account settings for this provider''s offerings, under the
             same keys as an offering''s plugin options. Each applies to every offering
-            that does not set its own. Updated key by key: an omitted key is kept,
-            and a blank value removes it.'
+            that does not set its own; project_groups_enabled is the provider''s own.
+            Updated key by key: an omitted key is kept, and a blank value removes
+            it.'
     PatchedServiceProviderRequestMultipart:
       type: object
       description: ''
@@ -195624,11 +199077,12 @@ components:
             can modify this field. '
         account_options:
           allOf:
-          - $ref: '#/components/schemas/AccountOptionsRequest'
+          - $ref: '#/components/schemas/ProviderAccountOptionsRequest'
           description: 'Account settings for this provider''s offerings, under the
             same keys as an offering''s plugin options. Each applies to every offering
-            that does not set its own. Updated key by key: an omitted key is kept,
-            and a blank value removes it.'
+            that does not set its own; project_groups_enabled is the provider''s own.
+            Updated key by key: an omitted key is kept, and a blank value removes
+            it.'
     OnboardingJustificationDocumentationRequestForm:
       type: object
       description: ''
@@ -196035,6 +199489,10 @@ components:
         DISCLAIMER_AREA_TEXT:
           type: string
           minLength: 1
+        ABOUT_US_PAGE_ENABLED:
+          type: boolean
+        ABOUT_US_PAGE_CONTENT:
+          type: string
         SITE_ADDRESS:
           type: string
         SITE_EMAIL:
@@ -196083,6 +199541,8 @@ components:
           type: string
         TELEMETRY_VERSION:
           type: integer
+        TELEMETRY_DEPLOYMENT_ID:
+          type: string
         CHECK_FOR_UPDATES:
           type: boolean
         SCRIPT_RUN_MODE:
@@ -196369,6 +199829,8 @@ components:
         ENABLE_MOCK_COURSE_ACCOUNT_BACKEND:
           type: boolean
         PROPOSAL_REVIEW_DURATION:
+          type: integer
+        PROPOSAL_DASHBOARD_REVIEWS_DUE_WITHIN_DAYS:
           type: integer
         ORCID_CLIENT_ID:
           type: string
@@ -196794,6 +200256,8 @@ components:
         AFFILIATES_ENABLED:
           type: boolean
         MATRIX_ENABLED:
+          type: boolean
+        MATRIX_AUTO_CREATE_PROJECT_ROOMS:
           type: boolean
         MATRIX_HOMESERVER_URL:
           type: string
@@ -196856,6 +200320,10 @@ components:
         DISCLAIMER_AREA_TEXT:
           type: string
           minLength: 1
+        ABOUT_US_PAGE_ENABLED:
+          type: boolean
+        ABOUT_US_PAGE_CONTENT:
+          type: string
         SITE_ADDRESS:
           type: string
         SITE_EMAIL:
@@ -196904,6 +200372,8 @@ components:
           type: string
         TELEMETRY_VERSION:
           type: integer
+        TELEMETRY_DEPLOYMENT_ID:
+          type: string
         CHECK_FOR_UPDATES:
           type: boolean
         SCRIPT_RUN_MODE:
@@ -197190,6 +200660,8 @@ components:
         ENABLE_MOCK_COURSE_ACCOUNT_BACKEND:
           type: boolean
         PROPOSAL_REVIEW_DURATION:
+          type: integer
+        PROPOSAL_DASHBOARD_REVIEWS_DUE_WITHIN_DAYS:
           type: integer
         ORCID_CLIENT_ID:
           type: string
@@ -197615,6 +201087,8 @@ components:
         AFFILIATES_ENABLED:
           type: boolean
         MATRIX_ENABLED:
+          type: boolean
+        MATRIX_AUTO_CREATE_PROJECT_ROOMS:
           type: boolean
         MATRIX_HOMESERVER_URL:
           type: string
@@ -198721,6 +202195,7 @@ components:
       - category_uuid
       - citation_count
       - compliance_checklist
+      - compliance_checklist_details
       - components
       - country
       - created
@@ -198975,6 +202450,64 @@ components:
       - current_assignments
       - expertise_match_score
       - invited_at
+      description: ''
+    ChangelogEntryListCategoryEnum:
+      type: string
+      enum:
+      - ai_assistant
+      - auth
+      - identity
+      - infrastructure
+      - invoices
+      - marketplace
+      - notifications
+      - openstack
+      - policy
+      - proposal
+      - reporting
+      - slurm
+      - support
+      - ui
+      description: ''
+    ChangelogEntryListOEnum:
+      type: string
+      enum:
+      - -category
+      - -risk
+      - -title
+      - -type
+      - -version
+      - category
+      - risk
+      - title
+      - type
+      - version
+      description: ''
+    ChangelogEntryListRiskEnum:
+      type: string
+      enum:
+      - high
+      - low
+      - medium
+      - none
+      description: ''
+    ChangelogEntryListScopeEnum:
+      type: string
+      enum:
+      - core
+      - dev
+      - infra
+      - plugin
+      description: ''
+    ChangelogEntryListTypeEnum:
+      type: string
+      enum:
+      - breaking
+      - deprecation
+      - feature
+      - fix
+      - improvement
+      - security
       description: ''
     ChatSessionFieldEnum:
       type: string
@@ -200047,6 +203580,7 @@ components:
       - category_uuid
       - citation_count
       - compliance_checklist
+      - compliance_checklist_details
       - components
       - config_drive_default
       - country
@@ -200133,11 +203667,16 @@ components:
       - description
       - gid_used
       - gid_utilization
+      - group_gid_used
+      - group_gid_utilization
       - max_gid
+      - max_group_gid
       - max_uid
       - min_gid
+      - min_group_gid
       - min_uid
       - next_gid
+      - next_group_gid
       - next_uid
       - offering
       - scope
@@ -200225,6 +203764,7 @@ components:
       - category_uuid
       - citation_count
       - compliance_checklist
+      - compliance_checklist_details
       - components
       - country
       - created
@@ -200544,6 +204084,18 @@ components:
       - user_uuid
       - username
       - uuid
+      description: ''
+    ServiceProviderProjectGroupOEnum:
+      type: string
+      enum:
+      - -created
+      - -gid
+      - -modified
+      - -name
+      - created
+      - gid
+      - modified
+      - name
       description: ''
     MarketplaceProviderCustomerProjectFieldEnum:
       type: string
@@ -202041,6 +205593,7 @@ components:
       - description
       - documents
       - end_date
+      - evaluation_start
       - external_url
       - fixed_duration_in_days
       - has_eligibility_restrictions
@@ -202050,6 +205603,10 @@ components:
       - max_prepaid_duration_months
       - name
       - offerings
+      - order_author
+      - order_author_user
+      - order_author_user_name
+      - order_author_user_uuid
       - panel_chair
       - panel_chair_name
       - panel_chair_uuid
@@ -202064,10 +205621,6 @@ components:
       - slug
       - start_date
       - state
-      - support_ticket_caller
-      - support_ticket_caller_user
-      - support_ticket_caller_user_name
-      - support_ticket_caller_user_uuid
       - url
       - user_affiliations
       - user_assurance_levels
@@ -202104,6 +205657,7 @@ components:
       - description
       - documents
       - end_date
+      - evaluation_start
       - external_url
       - fixed_duration_in_days
       - has_eligibility_restrictions
