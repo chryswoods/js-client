@@ -11845,7 +11845,7 @@ export type KeycloakUserGroupMembershipState = 'pending' | 'active';
 
 export type KeywordSearchModeEnum = 'expertise_only' | 'full_text';
 
-export type LoginpagelayoutEnum = 'split-screen' | 'centered-card' | 'minimal' | 'full-hero' | 'gradient' | 'stacked' | 'right-split' | 'glassmorphism' | 'neumorphism' | 'animated-gradient' | 'video-background' | 'bottom-sheet' | 'tabbed' | 'wizard' | 'stats' | 'news' | 'carousel' | 'logo-watermark' | 'brand-pattern' | 'duotone' | 'diagonal' | 'time-based' | 'seasonal' | 'weather';
+export type LoginpagelayoutEnum = 'split-screen' | 'centered-card' | 'minimal' | 'full-hero' | 'gradient' | 'stacked' | 'right-split' | 'glassmorphism' | 'neumorphism' | 'animated-gradient' | 'video-background' | 'bottom-sheet' | 'tabbed' | 'wizard' | 'stats' | 'news' | 'carousel' | 'logo-watermark' | 'brand-pattern' | 'duotone' | 'diagonal' | 'brics' | 'time-based' | 'seasonal' | 'weather';
 
 export type LbAlgorithmEnum = 'ROUND_ROBIN' | 'LEAST_CONNECTIONS' | 'SOURCE_IP' | 'SOURCE_IP_PORT';
 
