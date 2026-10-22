@@ -2822,6 +2822,49 @@ export type AwardDetails = {
     allowed_domains: Array<string> | null;
 };
 
+export type AwardedResource = {
+    readonly uuid: string;
+    readonly url: string;
+    readonly requested_resource: string | null;
+    requested_offering: NestedRequestedOffering;
+    /**
+     * Plan of the awarded offering. Read back as the plan the item is provisioned on: the call offering's plan unless another was set. Null (or leaving it out when adding or moving) follows the call offering's plan.
+     */
+    plan?: string | null;
+    readonly plan_name: string | null;
+    attributes?: {
+        [key: string]: unknown;
+    };
+    limits?: {
+        [key: string]: number;
+    };
+    description?: string;
+    readonly resource: string | null;
+    readonly resource_name: string | null;
+    readonly created_by: string | null;
+    readonly created_by_name: string | null;
+    readonly created: string;
+    readonly modified: string;
+};
+
+export type AwardedResourceRequest = {
+    /**
+     * An accepted offering of the proposal's call to award the item on. Required when adding an item.
+     */
+    requested_offering_uuid?: string;
+    /**
+     * Plan of the awarded offering. Read back as the plan the item is provisioned on: the call offering's plan unless another was set. Null (or leaving it out when adding or moving) follows the call offering's plan.
+     */
+    plan?: string | null;
+    attributes?: {
+        [key: string]: unknown;
+    };
+    limits?: {
+        [key: string]: number;
+    };
+    description?: string;
+};
+
 export type AwsImage = {
     readonly url: string;
     readonly uuid: string;
@@ -4311,6 +4354,10 @@ export type CallWorkflowStepNotificationRule = {
      */
     days_before?: number | null;
     is_enabled?: boolean;
+    /**
+     * Only for an applicant audience: names of the proposal roles whose holders are notified. Empty notifies the proposal creator and every member of the proposal team.
+     */
+    notified_proposal_roles?: Array<string>;
 };
 
 export type CallWorkflowStepNotificationRuleNested = {
@@ -4322,6 +4369,7 @@ export type CallWorkflowStepNotificationRuleNested = {
      */
     readonly days_before: number | null;
     readonly is_enabled: boolean;
+    readonly notified_proposal_roles: Array<string>;
 };
 
 export type CallWorkflowStepNotificationRuleRequest = {
@@ -4333,6 +4381,10 @@ export type CallWorkflowStepNotificationRuleRequest = {
      */
     days_before?: number | null;
     is_enabled?: boolean;
+    /**
+     * Only for an applicant audience: names of the proposal roles whose holders are notified. Empty notifies the proposal creator and every member of the proposal team.
+     */
+    notified_proposal_roles?: Array<string>;
 };
 
 export type CallWorkflowStepRequest = {
@@ -5553,6 +5605,72 @@ export type CommentRequest = {
     is_public?: boolean;
 };
 
+export type ComparatorEnum = 'ge' | 'le';
+
+export type CompleteRoundRefusal = {
+    readonly detail: string;
+    /**
+     * Decisions of the round whose release failed at publication and that were never announced. Present when completing is refused because of them; publish the results again to retry them.
+     */
+    readonly held_decisions_count: number;
+    /**
+     * Proposals of the round without a decision. Present when completing is refused because of them under the refuse rule.
+     */
+    readonly undecided_count: number;
+};
+
+export type CompleteRoundResponse = {
+    readonly uuid: string;
+    readonly slug: string;
+    readonly name: string;
+    start_time: string;
+    cutoff_time: string;
+    status: RoundStatus;
+    allocation_date?: string | null;
+    review_duration_in_days?: number;
+    /**
+     * Where the round stands after its cut-off: evaluating, deciding, results_published or closed. Empty before the cut-off.
+     */
+    lifecycle_state: LifecycleStateEnum | NullEnum | null;
+    readonly evaluation_started_at: string | null;
+    readonly deciding_started_at: string | null;
+    readonly results_published_at: string | null;
+    readonly closed_at: string | null;
+    readonly url: string;
+    readonly proposals: Array<ProtectedProposalList>;
+    readonly results_published_by_name: string | null;
+    /**
+     * Proposals of the round whose decision is recorded but not yet published. After publication, decisions that could not be carried out; publishing the results again retries them. Null for anyone who may not see held decisions.
+     */
+    readonly held_decisions_count: number | null;
+    /**
+     * Whether the round holds any proposal, in any state. A round with proposals cannot be deleted. Unlike the proposals list, which leaves out what the viewer may not see, this counts every one.
+     */
+    readonly has_proposals: boolean;
+    /**
+     * Why results were published while some proposals of the round still had no decision.
+     */
+    readonly results_forced_reason: string | null;
+    /**
+     * When the round's results were adopted.
+     */
+    readonly adopted_at: string | null;
+    readonly adoption_note: string | null;
+    readonly adoption_document: string | null;
+    /**
+     * Overrides the call's rule for proposals still without a decision when the round is completed. Empty: the call's rule applies.
+     */
+    undecided_at_round_completion?: UndecidedAtRoundCompletionEnum | BlankEnum | NullEnum | null;
+    /**
+     * Proposals without a decision that completing the round rejected.
+     */
+    readonly rejected_proposals: Array<PublishRoundResultsFailure>;
+    /**
+     * Proposals without a decision whose rejection failed. The round stays open; completing it again retries them.
+     */
+    readonly failed_proposals: Array<PublishRoundResultsFailure>;
+};
+
 export type CompleteWorkflowStepRequest = {
     /**
      * UUID of the workflow step instance the client believes is active. Used to detect concurrent step transitions.
@@ -5651,6 +5769,14 @@ export type ComponentStats = {
     readonly billing_type: string;
     readonly usage: number;
     readonly limit_usage: number;
+    /**
+     * Part of usage that came from terminated resources.
+     */
+    readonly usage_terminated: number;
+    /**
+     * Part of limit_usage that came from terminated resources.
+     */
+    readonly limit_usage_terminated: number;
     readonly limit: number;
     readonly offering_name: string;
     readonly offering_uuid: string;
@@ -5664,6 +5790,14 @@ export type ComponentStatsPerOffering = {
     readonly billing_type: string;
     readonly usage: number;
     readonly limit_usage: number;
+    /**
+     * Part of usage that came from terminated resources.
+     */
+    readonly usage_terminated: number;
+    /**
+     * Part of limit_usage that came from terminated resources.
+     */
+    readonly limit_usage_terminated: number;
     readonly limit: number | null;
     readonly offering_name: string;
     readonly offering_uuid: string;
@@ -6360,6 +6494,12 @@ export type ConstanceSettings = {
     ARROW_CONSUMPTION_SYNC_ENABLED?: boolean;
     ARROW_CONSUMPTION_SYNC_INTERVAL_HOURS?: number;
     ARROW_BILLING_CHECK_INTERVAL_HOURS?: number;
+    METRICS_LATE_DATA_DAYS?: number;
+    METRICS_MAX_SERIES_PER_RESOURCE_METRIC?: number;
+    METRICS_MAX_POINTS_PER_REQUEST?: number;
+    METRICS_MAX_OTLP_BODY_BYTES?: number;
+    METRICS_DEFAULT_RETENTION_POLICY?: string;
+    METRICS_ARCHIVE_GRACE_DAYS?: number;
     USAGE_POLL_RECORD_RETENTION_MONTHS?: number;
     SLURM_POLICY_EVALUATION_LOG_RETENTION_DAYS?: number;
     FEDERATED_IDENTITY_SYNC_ENABLED?: boolean;
@@ -6381,15 +6521,18 @@ export type ConstanceSettings = {
     MATRIX_APPSERVICE_AS_TOKEN?: string;
     MATRIX_APPSERVICE_HS_TOKEN?: string;
     MATRIX_APPSERVICE_SENDER_LOCALPART?: string;
+    MATRIX_TOKENS_MANAGED_BY?: string;
     MATRIX_HISTORY_EXPORT_ENABLED?: boolean;
     MATRIX_EXPORT_MEDIA?: boolean;
+    MATRIX_HISTORY_EXPORT_RETENTION_DAYS?: number;
     MATRIX_USER_REGISTRATION_SECRET?: string;
     MATRIX_USER_ID_FORMAT?: string;
-    MATRIX_LOGIN_METHOD?: string;
-    MATRIX_OIDC_PROVIDER_URL?: string;
+    MATRIX_EXTERNAL_LOGIN_METHOD?: MatrixExternalLoginMethodEnum;
+    MATRIX_SSO_REGISTRATION_METHOD?: string;
     MATRIX_LIVEKIT_KEY?: string;
     MATRIX_LIVEKIT_SECRET?: string;
     MATRIX_LIVEKIT_URL?: string;
+    MATRIX_LIVEKIT_PUBLIC_URL?: string;
     SITE_AGENT_LOG_MAX_ROWS_PER_IDENTITY?: number;
     PAT_ENABLED?: boolean;
     PAT_MAX_LIFETIME_DAYS?: number;
@@ -6704,6 +6847,12 @@ export type ConstanceSettingsRequest = {
     ARROW_CONSUMPTION_SYNC_ENABLED?: boolean;
     ARROW_CONSUMPTION_SYNC_INTERVAL_HOURS?: number;
     ARROW_BILLING_CHECK_INTERVAL_HOURS?: number;
+    METRICS_LATE_DATA_DAYS?: number;
+    METRICS_MAX_SERIES_PER_RESOURCE_METRIC?: number;
+    METRICS_MAX_POINTS_PER_REQUEST?: number;
+    METRICS_MAX_OTLP_BODY_BYTES?: number;
+    METRICS_DEFAULT_RETENTION_POLICY?: string;
+    METRICS_ARCHIVE_GRACE_DAYS?: number;
     USAGE_POLL_RECORD_RETENTION_MONTHS?: number;
     SLURM_POLICY_EVALUATION_LOG_RETENTION_DAYS?: number;
     FEDERATED_IDENTITY_SYNC_ENABLED?: boolean;
@@ -6725,15 +6874,18 @@ export type ConstanceSettingsRequest = {
     MATRIX_APPSERVICE_AS_TOKEN?: string;
     MATRIX_APPSERVICE_HS_TOKEN?: string;
     MATRIX_APPSERVICE_SENDER_LOCALPART?: string;
+    MATRIX_TOKENS_MANAGED_BY?: string;
     MATRIX_HISTORY_EXPORT_ENABLED?: boolean;
     MATRIX_EXPORT_MEDIA?: boolean;
+    MATRIX_HISTORY_EXPORT_RETENTION_DAYS?: number;
     MATRIX_USER_REGISTRATION_SECRET?: string;
     MATRIX_USER_ID_FORMAT?: string;
-    MATRIX_LOGIN_METHOD?: string;
-    MATRIX_OIDC_PROVIDER_URL?: string;
+    MATRIX_EXTERNAL_LOGIN_METHOD?: MatrixExternalLoginMethodEnum;
+    MATRIX_SSO_REGISTRATION_METHOD?: string;
     MATRIX_LIVEKIT_KEY?: string;
     MATRIX_LIVEKIT_SECRET?: string;
     MATRIX_LIVEKIT_URL?: string;
+    MATRIX_LIVEKIT_PUBLIC_URL?: string;
     SITE_AGENT_LOG_MAX_ROWS_PER_IDENTITY?: number;
     PAT_ENABLED?: boolean;
     PAT_MAX_LIFETIME_DAYS?: number;
@@ -9228,7 +9380,7 @@ export type EventMetadataResponse = {
      * Map of event group keys to lists of event type enums from EventType
      */
     event_groups: {
-        [key: string]: Array<'access_subnet_creation_succeeded' | 'access_subnet_deletion_succeeded' | 'access_subnet_update_succeeded' | 'offering_access_subnet_creation_succeeded' | 'offering_access_subnet_deletion_succeeded' | 'offering_access_subnet_update_succeeded' | 'allowed_offerings_have_been_updated' | 'attachment_created' | 'attachment_deleted' | 'attachment_updated' | 'auth_logged_in_with_saml2' | 'auth_logged_in_with_username' | 'auth_logged_in_with_oauth' | 'auth_logged_out' | 'auth_logged_out_with_saml2' | 'auth_login_failed_with_username' | 'block_creation_of_new_resources' | 'block_modification_of_existing_resources' | 'call_document_added' | 'call_document_removed' | 'create_of_affiliate_by_staff' | 'create_of_credit_by_staff' | 'create_of_project_credit_by_staff' | 'custom_notification' | 'customer_creation_succeeded' | 'customer_deletion_succeeded' | 'customer_update_succeeded' | 'customer_permission_review_created' | 'customer_permission_review_closed' | 'droplet_resize_scheduled' | 'droplet_resize_succeeded' | 'freeipa_profile_created' | 'freeipa_profile_deleted' | 'freeipa_profile_disabled' | 'freeipa_profile_enabled' | 'invoice_canceled' | 'invoice_created' | 'invoice_item_created' | 'invoice_item_deleted' | 'invoice_item_updated' | 'invoice_paid' | 'issue_creation_succeeded' | 'issue_deletion_succeeded' | 'issue_update_succeeded' | 'marketplace_offering_component_created' | 'marketplace_offering_component_deleted' | 'marketplace_offering_component_updated' | 'marketplace_offering_created' | 'marketplace_offering_merge_created' | 'marketplace_offering_merge_executed' | 'marketplace_offering_merge_failed' | 'marketplace_offering_merge_undone' | 'marketplace_offering_merge_verification_failed' | 'marketplace_offering_updated' | 'marketplace_offering_options_updated' | 'marketplace_offering_resource_options_updated' | 'marketplace_offering_user_created' | 'marketplace_offering_user_updated' | 'marketplace_offering_user_deleted' | 'marketplace_offering_user_restriction_updated' | 'marketplace_provider_project_group_gid_updated' | 'marketplace_order_approved' | 'marketplace_order_completed' | 'marketplace_order_created' | 'marketplace_order_failed' | 'marketplace_order_rejected' | 'marketplace_order_terminated' | 'marketplace_order_unlinked' | 'marketplace_plan_archived' | 'marketplace_plan_component_current_price_updated' | 'marketplace_plan_component_future_price_updated' | 'marketplace_plan_component_quota_updated' | 'marketplace_plan_created' | 'marketplace_plan_updated' | 'marketplace_plan_deleted' | 'marketplace_resource_create_canceled' | 'marketplace_resource_create_failed' | 'marketplace_resource_create_requested' | 'marketplace_resource_create_succeeded' | 'marketplace_resource_downscaled' | 'marketplace_resource_erred_on_backend' | 'marketplace_resource_paused' | 'marketplace_resource_terminate_canceled' | 'marketplace_resource_terminate_failed' | 'marketplace_resource_terminate_requested' | 'marketplace_resource_terminate_succeeded' | 'marketplace_resource_unlinked' | 'marketplace_resource_update_canceled' | 'marketplace_resource_update_end_date_succeeded' | 'marketplace_resource_api_key_rotated' | 'marketplace_resource_api_key_revealed' | 'marketplace_resource_update_failed' | 'marketplace_resource_update_limits_failed' | 'marketplace_resource_update_limits_succeeded' | 'marketplace_resource_plan_switched' | 'marketplace_resource_project_created' | 'marketplace_resource_project_recovered' | 'marketplace_resource_project_removed' | 'marketplace_resource_update_requested' | 'marketplace_resource_update_succeeded' | 'marketplace_resource_limit_change_request_created' | 'marketplace_resource_limit_change_request_approved' | 'marketplace_resource_limit_change_request_rejected' | 'marketplace_resource_end_date_change_request_created' | 'marketplace_resource_end_date_change_request_approved' | 'marketplace_resource_end_date_change_request_rejected' | 'marketplace_resource_end_date_change_request_canceled' | 'maintenance_announcement_cancelled' | 'maintenance_announcement_completed' | 'maintenance_announcement_created' | 'maintenance_announcement_deleted' | 'maintenance_announcement_scheduled' | 'maintenance_announcement_started' | 'maintenance_announcement_unscheduled' | 'maintenance_announcement_updated' | 'notify_external_user' | 'notify_organization_owners' | 'notify_project_team' | 'openstack_floating_ip_attached' | 'openstack_floating_ip_connected' | 'openstack_floating_ip_description_updated' | 'openstack_floating_ip_detached' | 'openstack_floating_ip_disconnected' | 'openstack_instance_security_groups_changed' | 'openstack_network_cleaned' | 'openstack_network_created' | 'openstack_network_deleted' | 'openstack_network_imported' | 'openstack_network_pulled' | 'openstack_network_updated' | 'openstack_load_balancer_created' | 'openstack_load_balancer_updated' | 'openstack_load_balancer_deleted' | 'openstack_load_balancer_security_groups_changed' | 'openstack_listener_created' | 'openstack_listener_updated' | 'openstack_listener_deleted' | 'openstack_pool_created' | 'openstack_pool_updated' | 'openstack_pool_deleted' | 'openstack_pool_member_created' | 'openstack_pool_member_updated' | 'openstack_pool_member_deleted' | 'openstack_port_cleaned' | 'openstack_port_created' | 'openstack_port_deleted' | 'openstack_port_imported' | 'openstack_port_pulled' | 'openstack_port_updated' | 'openstack_port_security_enabled' | 'openstack_port_security_disabled' | 'openstack_port_allowed_address_pairs_changed' | 'openstack_port_security_groups_changed' | 'openstack_rbac_policy_created' | 'openstack_rbac_policy_deleted' | 'openstack_router_interface_added' | 'openstack_router_interface_removed' | 'openstack_router_updated' | 'openstack_subnet_host_routes_changed' | 'openstack_security_group_cleaned' | 'openstack_security_group_created' | 'openstack_security_group_deleted' | 'openstack_security_group_imported' | 'openstack_security_group_pulled' | 'openstack_security_group_rule_cleaned' | 'openstack_security_group_rule_created' | 'openstack_security_group_rule_deleted' | 'openstack_security_group_rule_imported' | 'openstack_security_group_rule_updated' | 'openstack_security_group_rules_changed' | 'openstack_security_group_updated' | 'openstack_security_group_added_remotely' | 'openstack_security_group_removed_remotely' | 'openstack_security_group_added_locally' | 'openstack_security_group_removed_locally' | 'openstack_server_group_cleaned' | 'openstack_server_group_created' | 'openstack_server_group_deleted' | 'openstack_server_group_imported' | 'openstack_server_group_pulled' | 'openstack_subnet_cleaned' | 'openstack_subnet_created' | 'openstack_subnet_deleted' | 'openstack_subnet_imported' | 'openstack_subnet_pulled' | 'openstack_subnet_updated' | 'openstack_tenant_quota_limit_updated' | 'payment_added' | 'payment_created' | 'payment_removed' | 'policy_notification' | 'project_creation_succeeded' | 'project_deletion_succeeded' | 'project_deletion_triggered' | 'project_update_request_approved' | 'project_update_request_created' | 'project_update_request_rejected' | 'project_end_date_change_request_approved' | 'project_end_date_change_request_created' | 'project_end_date_change_request_rejected' | 'project_update_succeeded' | 'project_permission_review_created' | 'project_permission_review_closed' | 'proposal_canceled' | 'proposal_document_added' | 'proposal_document_removed' | 'proposal_workflow_advanced' | 'query_executed' | 'increase_of_customer_credit_due_to_affiliate_fee' | 'reduction_of_customer_credit' | 'reduction_of_customer_credit_due_to_minimal_consumption' | 'reduction_of_customer_expected_consumption' | 'reduction_of_project_credit' | 'reduction_of_project_credit_due_to_minimal_consumption' | 'reduction_of_project_expected_consumption' | 'request_downscaling' | 'request_pausing' | 'request_slurm_resource_downscaling' | 'request_slurm_resource_pausing' | 'reset_downscaling' | 'reset_member_restriction' | 'reset_pausing' | 'resource_assign_floating_ip_failed' | 'resource_assign_floating_ip_scheduled' | 'resource_assign_floating_ip_succeeded' | 'resource_attach_failed' | 'resource_attach_scheduled' | 'resource_attach_succeeded' | 'resource_backup_creation_failed' | 'resource_backup_creation_scheduled' | 'resource_backup_creation_succeeded' | 'resource_backup_deletion_failed' | 'resource_backup_deletion_scheduled' | 'resource_backup_deletion_succeeded' | 'resource_backup_restoration_failed' | 'resource_backup_restoration_scheduled' | 'resource_backup_restoration_succeeded' | 'resource_change_flavor_failed' | 'resource_change_flavor_scheduled' | 'resource_change_flavor_succeeded' | 'resource_creation_failed' | 'resource_creation_scheduled' | 'resource_creation_succeeded' | 'resource_deletion_failed' | 'resource_deletion_scheduled' | 'resource_deletion_succeeded' | 'resource_detach_failed' | 'resource_detach_scheduled' | 'resource_detach_succeeded' | 'resource_extend_failed' | 'resource_extend_scheduled' | 'resource_extend_succeeded' | 'resource_extend_volume_failed' | 'resource_extend_volume_scheduled' | 'resource_extend_volume_succeeded' | 'resource_import_succeeded' | 'resource_pull_failed' | 'resource_pull_scheduled' | 'resource_pull_succeeded' | 'resource_rescue_failed' | 'resource_rescue_scheduled' | 'resource_rescue_succeeded' | 'resource_restart_failed' | 'resource_restart_scheduled' | 'resource_restart_succeeded' | 'resource_retype_failed' | 'resource_retype_scheduled' | 'resource_retype_succeeded' | 'resource_robot_account_created' | 'resource_robot_account_deleted' | 'resource_robot_account_state_changed' | 'resource_robot_account_updated' | 'resource_start_failed' | 'resource_start_scheduled' | 'resource_start_succeeded' | 'resource_stop_failed' | 'resource_stop_scheduled' | 'resource_stop_succeeded' | 'resource_unassign_floating_ip_failed' | 'resource_unassign_floating_ip_scheduled' | 'resource_unassign_floating_ip_succeeded' | 'resource_unrescue_failed' | 'resource_unrescue_scheduled' | 'resource_unrescue_succeeded' | 'resource_update_allowed_address_pairs_failed' | 'resource_update_allowed_address_pairs_scheduled' | 'resource_update_allowed_address_pairs_succeeded' | 'resource_update_floating_ips_failed' | 'resource_update_floating_ips_scheduled' | 'resource_update_floating_ips_succeeded' | 'resource_update_metadata_failed' | 'resource_update_metadata_scheduled' | 'resource_update_metadata_succeeded' | 'resource_update_ports_failed' | 'resource_update_ports_scheduled' | 'resource_update_ports_succeeded' | 'resource_update_security_groups_failed' | 'resource_update_security_groups_scheduled' | 'resource_update_security_groups_succeeded' | 'resource_update_succeeded' | 'restrict_members' | 'review_canceled' | 'reviewer_workload_limit_overridden' | 'role_cloned' | 'role_concealed' | 'role_definition_created' | 'role_definition_deleted' | 'role_definition_updated' | 'role_disabled' | 'role_enabled' | 'role_granted' | 'role_revealed' | 'role_revoked' | 'role_updated' | 'roll_back_customer_credit' | 'roll_back_project_credit' | 'service_account_created' | 'service_account_deleted' | 'service_account_updated' | 'set_to_zero_overdue_credit' | 'slurm_policy_evaluation' | 'ssh_key_creation_succeeded' | 'ssh_key_deletion_succeeded' | 'terminate_resources' | 'token_created' | 'token_lifetime_updated' | 'update_of_affiliate_by_staff' | 'update_of_credit_by_staff' | 'update_of_project_credit_by_staff' | 'automatic_credit_adjustment' | 'user_activated' | 'user_blocked' | 'user_creation_succeeded' | 'user_data_accessed' | 'user_deactivated' | 'user_deactivated_no_roles' | 'user_deletion_succeeded' | 'user_details_update_succeeded' | 'user_has_been_created_by_staff' | 'user_password_updated' | 'user_password_updated_by_staff' | 'user_password_removed_by_staff' | 'user_update_succeeded' | 'user_group_invitation_updated' | 'user_invitation_updated' | 'user_invitation_deleted' | 'terms_of_service_consent_granted' | 'terms_of_service_consent_revoked' | 'chat_session_accessed' | 'chat_thread_accessed' | 'chat_injection_detected' | 'chat_pii_detected' | 'chat_feedback_submitted' | 'onboarding_verification_deleted' | 'onboarding_verification_deleted_by_task' | 'pat_created' | 'pat_revoked' | 'pat_rotated' | 'pat_expired' | 'pat_used_from_new_ip' | 'pat_access_denied_from_ip' | 'pat_network_acl_updated' | 'pat_authentication_rejected' | 'passkey_registered' | 'passkey_renamed' | 'passkey_revoked' | 'passkey_revoked_by_staff' | 'passkey_authentication_succeeded' | 'passkey_authentication_failed' | 'event_consumer_registered_with_broad_credential'>;
+        [key: string]: Array<'access_subnet_creation_succeeded' | 'access_subnet_deletion_succeeded' | 'access_subnet_update_succeeded' | 'offering_access_subnet_creation_succeeded' | 'offering_access_subnet_deletion_succeeded' | 'offering_access_subnet_update_succeeded' | 'allowed_offerings_have_been_updated' | 'attachment_created' | 'attachment_deleted' | 'attachment_updated' | 'auth_logged_in_with_saml2' | 'auth_logged_in_with_username' | 'auth_logged_in_with_oauth' | 'auth_logged_out' | 'auth_logged_out_with_saml2' | 'auth_login_failed_with_username' | 'block_creation_of_new_resources' | 'block_modification_of_existing_resources' | 'call_document_added' | 'call_document_removed' | 'create_of_affiliate_by_staff' | 'create_of_credit_by_staff' | 'create_of_project_credit_by_staff' | 'custom_notification' | 'customer_creation_succeeded' | 'customer_deletion_succeeded' | 'customer_update_succeeded' | 'customer_permission_review_created' | 'customer_permission_review_closed' | 'droplet_resize_scheduled' | 'droplet_resize_succeeded' | 'freeipa_profile_created' | 'freeipa_profile_deleted' | 'freeipa_profile_disabled' | 'freeipa_profile_enabled' | 'invoice_canceled' | 'invoice_created' | 'invoice_item_created' | 'invoice_item_deleted' | 'invoice_item_updated' | 'invoice_paid' | 'issue_creation_succeeded' | 'issue_deletion_succeeded' | 'issue_update_succeeded' | 'marketplace_offering_component_created' | 'marketplace_offering_component_deleted' | 'marketplace_offering_component_updated' | 'marketplace_offering_created' | 'marketplace_offering_merge_created' | 'marketplace_offering_merge_executed' | 'marketplace_offering_merge_failed' | 'marketplace_offering_merge_undone' | 'marketplace_offering_merge_verification_failed' | 'marketplace_offering_updated' | 'marketplace_offering_options_updated' | 'marketplace_offering_resource_options_updated' | 'marketplace_offering_user_created' | 'marketplace_offering_user_updated' | 'marketplace_offering_user_deleted' | 'marketplace_offering_user_restriction_updated' | 'marketplace_provider_project_group_gid_updated' | 'marketplace_order_approved' | 'marketplace_order_completed' | 'marketplace_order_created' | 'marketplace_order_failed' | 'marketplace_order_rejected' | 'marketplace_order_terminated' | 'marketplace_order_unlinked' | 'marketplace_plan_archived' | 'marketplace_plan_component_current_price_updated' | 'marketplace_plan_component_future_price_updated' | 'marketplace_plan_component_quota_updated' | 'marketplace_plan_created' | 'marketplace_plan_updated' | 'marketplace_plan_deleted' | 'marketplace_resource_create_canceled' | 'marketplace_resource_create_failed' | 'marketplace_resource_create_requested' | 'marketplace_resource_create_succeeded' | 'marketplace_resource_downscaled' | 'marketplace_resource_erred_on_backend' | 'marketplace_resource_paused' | 'marketplace_resource_terminate_canceled' | 'marketplace_resource_terminate_failed' | 'marketplace_resource_terminate_requested' | 'marketplace_resource_terminate_succeeded' | 'marketplace_resource_unlinked' | 'marketplace_resource_update_canceled' | 'marketplace_resource_update_end_date_succeeded' | 'marketplace_resource_api_key_requested' | 'marketplace_resource_api_key_rotated' | 'marketplace_resource_api_key_paused' | 'marketplace_resource_api_key_resumed' | 'marketplace_resource_api_key_updated' | 'marketplace_resource_api_key_deleted' | 'marketplace_resource_api_key_failed' | 'marketplace_resource_api_key_revealed' | 'marketplace_resource_update_failed' | 'marketplace_resource_update_limits_failed' | 'marketplace_resource_update_limits_succeeded' | 'marketplace_resource_plan_switched' | 'marketplace_resource_project_created' | 'marketplace_resource_project_recovered' | 'marketplace_resource_project_removed' | 'marketplace_resource_update_requested' | 'marketplace_resource_update_succeeded' | 'marketplace_resource_limit_change_request_created' | 'marketplace_resource_limit_change_request_approved' | 'marketplace_resource_limit_change_request_rejected' | 'marketplace_resource_end_date_change_request_created' | 'marketplace_resource_end_date_change_request_approved' | 'marketplace_resource_end_date_change_request_rejected' | 'marketplace_resource_end_date_change_request_canceled' | 'maintenance_announcement_cancelled' | 'maintenance_announcement_completed' | 'maintenance_announcement_created' | 'maintenance_announcement_deleted' | 'maintenance_announcement_scheduled' | 'maintenance_announcement_started' | 'maintenance_announcement_unscheduled' | 'maintenance_announcement_updated' | 'notify_external_user' | 'notify_organization_owners' | 'notify_project_team' | 'openstack_floating_ip_attached' | 'openstack_floating_ip_connected' | 'openstack_floating_ip_description_updated' | 'openstack_floating_ip_detached' | 'openstack_floating_ip_disconnected' | 'openstack_instance_security_groups_changed' | 'openstack_network_cleaned' | 'openstack_network_created' | 'openstack_network_deleted' | 'openstack_network_imported' | 'openstack_network_pulled' | 'openstack_network_updated' | 'openstack_load_balancer_created' | 'openstack_load_balancer_updated' | 'openstack_load_balancer_deleted' | 'openstack_load_balancer_security_groups_changed' | 'openstack_listener_created' | 'openstack_listener_updated' | 'openstack_listener_deleted' | 'openstack_pool_created' | 'openstack_pool_updated' | 'openstack_pool_deleted' | 'openstack_pool_member_created' | 'openstack_pool_member_updated' | 'openstack_pool_member_deleted' | 'openstack_port_cleaned' | 'openstack_port_created' | 'openstack_port_deleted' | 'openstack_port_imported' | 'openstack_port_pulled' | 'openstack_port_updated' | 'openstack_port_security_enabled' | 'openstack_port_security_disabled' | 'openstack_port_allowed_address_pairs_changed' | 'openstack_port_security_groups_changed' | 'openstack_rbac_policy_created' | 'openstack_rbac_policy_deleted' | 'openstack_router_interface_added' | 'openstack_router_interface_removed' | 'openstack_router_updated' | 'openstack_subnet_host_routes_changed' | 'openstack_security_group_cleaned' | 'openstack_security_group_created' | 'openstack_security_group_deleted' | 'openstack_security_group_imported' | 'openstack_security_group_pulled' | 'openstack_security_group_rule_cleaned' | 'openstack_security_group_rule_created' | 'openstack_security_group_rule_deleted' | 'openstack_security_group_rule_imported' | 'openstack_security_group_rule_updated' | 'openstack_security_group_rules_changed' | 'openstack_security_group_updated' | 'openstack_security_group_added_remotely' | 'openstack_security_group_removed_remotely' | 'openstack_security_group_added_locally' | 'openstack_security_group_removed_locally' | 'openstack_server_group_cleaned' | 'openstack_server_group_created' | 'openstack_server_group_deleted' | 'openstack_server_group_imported' | 'openstack_server_group_pulled' | 'openstack_subnet_cleaned' | 'openstack_subnet_created' | 'openstack_subnet_deleted' | 'openstack_subnet_imported' | 'openstack_subnet_pulled' | 'openstack_subnet_updated' | 'openstack_tenant_quota_limit_updated' | 'payment_added' | 'payment_created' | 'payment_removed' | 'policy_notification' | 'project_creation_succeeded' | 'project_deletion_succeeded' | 'project_deletion_triggered' | 'project_update_request_approved' | 'project_update_request_created' | 'project_update_request_rejected' | 'project_end_date_change_request_approved' | 'project_end_date_change_request_created' | 'project_end_date_change_request_rejected' | 'project_update_succeeded' | 'project_permission_review_created' | 'project_permission_review_closed' | 'proposal_canceled' | 'proposal_document_added' | 'proposal_draft_carried_over' | 'proposal_document_removed' | 'proposal_decision_reopened' | 'proposal_rejected_at_round_completion' | 'proposal_workflow_advanced' | 'round_closed' | 'round_decision_started' | 'round_evaluation_started' | 'round_results_published' | 'round_undecided_proposals_rejected' | 'query_executed' | 'increase_of_customer_credit_due_to_affiliate_fee' | 'reduction_of_customer_credit' | 'reduction_of_customer_credit_due_to_minimal_consumption' | 'reduction_of_customer_expected_consumption' | 'reduction_of_project_credit' | 'reduction_of_project_credit_due_to_minimal_consumption' | 'reduction_of_project_expected_consumption' | 'request_downscaling' | 'request_pausing' | 'request_slurm_resource_downscaling' | 'request_slurm_resource_pausing' | 'reset_downscaling' | 'reset_member_restriction' | 'reset_pausing' | 'resource_assign_floating_ip_failed' | 'resource_assign_floating_ip_scheduled' | 'resource_assign_floating_ip_succeeded' | 'resource_attach_failed' | 'resource_attach_scheduled' | 'resource_attach_succeeded' | 'resource_backup_creation_failed' | 'resource_backup_creation_scheduled' | 'resource_backup_creation_succeeded' | 'resource_backup_deletion_failed' | 'resource_backup_deletion_scheduled' | 'resource_backup_deletion_succeeded' | 'resource_backup_restoration_failed' | 'resource_backup_restoration_scheduled' | 'resource_backup_restoration_succeeded' | 'resource_change_flavor_failed' | 'resource_change_flavor_scheduled' | 'resource_change_flavor_succeeded' | 'resource_creation_failed' | 'resource_creation_scheduled' | 'resource_creation_succeeded' | 'resource_deletion_failed' | 'resource_deletion_scheduled' | 'resource_deletion_succeeded' | 'resource_detach_failed' | 'resource_detach_scheduled' | 'resource_detach_succeeded' | 'resource_extend_failed' | 'resource_extend_scheduled' | 'resource_extend_succeeded' | 'resource_extend_volume_failed' | 'resource_extend_volume_scheduled' | 'resource_extend_volume_succeeded' | 'resource_import_succeeded' | 'resource_pull_failed' | 'resource_pull_scheduled' | 'resource_pull_succeeded' | 'resource_rescue_failed' | 'resource_rescue_scheduled' | 'resource_rescue_succeeded' | 'resource_restart_failed' | 'resource_restart_scheduled' | 'resource_restart_succeeded' | 'resource_retype_failed' | 'resource_retype_scheduled' | 'resource_retype_succeeded' | 'resource_robot_account_created' | 'resource_robot_account_deleted' | 'resource_robot_account_state_changed' | 'resource_robot_account_updated' | 'resource_start_failed' | 'resource_start_scheduled' | 'resource_start_succeeded' | 'resource_stop_failed' | 'resource_stop_scheduled' | 'resource_stop_succeeded' | 'resource_unassign_floating_ip_failed' | 'resource_unassign_floating_ip_scheduled' | 'resource_unassign_floating_ip_succeeded' | 'resource_unrescue_failed' | 'resource_unrescue_scheduled' | 'resource_unrescue_succeeded' | 'resource_update_allowed_address_pairs_failed' | 'resource_update_allowed_address_pairs_scheduled' | 'resource_update_allowed_address_pairs_succeeded' | 'resource_update_floating_ips_failed' | 'resource_update_floating_ips_scheduled' | 'resource_update_floating_ips_succeeded' | 'resource_update_metadata_failed' | 'resource_update_metadata_scheduled' | 'resource_update_metadata_succeeded' | 'resource_update_ports_failed' | 'resource_update_ports_scheduled' | 'resource_update_ports_succeeded' | 'resource_update_security_groups_failed' | 'resource_update_security_groups_scheduled' | 'resource_update_security_groups_succeeded' | 'resource_update_succeeded' | 'restrict_members' | 'review_canceled' | 'reviewer_workload_limit_overridden' | 'role_cloned' | 'role_concealed' | 'role_definition_created' | 'role_definition_deleted' | 'role_definition_updated' | 'role_disabled' | 'role_enabled' | 'role_granted' | 'role_revealed' | 'role_revoked' | 'role_updated' | 'roll_back_customer_credit' | 'roll_back_project_credit' | 'service_account_created' | 'service_account_deleted' | 'service_account_updated' | 'set_to_zero_overdue_credit' | 'slurm_policy_evaluation' | 'ssh_key_creation_succeeded' | 'ssh_key_deletion_succeeded' | 'terminate_resources' | 'token_created' | 'token_lifetime_updated' | 'update_of_affiliate_by_staff' | 'update_of_credit_by_staff' | 'update_of_project_credit_by_staff' | 'automatic_credit_adjustment' | 'user_activated' | 'user_blocked' | 'user_creation_succeeded' | 'user_data_accessed' | 'user_deactivated' | 'user_deactivated_no_roles' | 'user_deletion_succeeded' | 'user_details_update_succeeded' | 'user_has_been_created_by_staff' | 'user_password_updated' | 'user_password_updated_by_staff' | 'user_password_removed_by_staff' | 'matrix_password_generated' | 'matrix_recovery_key_escrowed' | 'matrix_recovery_key_viewed' | 'matrix_encryption_reset_started' | 'user_update_succeeded' | 'user_group_invitation_updated' | 'user_invitation_updated' | 'user_invitation_deleted' | 'terms_of_service_consent_granted' | 'terms_of_service_consent_revoked' | 'chat_session_accessed' | 'chat_thread_accessed' | 'chat_injection_detected' | 'chat_pii_detected' | 'chat_feedback_submitted' | 'onboarding_verification_deleted' | 'onboarding_verification_deleted_by_task' | 'pat_created' | 'pat_revoked' | 'pat_rotated' | 'pat_expired' | 'pat_used_from_new_ip' | 'pat_access_denied_from_ip' | 'pat_network_acl_updated' | 'pat_authentication_rejected' | 'passkey_registered' | 'passkey_renamed' | 'passkey_revoked' | 'passkey_revoked_by_staff' | 'passkey_authentication_succeeded' | 'passkey_authentication_failed' | 'event_consumer_registered_with_broad_credential'>;
     };
 };
 
@@ -9326,7 +9478,7 @@ export type EventSubscriptionRequest = {
     observable_objects?: Array<EventSubscriptionObservableObjectRequest>;
 };
 
-export type EventTypesEnum = 'access_subnet_creation_succeeded' | 'access_subnet_deletion_succeeded' | 'access_subnet_update_succeeded' | 'offering_access_subnet_creation_succeeded' | 'offering_access_subnet_deletion_succeeded' | 'offering_access_subnet_update_succeeded' | 'allowed_offerings_have_been_updated' | 'attachment_created' | 'attachment_deleted' | 'attachment_updated' | 'auth_logged_in_with_saml2' | 'auth_logged_in_with_username' | 'auth_logged_in_with_oauth' | 'auth_logged_out' | 'auth_logged_out_with_saml2' | 'auth_login_failed_with_username' | 'block_creation_of_new_resources' | 'block_modification_of_existing_resources' | 'call_document_added' | 'call_document_removed' | 'create_of_affiliate_by_staff' | 'create_of_credit_by_staff' | 'create_of_project_credit_by_staff' | 'custom_notification' | 'customer_creation_succeeded' | 'customer_deletion_succeeded' | 'customer_update_succeeded' | 'customer_permission_review_created' | 'customer_permission_review_closed' | 'droplet_resize_scheduled' | 'droplet_resize_succeeded' | 'freeipa_profile_created' | 'freeipa_profile_deleted' | 'freeipa_profile_disabled' | 'freeipa_profile_enabled' | 'invoice_canceled' | 'invoice_created' | 'invoice_item_created' | 'invoice_item_deleted' | 'invoice_item_updated' | 'invoice_paid' | 'issue_creation_succeeded' | 'issue_deletion_succeeded' | 'issue_update_succeeded' | 'marketplace_offering_component_created' | 'marketplace_offering_component_deleted' | 'marketplace_offering_component_updated' | 'marketplace_offering_created' | 'marketplace_offering_merge_created' | 'marketplace_offering_merge_executed' | 'marketplace_offering_merge_failed' | 'marketplace_offering_merge_undone' | 'marketplace_offering_merge_verification_failed' | 'marketplace_offering_updated' | 'marketplace_offering_options_updated' | 'marketplace_offering_resource_options_updated' | 'marketplace_offering_user_created' | 'marketplace_offering_user_updated' | 'marketplace_offering_user_deleted' | 'marketplace_offering_user_restriction_updated' | 'marketplace_provider_project_group_gid_updated' | 'marketplace_order_approved' | 'marketplace_order_completed' | 'marketplace_order_created' | 'marketplace_order_failed' | 'marketplace_order_rejected' | 'marketplace_order_terminated' | 'marketplace_order_unlinked' | 'marketplace_plan_archived' | 'marketplace_plan_component_current_price_updated' | 'marketplace_plan_component_future_price_updated' | 'marketplace_plan_component_quota_updated' | 'marketplace_plan_created' | 'marketplace_plan_updated' | 'marketplace_plan_deleted' | 'marketplace_resource_create_canceled' | 'marketplace_resource_create_failed' | 'marketplace_resource_create_requested' | 'marketplace_resource_create_succeeded' | 'marketplace_resource_downscaled' | 'marketplace_resource_erred_on_backend' | 'marketplace_resource_paused' | 'marketplace_resource_terminate_canceled' | 'marketplace_resource_terminate_failed' | 'marketplace_resource_terminate_requested' | 'marketplace_resource_terminate_succeeded' | 'marketplace_resource_unlinked' | 'marketplace_resource_update_canceled' | 'marketplace_resource_update_end_date_succeeded' | 'marketplace_resource_api_key_rotated' | 'marketplace_resource_api_key_revealed' | 'marketplace_resource_update_failed' | 'marketplace_resource_update_limits_failed' | 'marketplace_resource_update_limits_succeeded' | 'marketplace_resource_plan_switched' | 'marketplace_resource_project_created' | 'marketplace_resource_project_recovered' | 'marketplace_resource_project_removed' | 'marketplace_resource_update_requested' | 'marketplace_resource_update_succeeded' | 'marketplace_resource_limit_change_request_created' | 'marketplace_resource_limit_change_request_approved' | 'marketplace_resource_limit_change_request_rejected' | 'marketplace_resource_end_date_change_request_created' | 'marketplace_resource_end_date_change_request_approved' | 'marketplace_resource_end_date_change_request_rejected' | 'marketplace_resource_end_date_change_request_canceled' | 'maintenance_announcement_cancelled' | 'maintenance_announcement_completed' | 'maintenance_announcement_created' | 'maintenance_announcement_deleted' | 'maintenance_announcement_scheduled' | 'maintenance_announcement_started' | 'maintenance_announcement_unscheduled' | 'maintenance_announcement_updated' | 'notify_external_user' | 'notify_organization_owners' | 'notify_project_team' | 'openstack_floating_ip_attached' | 'openstack_floating_ip_connected' | 'openstack_floating_ip_description_updated' | 'openstack_floating_ip_detached' | 'openstack_floating_ip_disconnected' | 'openstack_instance_security_groups_changed' | 'openstack_network_cleaned' | 'openstack_network_created' | 'openstack_network_deleted' | 'openstack_network_imported' | 'openstack_network_pulled' | 'openstack_network_updated' | 'openstack_load_balancer_created' | 'openstack_load_balancer_updated' | 'openstack_load_balancer_deleted' | 'openstack_load_balancer_security_groups_changed' | 'openstack_listener_created' | 'openstack_listener_updated' | 'openstack_listener_deleted' | 'openstack_pool_created' | 'openstack_pool_updated' | 'openstack_pool_deleted' | 'openstack_pool_member_created' | 'openstack_pool_member_updated' | 'openstack_pool_member_deleted' | 'openstack_port_cleaned' | 'openstack_port_created' | 'openstack_port_deleted' | 'openstack_port_imported' | 'openstack_port_pulled' | 'openstack_port_updated' | 'openstack_port_security_enabled' | 'openstack_port_security_disabled' | 'openstack_port_allowed_address_pairs_changed' | 'openstack_port_security_groups_changed' | 'openstack_rbac_policy_created' | 'openstack_rbac_policy_deleted' | 'openstack_router_interface_added' | 'openstack_router_interface_removed' | 'openstack_router_updated' | 'openstack_subnet_host_routes_changed' | 'openstack_security_group_cleaned' | 'openstack_security_group_created' | 'openstack_security_group_deleted' | 'openstack_security_group_imported' | 'openstack_security_group_pulled' | 'openstack_security_group_rule_cleaned' | 'openstack_security_group_rule_created' | 'openstack_security_group_rule_deleted' | 'openstack_security_group_rule_imported' | 'openstack_security_group_rule_updated' | 'openstack_security_group_rules_changed' | 'openstack_security_group_updated' | 'openstack_security_group_added_remotely' | 'openstack_security_group_removed_remotely' | 'openstack_security_group_added_locally' | 'openstack_security_group_removed_locally' | 'openstack_server_group_cleaned' | 'openstack_server_group_created' | 'openstack_server_group_deleted' | 'openstack_server_group_imported' | 'openstack_server_group_pulled' | 'openstack_subnet_cleaned' | 'openstack_subnet_created' | 'openstack_subnet_deleted' | 'openstack_subnet_imported' | 'openstack_subnet_pulled' | 'openstack_subnet_updated' | 'openstack_tenant_quota_limit_updated' | 'payment_added' | 'payment_created' | 'payment_removed' | 'policy_notification' | 'project_creation_succeeded' | 'project_deletion_succeeded' | 'project_deletion_triggered' | 'project_update_request_approved' | 'project_update_request_created' | 'project_update_request_rejected' | 'project_end_date_change_request_approved' | 'project_end_date_change_request_created' | 'project_end_date_change_request_rejected' | 'project_update_succeeded' | 'project_permission_review_created' | 'project_permission_review_closed' | 'proposal_canceled' | 'proposal_document_added' | 'proposal_document_removed' | 'proposal_workflow_advanced' | 'query_executed' | 'increase_of_customer_credit_due_to_affiliate_fee' | 'reduction_of_customer_credit' | 'reduction_of_customer_credit_due_to_minimal_consumption' | 'reduction_of_customer_expected_consumption' | 'reduction_of_project_credit' | 'reduction_of_project_credit_due_to_minimal_consumption' | 'reduction_of_project_expected_consumption' | 'request_downscaling' | 'request_pausing' | 'request_slurm_resource_downscaling' | 'request_slurm_resource_pausing' | 'reset_downscaling' | 'reset_member_restriction' | 'reset_pausing' | 'resource_assign_floating_ip_failed' | 'resource_assign_floating_ip_scheduled' | 'resource_assign_floating_ip_succeeded' | 'resource_attach_failed' | 'resource_attach_scheduled' | 'resource_attach_succeeded' | 'resource_backup_creation_failed' | 'resource_backup_creation_scheduled' | 'resource_backup_creation_succeeded' | 'resource_backup_deletion_failed' | 'resource_backup_deletion_scheduled' | 'resource_backup_deletion_succeeded' | 'resource_backup_restoration_failed' | 'resource_backup_restoration_scheduled' | 'resource_backup_restoration_succeeded' | 'resource_change_flavor_failed' | 'resource_change_flavor_scheduled' | 'resource_change_flavor_succeeded' | 'resource_creation_failed' | 'resource_creation_scheduled' | 'resource_creation_succeeded' | 'resource_deletion_failed' | 'resource_deletion_scheduled' | 'resource_deletion_succeeded' | 'resource_detach_failed' | 'resource_detach_scheduled' | 'resource_detach_succeeded' | 'resource_extend_failed' | 'resource_extend_scheduled' | 'resource_extend_succeeded' | 'resource_extend_volume_failed' | 'resource_extend_volume_scheduled' | 'resource_extend_volume_succeeded' | 'resource_import_succeeded' | 'resource_pull_failed' | 'resource_pull_scheduled' | 'resource_pull_succeeded' | 'resource_rescue_failed' | 'resource_rescue_scheduled' | 'resource_rescue_succeeded' | 'resource_restart_failed' | 'resource_restart_scheduled' | 'resource_restart_succeeded' | 'resource_retype_failed' | 'resource_retype_scheduled' | 'resource_retype_succeeded' | 'resource_robot_account_created' | 'resource_robot_account_deleted' | 'resource_robot_account_state_changed' | 'resource_robot_account_updated' | 'resource_start_failed' | 'resource_start_scheduled' | 'resource_start_succeeded' | 'resource_stop_failed' | 'resource_stop_scheduled' | 'resource_stop_succeeded' | 'resource_unassign_floating_ip_failed' | 'resource_unassign_floating_ip_scheduled' | 'resource_unassign_floating_ip_succeeded' | 'resource_unrescue_failed' | 'resource_unrescue_scheduled' | 'resource_unrescue_succeeded' | 'resource_update_allowed_address_pairs_failed' | 'resource_update_allowed_address_pairs_scheduled' | 'resource_update_allowed_address_pairs_succeeded' | 'resource_update_floating_ips_failed' | 'resource_update_floating_ips_scheduled' | 'resource_update_floating_ips_succeeded' | 'resource_update_metadata_failed' | 'resource_update_metadata_scheduled' | 'resource_update_metadata_succeeded' | 'resource_update_ports_failed' | 'resource_update_ports_scheduled' | 'resource_update_ports_succeeded' | 'resource_update_security_groups_failed' | 'resource_update_security_groups_scheduled' | 'resource_update_security_groups_succeeded' | 'resource_update_succeeded' | 'restrict_members' | 'review_canceled' | 'reviewer_workload_limit_overridden' | 'role_cloned' | 'role_concealed' | 'role_definition_created' | 'role_definition_deleted' | 'role_definition_updated' | 'role_disabled' | 'role_enabled' | 'role_granted' | 'role_revealed' | 'role_revoked' | 'role_updated' | 'roll_back_customer_credit' | 'roll_back_project_credit' | 'service_account_created' | 'service_account_deleted' | 'service_account_updated' | 'set_to_zero_overdue_credit' | 'slurm_policy_evaluation' | 'ssh_key_creation_succeeded' | 'ssh_key_deletion_succeeded' | 'terminate_resources' | 'token_created' | 'token_lifetime_updated' | 'update_of_affiliate_by_staff' | 'update_of_credit_by_staff' | 'update_of_project_credit_by_staff' | 'automatic_credit_adjustment' | 'user_activated' | 'user_blocked' | 'user_creation_succeeded' | 'user_data_accessed' | 'user_deactivated' | 'user_deactivated_no_roles' | 'user_deletion_succeeded' | 'user_details_update_succeeded' | 'user_has_been_created_by_staff' | 'user_password_updated' | 'user_password_updated_by_staff' | 'user_password_removed_by_staff' | 'user_update_succeeded' | 'user_group_invitation_updated' | 'user_invitation_updated' | 'user_invitation_deleted' | 'terms_of_service_consent_granted' | 'terms_of_service_consent_revoked' | 'chat_session_accessed' | 'chat_thread_accessed' | 'chat_injection_detected' | 'chat_pii_detected' | 'chat_feedback_submitted' | 'onboarding_verification_deleted' | 'onboarding_verification_deleted_by_task' | 'pat_created' | 'pat_revoked' | 'pat_rotated' | 'pat_expired' | 'pat_used_from_new_ip' | 'pat_access_denied_from_ip' | 'pat_network_acl_updated' | 'pat_authentication_rejected' | 'passkey_registered' | 'passkey_renamed' | 'passkey_revoked' | 'passkey_revoked_by_staff' | 'passkey_authentication_succeeded' | 'passkey_authentication_failed' | 'event_consumer_registered_with_broad_credential';
+export type EventTypesEnum = 'access_subnet_creation_succeeded' | 'access_subnet_deletion_succeeded' | 'access_subnet_update_succeeded' | 'offering_access_subnet_creation_succeeded' | 'offering_access_subnet_deletion_succeeded' | 'offering_access_subnet_update_succeeded' | 'allowed_offerings_have_been_updated' | 'attachment_created' | 'attachment_deleted' | 'attachment_updated' | 'auth_logged_in_with_saml2' | 'auth_logged_in_with_username' | 'auth_logged_in_with_oauth' | 'auth_logged_out' | 'auth_logged_out_with_saml2' | 'auth_login_failed_with_username' | 'block_creation_of_new_resources' | 'block_modification_of_existing_resources' | 'call_document_added' | 'call_document_removed' | 'create_of_affiliate_by_staff' | 'create_of_credit_by_staff' | 'create_of_project_credit_by_staff' | 'custom_notification' | 'customer_creation_succeeded' | 'customer_deletion_succeeded' | 'customer_update_succeeded' | 'customer_permission_review_created' | 'customer_permission_review_closed' | 'droplet_resize_scheduled' | 'droplet_resize_succeeded' | 'freeipa_profile_created' | 'freeipa_profile_deleted' | 'freeipa_profile_disabled' | 'freeipa_profile_enabled' | 'invoice_canceled' | 'invoice_created' | 'invoice_item_created' | 'invoice_item_deleted' | 'invoice_item_updated' | 'invoice_paid' | 'issue_creation_succeeded' | 'issue_deletion_succeeded' | 'issue_update_succeeded' | 'marketplace_offering_component_created' | 'marketplace_offering_component_deleted' | 'marketplace_offering_component_updated' | 'marketplace_offering_created' | 'marketplace_offering_merge_created' | 'marketplace_offering_merge_executed' | 'marketplace_offering_merge_failed' | 'marketplace_offering_merge_undone' | 'marketplace_offering_merge_verification_failed' | 'marketplace_offering_updated' | 'marketplace_offering_options_updated' | 'marketplace_offering_resource_options_updated' | 'marketplace_offering_user_created' | 'marketplace_offering_user_updated' | 'marketplace_offering_user_deleted' | 'marketplace_offering_user_restriction_updated' | 'marketplace_provider_project_group_gid_updated' | 'marketplace_order_approved' | 'marketplace_order_completed' | 'marketplace_order_created' | 'marketplace_order_failed' | 'marketplace_order_rejected' | 'marketplace_order_terminated' | 'marketplace_order_unlinked' | 'marketplace_plan_archived' | 'marketplace_plan_component_current_price_updated' | 'marketplace_plan_component_future_price_updated' | 'marketplace_plan_component_quota_updated' | 'marketplace_plan_created' | 'marketplace_plan_updated' | 'marketplace_plan_deleted' | 'marketplace_resource_create_canceled' | 'marketplace_resource_create_failed' | 'marketplace_resource_create_requested' | 'marketplace_resource_create_succeeded' | 'marketplace_resource_downscaled' | 'marketplace_resource_erred_on_backend' | 'marketplace_resource_paused' | 'marketplace_resource_terminate_canceled' | 'marketplace_resource_terminate_failed' | 'marketplace_resource_terminate_requested' | 'marketplace_resource_terminate_succeeded' | 'marketplace_resource_unlinked' | 'marketplace_resource_update_canceled' | 'marketplace_resource_update_end_date_succeeded' | 'marketplace_resource_api_key_requested' | 'marketplace_resource_api_key_rotated' | 'marketplace_resource_api_key_paused' | 'marketplace_resource_api_key_resumed' | 'marketplace_resource_api_key_updated' | 'marketplace_resource_api_key_deleted' | 'marketplace_resource_api_key_failed' | 'marketplace_resource_api_key_revealed' | 'marketplace_resource_update_failed' | 'marketplace_resource_update_limits_failed' | 'marketplace_resource_update_limits_succeeded' | 'marketplace_resource_plan_switched' | 'marketplace_resource_project_created' | 'marketplace_resource_project_recovered' | 'marketplace_resource_project_removed' | 'marketplace_resource_update_requested' | 'marketplace_resource_update_succeeded' | 'marketplace_resource_limit_change_request_created' | 'marketplace_resource_limit_change_request_approved' | 'marketplace_resource_limit_change_request_rejected' | 'marketplace_resource_end_date_change_request_created' | 'marketplace_resource_end_date_change_request_approved' | 'marketplace_resource_end_date_change_request_rejected' | 'marketplace_resource_end_date_change_request_canceled' | 'maintenance_announcement_cancelled' | 'maintenance_announcement_completed' | 'maintenance_announcement_created' | 'maintenance_announcement_deleted' | 'maintenance_announcement_scheduled' | 'maintenance_announcement_started' | 'maintenance_announcement_unscheduled' | 'maintenance_announcement_updated' | 'notify_external_user' | 'notify_organization_owners' | 'notify_project_team' | 'openstack_floating_ip_attached' | 'openstack_floating_ip_connected' | 'openstack_floating_ip_description_updated' | 'openstack_floating_ip_detached' | 'openstack_floating_ip_disconnected' | 'openstack_instance_security_groups_changed' | 'openstack_network_cleaned' | 'openstack_network_created' | 'openstack_network_deleted' | 'openstack_network_imported' | 'openstack_network_pulled' | 'openstack_network_updated' | 'openstack_load_balancer_created' | 'openstack_load_balancer_updated' | 'openstack_load_balancer_deleted' | 'openstack_load_balancer_security_groups_changed' | 'openstack_listener_created' | 'openstack_listener_updated' | 'openstack_listener_deleted' | 'openstack_pool_created' | 'openstack_pool_updated' | 'openstack_pool_deleted' | 'openstack_pool_member_created' | 'openstack_pool_member_updated' | 'openstack_pool_member_deleted' | 'openstack_port_cleaned' | 'openstack_port_created' | 'openstack_port_deleted' | 'openstack_port_imported' | 'openstack_port_pulled' | 'openstack_port_updated' | 'openstack_port_security_enabled' | 'openstack_port_security_disabled' | 'openstack_port_allowed_address_pairs_changed' | 'openstack_port_security_groups_changed' | 'openstack_rbac_policy_created' | 'openstack_rbac_policy_deleted' | 'openstack_router_interface_added' | 'openstack_router_interface_removed' | 'openstack_router_updated' | 'openstack_subnet_host_routes_changed' | 'openstack_security_group_cleaned' | 'openstack_security_group_created' | 'openstack_security_group_deleted' | 'openstack_security_group_imported' | 'openstack_security_group_pulled' | 'openstack_security_group_rule_cleaned' | 'openstack_security_group_rule_created' | 'openstack_security_group_rule_deleted' | 'openstack_security_group_rule_imported' | 'openstack_security_group_rule_updated' | 'openstack_security_group_rules_changed' | 'openstack_security_group_updated' | 'openstack_security_group_added_remotely' | 'openstack_security_group_removed_remotely' | 'openstack_security_group_added_locally' | 'openstack_security_group_removed_locally' | 'openstack_server_group_cleaned' | 'openstack_server_group_created' | 'openstack_server_group_deleted' | 'openstack_server_group_imported' | 'openstack_server_group_pulled' | 'openstack_subnet_cleaned' | 'openstack_subnet_created' | 'openstack_subnet_deleted' | 'openstack_subnet_imported' | 'openstack_subnet_pulled' | 'openstack_subnet_updated' | 'openstack_tenant_quota_limit_updated' | 'payment_added' | 'payment_created' | 'payment_removed' | 'policy_notification' | 'project_creation_succeeded' | 'project_deletion_succeeded' | 'project_deletion_triggered' | 'project_update_request_approved' | 'project_update_request_created' | 'project_update_request_rejected' | 'project_end_date_change_request_approved' | 'project_end_date_change_request_created' | 'project_end_date_change_request_rejected' | 'project_update_succeeded' | 'project_permission_review_created' | 'project_permission_review_closed' | 'proposal_canceled' | 'proposal_document_added' | 'proposal_draft_carried_over' | 'proposal_document_removed' | 'proposal_decision_reopened' | 'proposal_rejected_at_round_completion' | 'proposal_workflow_advanced' | 'round_closed' | 'round_decision_started' | 'round_evaluation_started' | 'round_results_published' | 'round_undecided_proposals_rejected' | 'query_executed' | 'increase_of_customer_credit_due_to_affiliate_fee' | 'reduction_of_customer_credit' | 'reduction_of_customer_credit_due_to_minimal_consumption' | 'reduction_of_customer_expected_consumption' | 'reduction_of_project_credit' | 'reduction_of_project_credit_due_to_minimal_consumption' | 'reduction_of_project_expected_consumption' | 'request_downscaling' | 'request_pausing' | 'request_slurm_resource_downscaling' | 'request_slurm_resource_pausing' | 'reset_downscaling' | 'reset_member_restriction' | 'reset_pausing' | 'resource_assign_floating_ip_failed' | 'resource_assign_floating_ip_scheduled' | 'resource_assign_floating_ip_succeeded' | 'resource_attach_failed' | 'resource_attach_scheduled' | 'resource_attach_succeeded' | 'resource_backup_creation_failed' | 'resource_backup_creation_scheduled' | 'resource_backup_creation_succeeded' | 'resource_backup_deletion_failed' | 'resource_backup_deletion_scheduled' | 'resource_backup_deletion_succeeded' | 'resource_backup_restoration_failed' | 'resource_backup_restoration_scheduled' | 'resource_backup_restoration_succeeded' | 'resource_change_flavor_failed' | 'resource_change_flavor_scheduled' | 'resource_change_flavor_succeeded' | 'resource_creation_failed' | 'resource_creation_scheduled' | 'resource_creation_succeeded' | 'resource_deletion_failed' | 'resource_deletion_scheduled' | 'resource_deletion_succeeded' | 'resource_detach_failed' | 'resource_detach_scheduled' | 'resource_detach_succeeded' | 'resource_extend_failed' | 'resource_extend_scheduled' | 'resource_extend_succeeded' | 'resource_extend_volume_failed' | 'resource_extend_volume_scheduled' | 'resource_extend_volume_succeeded' | 'resource_import_succeeded' | 'resource_pull_failed' | 'resource_pull_scheduled' | 'resource_pull_succeeded' | 'resource_rescue_failed' | 'resource_rescue_scheduled' | 'resource_rescue_succeeded' | 'resource_restart_failed' | 'resource_restart_scheduled' | 'resource_restart_succeeded' | 'resource_retype_failed' | 'resource_retype_scheduled' | 'resource_retype_succeeded' | 'resource_robot_account_created' | 'resource_robot_account_deleted' | 'resource_robot_account_state_changed' | 'resource_robot_account_updated' | 'resource_start_failed' | 'resource_start_scheduled' | 'resource_start_succeeded' | 'resource_stop_failed' | 'resource_stop_scheduled' | 'resource_stop_succeeded' | 'resource_unassign_floating_ip_failed' | 'resource_unassign_floating_ip_scheduled' | 'resource_unassign_floating_ip_succeeded' | 'resource_unrescue_failed' | 'resource_unrescue_scheduled' | 'resource_unrescue_succeeded' | 'resource_update_allowed_address_pairs_failed' | 'resource_update_allowed_address_pairs_scheduled' | 'resource_update_allowed_address_pairs_succeeded' | 'resource_update_floating_ips_failed' | 'resource_update_floating_ips_scheduled' | 'resource_update_floating_ips_succeeded' | 'resource_update_metadata_failed' | 'resource_update_metadata_scheduled' | 'resource_update_metadata_succeeded' | 'resource_update_ports_failed' | 'resource_update_ports_scheduled' | 'resource_update_ports_succeeded' | 'resource_update_security_groups_failed' | 'resource_update_security_groups_scheduled' | 'resource_update_security_groups_succeeded' | 'resource_update_succeeded' | 'restrict_members' | 'review_canceled' | 'reviewer_workload_limit_overridden' | 'role_cloned' | 'role_concealed' | 'role_definition_created' | 'role_definition_deleted' | 'role_definition_updated' | 'role_disabled' | 'role_enabled' | 'role_granted' | 'role_revealed' | 'role_revoked' | 'role_updated' | 'roll_back_customer_credit' | 'roll_back_project_credit' | 'service_account_created' | 'service_account_deleted' | 'service_account_updated' | 'set_to_zero_overdue_credit' | 'slurm_policy_evaluation' | 'ssh_key_creation_succeeded' | 'ssh_key_deletion_succeeded' | 'terminate_resources' | 'token_created' | 'token_lifetime_updated' | 'update_of_affiliate_by_staff' | 'update_of_credit_by_staff' | 'update_of_project_credit_by_staff' | 'automatic_credit_adjustment' | 'user_activated' | 'user_blocked' | 'user_creation_succeeded' | 'user_data_accessed' | 'user_deactivated' | 'user_deactivated_no_roles' | 'user_deletion_succeeded' | 'user_details_update_succeeded' | 'user_has_been_created_by_staff' | 'user_password_updated' | 'user_password_updated_by_staff' | 'user_password_removed_by_staff' | 'matrix_password_generated' | 'matrix_recovery_key_escrowed' | 'matrix_recovery_key_viewed' | 'matrix_encryption_reset_started' | 'user_update_succeeded' | 'user_group_invitation_updated' | 'user_invitation_updated' | 'user_invitation_deleted' | 'terms_of_service_consent_granted' | 'terms_of_service_consent_revoked' | 'chat_session_accessed' | 'chat_thread_accessed' | 'chat_injection_detected' | 'chat_pii_detected' | 'chat_feedback_submitted' | 'onboarding_verification_deleted' | 'onboarding_verification_deleted_by_task' | 'pat_created' | 'pat_revoked' | 'pat_rotated' | 'pat_expired' | 'pat_used_from_new_ip' | 'pat_access_denied_from_ip' | 'pat_network_acl_updated' | 'pat_authentication_rejected' | 'passkey_registered' | 'passkey_renamed' | 'passkey_revoked' | 'passkey_revoked_by_staff' | 'passkey_authentication_succeeded' | 'passkey_authentication_failed' | 'event_consumer_registered_with_broad_credential';
 
 export type ExecuteActionErrorResponse = {
     error: string;
@@ -10081,6 +10233,8 @@ export type GlobalUserDataAccessLog = {
         [key: string]: unknown;
     };
 };
+
+export type GoodDirectionEnum = 'up' | 'down' | 'neutral';
 
 export type GoogleAuthUrl = {
     request_url: string;
@@ -11579,6 +11733,10 @@ export type IssueRequest = {
      */
     is_reported_manually?: boolean;
     template?: string | null;
+    /**
+     * Opening message, posted as the first public comment of an issue reported on behalf of another user.
+     */
+    first_comment?: string;
 };
 
 export type IssueStatus = {
@@ -11891,6 +12049,8 @@ export type LicenseSuggestion = {
     confidence: number;
 };
 
+export type LifecycleStateEnum = 'evaluating' | 'deciding' | 'results_published' | 'closed';
+
 export type LikertScaleLengthEnum = 3 | 5 | 7;
 
 export type LimitPeriodEnum = 'month' | 'quarterly' | 'annual' | 'total';
@@ -11974,6 +12134,14 @@ export type LiveKitTrack = {
     muted: boolean;
     width: number;
     height: number;
+    /**
+     * What the track carries, as LiveKit names it: CAMERA, MICROPHONE, SCREEN_SHARE, SCREEN_SHARE_AUDIO or UNKNOWN.
+     */
+    source: string;
+    /**
+     * How the publisher encrypts the track's media end to end, as LiveKit names it: GCM (LiveKit's end-to-end encryption, which Matrix calls in encrypted rooms use), CUSTOM (another scheme) or NONE (only encrypted between the browser and LiveKit).
+     */
+    encryption: string;
 };
 
 export type LoadBalancerAttachFloatingIpRequest = {
@@ -12647,19 +12815,19 @@ export type MatrixAppserviceSetupRequest = {
      */
     sender_localpart?: string;
     /**
-     * Matrix homeserver base URL. Only persisted if MATRIX_HOMESERVER_URL is not already configured.
+     * Matrix homeserver base URL. Only persisted if MATRIX_HOMESERVER_URL is not already configured; a different value is refused.
      */
     homeserver_url?: string;
     /**
-     * Optional. Matrix homeserver URL used by browser clients. Leave blank when the homeserver URL above is reachable from both servers and browsers. Set this for deployments where the two differ (e.g. Docker-internal vs. Caddy-proxied). Only persisted if MATRIX_HOMESERVER_PUBLIC_URL is not already configured.
+     * Optional. Matrix homeserver URL used by browser clients. Leave blank when the homeserver URL above is reachable from both servers and browsers. Set this for deployments where the two differ (e.g. Docker-internal vs. Caddy-proxied). Only persisted if MATRIX_HOMESERVER_PUBLIC_URL is not already configured; a different value is refused.
      */
     homeserver_public_url?: string;
     /**
-     * Matrix homeserver server_name domain. Only persisted if MATRIX_HOMESERVER_DOMAIN is not already configured.
+     * Matrix homeserver server_name domain. Only persisted if MATRIX_HOMESERVER_DOMAIN is not already configured; a different value is refused.
      */
     homeserver_domain?: string;
     /**
-     * Shared secret configured in the homeserver for user registration. Only persisted if MATRIX_USER_REGISTRATION_SECRET is not already configured.
+     * Registration token the homeserver requires for sign-up (its registration_token). Only persisted if MATRIX_USER_REGISTRATION_SECRET is not already configured; a different value is refused.
      */
     user_registration_secret?: string;
 };
@@ -12678,6 +12846,7 @@ export type MatrixAppserviceStatus = {
     as_token_configured: boolean;
     hs_token_configured: boolean;
     sender_localpart: string;
+    tokens_managed_by: string;
     bot_user_id: string;
     webhook_path: string;
     homeserver_url: string;
@@ -12686,14 +12855,40 @@ export type MatrixAppserviceStatus = {
 };
 
 export type MatrixCredentials = {
-    method: string;
+    method: MatrixExternalLoginMethodEnum;
     homeserver_url: string;
     matrix_user_id: string;
-    password?: string;
-    login_token?: string;
-    oidc_provider_url?: string;
-    room_id?: string;
-    access_token?: string;
+};
+
+export type MatrixCryptoConflict = {
+    state: MatrixCryptoConflictStateEnum;
+    detail: string;
+};
+
+export type MatrixCryptoConflictStateEnum = 'set_up' | 'locked' | 'not_locked' | 'in_progress' | 'no_lease' | 'wrong_key';
+
+export type MatrixCryptoEscrowRequest = {
+    lease: string;
+    recovery_key: string;
+};
+
+export type MatrixCryptoLease = {
+    lease: string;
+    expires_at: string;
+    /**
+     * For a reset only: the password to answer the homeserver's interactive auth with. Replaced once the new key is escrowed.
+     */
+    temporary_password: string | null;
+};
+
+export type MatrixCryptoLeaseReleaseRequest = {
+    lease: string;
+};
+
+export type MatrixCryptoLeaseRequestKindEnum = 'bootstrap' | 'reset' | 'import';
+
+export type MatrixCryptoLeaseRequestRequest = {
+    kind: MatrixCryptoLeaseRequestKindEnum;
 };
 
 export type MatrixDiagnosticCheck = {
@@ -12701,12 +12896,20 @@ export type MatrixDiagnosticCheck = {
     label: string;
     ok: boolean;
     detail: string;
+    /**
+     * The check's numbers, for monitoring: {"round_trip_ms": 12} for appservice_ping, {"failed": 2} for history_exports and {"4xx": 3, "5xx": 0} for webhook_errors. Absent on other checks, and on appservice_ping when the ping failed.
+     */
+    metrics?: {
+        [key: string]: number;
+    };
 };
 
 export type MatrixDiagnosticsResponse = {
     ok: boolean;
     checks: Array<MatrixDiagnosticCheck>;
 };
+
+export type MatrixExternalLoginMethodEnum = 'none' | 'password' | 'oidc';
 
 export type MatrixHistoryExport = {
     readonly uuid: string;
@@ -12726,6 +12929,19 @@ export type MatrixHistoryExport = {
 };
 
 export type MatrixHistoryExportStateEnum = 'pending' | 'exporting' | 'completed' | 'failed';
+
+export type MatrixPassword = {
+    homeserver_url: string;
+    matrix_user_id: string;
+    password: string;
+};
+
+export type MatrixRecoveryKey = {
+    /**
+     * The user's secret-storage recovery key, for unlocking chat history in another Matrix client. Null while Waldur holds no key that opens the user's secret storage.
+     */
+    recovery_key: string | null;
+};
 
 export type MatrixReprovisionResponse = {
     rooms_reprovisioned: number;
@@ -12784,7 +13000,24 @@ export type MatrixRoomMemberSummary = {
     membership_state: string;
 };
 
+export type MatrixRoomOpen = {
+    room_id: string;
+};
+
 export type MatrixRoomStateEnum = 'creating' | 'active' | 'disabling' | 'archived' | 'error';
+
+export type MatrixSession = {
+    homeserver_url: string;
+    matrix_user_id: string;
+    device_id: string;
+    access_token: string;
+    refresh_token: string | null;
+    expires_in_ms: number | null;
+    /**
+     * The user's secret-storage recovery key, or null before encryption is set up. Only ever returned to its owner.
+     */
+    recovery_key: string | null;
+};
 
 export type MePermission = {
     readonly role_name: string;
@@ -12964,9 +13197,13 @@ export type MergedPluginOptions = {
      */
     enable_membership_sync_status?: boolean;
     /**
-     * Include this offering in outbound SCIM user entitlement sync. When unset or false, SSH access endpoints on this offering are not pushed to the remote SCIM service even if SCIM_MEMBERSHIP_SYNC_ENABLED is on.
+     * Include this offering in outbound SCIM user entitlement sync. Login hosts are read from scim_login_nodes. When unset or false, this offering is not pushed to the remote SCIM service even if SCIM_MEMBERSHIP_SYNC_ENABLED is on.
      */
     enable_scim_entitlements?: boolean;
+    /**
+     * Bare hostnames of login nodes included in outbound SCIM entitlements when enable_scim_entitlements is set. Each entry is a DNS hostname only (for example login.example.org): stored lowercased, with no ssh:// URL, user@host, or host:port. These are not access links and do not appear in the resource access dropdown.
+     */
+    scim_login_nodes?: Array<string>;
     /**
      * If set to True, an Access subnets tab is shown on resource detail pages, letting consumers curate the IPs allowed to reach the backend entity. The list is advisory data for external firewalls.
      */
@@ -13216,6 +13453,10 @@ export type MergedPluginOptions = {
      */
     enforce_qos?: boolean;
     /**
+     * Declares that the site agent can govern resource API keys one by one: request, assign, limit, pause, resume and delete them. Without it a resource's keys can only be revealed and rotated. Nothing checks the claim: turn it on only if the agent's backend supports per-key commands (such as the Envoy AI Gateway); on one that does not (such as Ceph S3) every such command errs.
+     */
+    enable_api_key_provisioning?: boolean;
+    /**
      * If set to False, all orders require manual provider approval, including for service provider owners and staff
      */
     auto_approve_marketplace_script?: boolean;
@@ -13243,6 +13484,10 @@ export type MergedPluginOptions = {
      * Show a warning about unrecoverable loss of the SSH private key on the OpenStack instance order form.
      */
     show_ssh_key_loss_warning?: boolean;
+    /**
+     * Hide the API keys tab on resources of this offering.
+     */
+    hide_api_keys_tab?: boolean;
 };
 
 export type MergedPluginOptionsRequest = {
@@ -13383,9 +13628,13 @@ export type MergedPluginOptionsRequest = {
      */
     enable_membership_sync_status?: boolean;
     /**
-     * Include this offering in outbound SCIM user entitlement sync. When unset or false, SSH access endpoints on this offering are not pushed to the remote SCIM service even if SCIM_MEMBERSHIP_SYNC_ENABLED is on.
+     * Include this offering in outbound SCIM user entitlement sync. Login hosts are read from scim_login_nodes. When unset or false, this offering is not pushed to the remote SCIM service even if SCIM_MEMBERSHIP_SYNC_ENABLED is on.
      */
     enable_scim_entitlements?: boolean;
+    /**
+     * Bare hostnames of login nodes included in outbound SCIM entitlements when enable_scim_entitlements is set. Each entry is a DNS hostname only (for example login.example.org): stored lowercased, with no ssh:// URL, user@host, or host:port. These are not access links and do not appear in the resource access dropdown.
+     */
+    scim_login_nodes?: Array<string>;
     /**
      * If set to True, an Access subnets tab is shown on resource detail pages, letting consumers curate the IPs allowed to reach the backend entity. The list is advisory data for external firewalls.
      */
@@ -13635,6 +13884,10 @@ export type MergedPluginOptionsRequest = {
      */
     enforce_qos?: boolean;
     /**
+     * Declares that the site agent can govern resource API keys one by one: request, assign, limit, pause, resume and delete them. Without it a resource's keys can only be revealed and rotated. Nothing checks the claim: turn it on only if the agent's backend supports per-key commands (such as the Envoy AI Gateway); on one that does not (such as Ceph S3) every such command errs.
+     */
+    enable_api_key_provisioning?: boolean;
+    /**
      * If set to False, all orders require manual provider approval, including for service provider owners and staff
      */
     auto_approve_marketplace_script?: boolean;
@@ -13662,15 +13915,19 @@ export type MergedPluginOptionsRequest = {
      * Show a warning about unrecoverable loss of the SSH private key on the OpenStack instance order form.
      */
     show_ssh_key_loss_warning?: boolean;
+    /**
+     * Hide the API keys tab on resources of this offering.
+     */
+    hide_api_keys_tab?: boolean;
 };
 
 export type MergedSecretOptions = {
     /**
-     * Email addresses notified about every new order for this offering, regardless of whether the order needs approval. Intended for provider-side mailboxes which do not belong to a Waldur user, so these addresses are notified even if a user with the same address disabled notifications. At most 10 addresses.
+     * Email addresses notified about every new order for this offering, once the consumer side has approved it, or when it is placed if it needs no consumer approval. Provider approval is not awaited. Intended for provider-side mailboxes which do not belong to a Waldur user, so these addresses are notified even if a user with the same address disabled notifications. At most 10 addresses.
      */
     order_notification_emails?: Array<string>;
     /**
-     * List of organization or offering role names (e.g. 'CUSTOMER.OWNER', 'OFFERING.MANAGER') whose holders are notified about every new order for this offering, regardless of whether the order needs approval. Names are resolved on the provider organization and on the offering itself. Users who disabled notifications in their profile are skipped. At most 10 names.
+     * List of organization or offering role names (e.g. 'CUSTOMER.OWNER', 'OFFERING.MANAGER') whose holders are notified about every new order for this offering, once the consumer side has approved it, or when it is placed if it needs no consumer approval. Provider approval is not awaited. Names are resolved on the provider organization and on the offering itself. Users who disabled notifications in their profile are skipped. At most 10 names.
      */
     order_notification_roles?: Array<string>;
     /**
@@ -13837,11 +14094,11 @@ export type MergedSecretOptions = {
 
 export type MergedSecretOptionsRequest = {
     /**
-     * Email addresses notified about every new order for this offering, regardless of whether the order needs approval. Intended for provider-side mailboxes which do not belong to a Waldur user, so these addresses are notified even if a user with the same address disabled notifications. At most 10 addresses.
+     * Email addresses notified about every new order for this offering, once the consumer side has approved it, or when it is placed if it needs no consumer approval. Provider approval is not awaited. Intended for provider-side mailboxes which do not belong to a Waldur user, so these addresses are notified even if a user with the same address disabled notifications. At most 10 addresses.
      */
     order_notification_emails?: Array<string>;
     /**
-     * List of organization or offering role names (e.g. 'CUSTOMER.OWNER', 'OFFERING.MANAGER') whose holders are notified about every new order for this offering, regardless of whether the order needs approval. Names are resolved on the provider organization and on the offering itself. Users who disabled notifications in their profile are skipped. At most 10 names.
+     * List of organization or offering role names (e.g. 'CUSTOMER.OWNER', 'OFFERING.MANAGER') whose holders are notified about every new order for this offering, once the consumer side has approved it, or when it is placed if it needs no consumer approval. Provider approval is not awaited. Names are resolved on the provider organization and on the offering itself. Users who disabled notifications in their profile are skipped. At most 10 names.
      */
     order_notification_roles?: Array<string>;
     /**
@@ -14108,6 +14365,152 @@ export type MessageTemplateRequest = {
     name: string;
     subject: string;
     body: string;
+};
+
+export type MetricBreakdownItem = {
+    /**
+     * The attribute's value, or the resource's name when broken down by resource.
+     */
+    value: {
+        [key: string]: unknown;
+    } | null;
+    figure: number | null;
+    resource_uuid: string | null;
+    resource_name: string | null;
+};
+
+export type MetricDefinition = {
+    readonly uuid: string;
+    /**
+     * Name services report against. Cannot be changed.
+     */
+    key: string;
+    name: string;
+    description?: string;
+    /**
+     * UCUM unit, for example h, % or {learners}.
+     */
+    unit?: string;
+    kind?: MetricKindEnum;
+    good_direction?: GoodDirectionEnum;
+    attribute_keys?: Array<string>;
+    /**
+     * Distinct values one attribute may take per resource.
+     */
+    max_attribute_values?: number;
+    retention_policy?: string | null;
+    /**
+     * Service provider the definition is private to; empty is global.
+     */
+    owner_customer?: string | null;
+    readonly owner_customer_name: string;
+    state?: MetricDefinitionStateEnum;
+    readonly created: string;
+};
+
+export type MetricDefinitionRequest = {
+    /**
+     * Name services report against. Cannot be changed.
+     */
+    key: string;
+    name: string;
+    description?: string;
+    /**
+     * UCUM unit, for example h, % or {learners}.
+     */
+    unit?: string;
+    kind?: MetricKindEnum;
+    good_direction?: GoodDirectionEnum;
+    attribute_keys?: Array<string>;
+    /**
+     * Distinct values one attribute may take per resource.
+     */
+    max_attribute_values?: number;
+    retention_policy?: string | null;
+    /**
+     * Service provider the definition is private to; empty is global.
+     */
+    owner_customer?: string | null;
+    state?: MetricDefinitionStateEnum;
+};
+
+export type MetricDefinitionStateEnum = 'active' | 'deprecated';
+
+export type MetricGoal = {
+    readonly uuid: string;
+    offering_metric: string;
+    readonly metric_name: string;
+    /**
+     * Empty sets the offering's default goal.
+     */
+    project?: string | null;
+    readonly project_name: string;
+    comparator?: ComparatorEnum;
+    value: string;
+    period?: MetricGoalPeriodEnum;
+    readonly created: string;
+};
+
+export type MetricGoalPeriodEnum = 'month' | 'quarter' | 'rolling_30d';
+
+export type MetricGoalRequest = {
+    offering_metric: string;
+    /**
+     * Empty sets the offering's default goal.
+     */
+    project?: string | null;
+    comparator?: ComparatorEnum;
+    value: string;
+    period?: MetricGoalPeriodEnum;
+};
+
+export type MetricKindEnum = 'gauge' | 'counter';
+
+export type MetricPointReportRequest = MetricPointRequest | Array<MetricPointRequest>;
+
+export type MetricPointRequest = {
+    /**
+     * UUID of the resource
+     */
+    resource: string;
+    /**
+     * Key of a metric the resource's offering adopts
+     */
+    metric: string;
+    timestamp: string;
+    value: number;
+    /**
+     * Only for a counter reported as a running total: when the total started counting. Omit it to report the increment since the previous point.
+     */
+    start_time?: string | null;
+    /**
+     * Values of the attributes the metric declares
+     */
+    attributes?: {
+        [key: string]: unknown;
+    };
+};
+
+export type MetricPointValue = {
+    timestamp: string;
+    value: number | null;
+};
+
+export type MetricReportResult = {
+    accepted: number;
+    rejected: Array<RejectedPoint>;
+};
+
+export type MetricSeriesGroup = {
+    attributes: {
+        [key: string]: unknown;
+    };
+    points: Array<MetricPointValue>;
+};
+
+export type MetricSeriesResponse = {
+    granularity: string;
+    series: Array<MetricSeriesGroup>;
 };
 
 export type MigrationCreate = {
@@ -14953,6 +15356,14 @@ export type NestedRound = {
     status: RoundStatus;
     allocation_date?: string | null;
     review_duration_in_days?: number | null;
+    /**
+     * Where the round stands after its cut-off: evaluating, deciding, results_published or closed. Empty before the cut-off.
+     */
+    lifecycle_state: LifecycleStateEnum | NullEnum | null;
+    readonly evaluation_started_at: string | null;
+    readonly deciding_started_at: string | null;
+    readonly results_published_at: string | null;
+    readonly closed_at: string | null;
 };
 
 export type NestedRoundRequest = {
@@ -15293,7 +15704,7 @@ export type NullEnum = never;
 
 export type OpenportalmembershipsyncmodeEnum = 'invitation' | 'direct';
 
-export type ObservableObjectTypeEnum = 'order' | 'user_role' | 'resource' | 'offering_user' | 'importable_resources' | 'service_account' | 'course_account' | 'resource_periodic_limits' | 'offering_resources_sync' | 'resource_api_key_rotation' | 'resource_end_date_change_request' | 'user_profile' | 'user_ssh_key' | 'user_lifecycle' | 'service_provider_account' | 'call' | 'proposal';
+export type ObservableObjectTypeEnum = 'order' | 'user_role' | 'resource' | 'offering_user' | 'importable_resources' | 'service_account' | 'course_account' | 'resource_periodic_limits' | 'offering_resources_sync' | 'resource_api_key_rotation' | 'resource_end_date_change_request' | 'user_profile' | 'user_ssh_key' | 'user_lifecycle' | 'service_provider_account' | 'service_provider_project_group' | 'call' | 'proposal';
 
 export type ObtainAuthTokenRequest = {
     /**
@@ -16468,6 +16879,50 @@ export type OfferingMergeVerification = {
     undo?: OfferingMergeUndoReport;
 };
 
+export type OfferingMetric = {
+    readonly uuid: string;
+    offering: string;
+    readonly offering_name: string;
+    definition: string;
+    /**
+     * Name services report against. Cannot be changed.
+     */
+    readonly key: string;
+    readonly name: string;
+    /**
+     * Empty shows the definition's name.
+     */
+    display_name?: string;
+    /**
+     * UCUM unit, for example h, % or {learners}.
+     */
+    readonly unit: string;
+    kind: MetricKindEnum;
+    good_direction: GoodDirectionEnum;
+    readonly attribute_keys: Array<string>;
+    /**
+     * How the figures of a project's resources combine. An average is unweighted: every resource counts once.
+     */
+    project_aggregation?: ProjectAggregationEnum;
+    state: OfferingMetricStateEnum;
+    readonly created: string;
+};
+
+export type OfferingMetricRequest = {
+    offering: string;
+    definition: string;
+    /**
+     * Empty shows the definition's name.
+     */
+    display_name?: string;
+    /**
+     * How the figures of a project's resources combine. An average is unweighted: every resource counts once.
+     */
+    project_aggregation?: ProjectAggregationEnum;
+};
+
+export type OfferingMetricStateEnum = 'active' | 'paused' | 'archived';
+
 export type OfferingOptions = {
     order: Array<string>;
     options: {
@@ -17279,6 +17734,8 @@ export type OfferingUser = {
      * URL link for additional information or actions related to service provider comment
      */
     readonly service_provider_comment_url: string;
+    readonly service_provider_account_uuid: string | null;
+    readonly service_provider_account_username: string | null;
     /**
      * Check if the user has active consent for this offering.
      */
@@ -18311,7 +18768,7 @@ export type OpenStackInstance = {
     /**
      * Name of the availability zone where instance is located
      */
-    readonly availability_zone_name: string;
+    readonly availability_zone_name: string | null;
     /**
      * If True, instance will be connected directly to external network
      */
@@ -18854,7 +19311,7 @@ export type OpenStackNestedVolume = {
      * Type of the volume (e.g. SSD, HDD)
      */
     type?: string | null;
-    readonly type_name: string;
+    readonly type_name: string | null;
     readonly marketplace_resource_uuid: string | null;
 };
 
@@ -18913,6 +19370,10 @@ export type OpenStackNetwork = {
     readonly tenant: string;
     readonly tenant_name: string;
     readonly tenant_uuid: string;
+    /**
+     * False when the network belongs to an OpenStack project that Waldur does not manage and only reaches tenants through an RBAC share.
+     */
+    readonly tenant_is_managed: boolean;
     /**
      * Defines whether this network is external (public) or internal (private)
      */
@@ -19166,12 +19627,12 @@ export type OpenStackPortIpUpdateRequest = {
 
 export type OpenStackPortNestedSecurityGroup = {
     readonly uuid: string;
-    name: string;
-    readonly url: string;
+    readonly name: string;
+    url: string;
 };
 
 export type OpenStackPortNestedSecurityGroupRequest = {
-    name: string;
+    url: string;
 };
 
 export type OpenStackPortRequest = {
@@ -19703,6 +20164,10 @@ export type OpenStackSubNet = {
     readonly tenant: string;
     readonly tenant_name: string;
     /**
+     * False when the subnet's network belongs to an OpenStack project that Waldur does not manage and only reaches tenants through an RBAC share.
+     */
+    readonly tenant_is_managed: boolean;
+    /**
      * Network to which this subnet belongs
      */
     readonly network: string;
@@ -19879,6 +20344,10 @@ export type OpenStackTenant = {
      */
     default_volume_type_name?: string;
     skip_creation_of_default_router?: boolean;
+    /**
+     * False for an OpenStack project that Waldur does not manage but that shares networks with managed tenants. Waldur only reads such a project: it holds no credentials for it and never provisions, pulls with tenant credentials, bills or deletes it.
+     */
+    readonly is_managed: boolean;
     readonly marketplace_offering_uuid: string | null;
     readonly marketplace_offering_name: string | null;
     readonly marketplace_offering_type: string | null;
@@ -19995,13 +20464,13 @@ export type OpenStackVolume = {
      * Type of the volume (e.g. SSD, HDD)
      */
     type?: string | null;
-    readonly type_name: string;
+    readonly type_name: string | null;
     readonly runtime_state: string;
     /**
      * Availability zone where this volume is located
      */
     availability_zone?: string | null;
-    readonly availability_zone_name: string;
+    readonly availability_zone_name: string | null;
     /**
      * Name of volume as instance device e.g. /dev/vdb.
      */
@@ -20236,7 +20705,7 @@ export type OrderCreateRequest = {
      */
     start_date?: string | null;
     /**
-     * URL-friendly identifier. Only editable by staff users.
+     * Slug of the new resource. Used when the caller is staff or holds RESOURCE.SET_SLUG on the project, the offering or their organizations; otherwise ignored.
      */
     slug?: string;
     project: string;
@@ -20842,6 +21311,24 @@ export type PatchedAttributeRequest = {
     } | null;
 };
 
+export type PatchedAwardedResourceRequest = {
+    /**
+     * An accepted offering of the proposal's call to award the item on. Required when adding an item.
+     */
+    requested_offering_uuid?: string;
+    /**
+     * Plan of the awarded offering. Read back as the plan the item is provisioned on: the call offering's plan unless another was set. Null (or leaving it out when adding or moving) follows the call offering's plan.
+     */
+    plan?: string | null;
+    attributes?: {
+        [key: string]: unknown;
+    };
+    limits?: {
+        [key: string]: number;
+    };
+    description?: string;
+};
+
 export type PatchedAwsInstanceRequest = {
     name?: string;
     description?: string;
@@ -20960,6 +21447,10 @@ export type PatchedCallWorkflowStepNotificationRuleRequest = {
      */
     days_before?: number | null;
     is_enabled?: boolean;
+    /**
+     * Only for an applicant audience: names of the proposal roles whose holders are notified. Empty notifies the proposal creator and every member of the proposal team.
+     */
+    notified_proposal_roles?: Array<string>;
 };
 
 export type PatchedCallWorkflowStepRequest = {
@@ -21417,6 +21908,10 @@ export type PatchedIssueRequest = {
      * Set true if issue is created by regular user via portal.
      */
     is_reported_manually?: boolean;
+    /**
+     * Opening message, posted as the first public comment of an issue reported on behalf of another user.
+     */
+    first_comment?: string;
 };
 
 export type PatchedIssueStatusRequest = {
@@ -21558,6 +22053,43 @@ export type PatchedMessageTemplateRequest = {
     body?: string;
 };
 
+export type PatchedMetricDefinitionRequest = {
+    /**
+     * Name services report against. Cannot be changed.
+     */
+    key?: string;
+    name?: string;
+    description?: string;
+    /**
+     * UCUM unit, for example h, % or {learners}.
+     */
+    unit?: string;
+    kind?: MetricKindEnum;
+    good_direction?: GoodDirectionEnum;
+    attribute_keys?: Array<string>;
+    /**
+     * Distinct values one attribute may take per resource.
+     */
+    max_attribute_values?: number;
+    retention_policy?: string | null;
+    /**
+     * Service provider the definition is private to; empty is global.
+     */
+    owner_customer?: string | null;
+    state?: MetricDefinitionStateEnum;
+};
+
+export type PatchedMetricGoalRequest = {
+    offering_metric?: string;
+    /**
+     * Empty sets the offering's default goal.
+     */
+    project?: string | null;
+    comparator?: ComparatorEnum;
+    value?: string;
+    period?: MetricGoalPeriodEnum;
+};
+
 export type PatchedMigrationDetailsRequest = {
     mappings?: MappingRequest;
     error_message?: string;
@@ -21642,6 +22174,19 @@ export type PatchedOfferingMergeRequest = {
         [key: string]: string;
     };
     invoice_policy?: InvoicePolicyEnum;
+};
+
+export type PatchedOfferingMetricRequest = {
+    offering?: string;
+    definition?: string;
+    /**
+     * Empty shows the definition's name.
+     */
+    display_name?: string;
+    /**
+     * How the figures of a project's resources combine. An average is unweighted: every resource counts once.
+     */
+    project_aggregation?: ProjectAggregationEnum;
 };
 
 export type PatchedOfferingPartitionUpdateRequest = {
@@ -21965,7 +22510,6 @@ export type PatchedOpenStackPortRequest = {
      * Target tenant for shared network port creation. If not specified, defaults to network's tenant.
      */
     target_tenant?: string;
-    security_groups?: Array<OpenStackPortNestedSecurityGroupRequest>;
 };
 
 export type PatchedOpenStackSecurityGroupUpdateRequest = {
@@ -22160,7 +22704,7 @@ export type PatchedProjectOrderAutoApprovalRequest = {
 export type PatchedProjectRequest = {
     name?: string;
     /**
-     * URL-friendly identifier. Only editable by staff users.
+     * URL-friendly identifier. Editable by staff; on create also by holders of PROJECT.SET_SLUG on the organization, otherwise ignored.
      */
     slug?: string;
     /**
@@ -22299,6 +22843,10 @@ export type PatchedProtectedCallRequest = {
      * When a submitted proposal's evaluation starts: on submission, or for all proposals of a round together at its cut-off. Cannot be changed while the call has proposals submitted or in review.
      */
     evaluation_start?: EvaluationStartEnum;
+    /**
+     * When applicants learn the allocation decision: immediately, or for every proposal of a round together when a call manager publishes the round's results. Cannot be changed while decisions are held.
+     */
+    publish_results?: PublishResultsEnum;
     created_by?: string | null;
     reference_code?: string;
     /**
@@ -22343,6 +22891,14 @@ export type PatchedProtectedCallRequest = {
      * The person orders are attributed to when the author is a named contact. Must hold a role on this call or on the organisation managing it.
      */
     order_author_user?: string | null;
+    /**
+     * Whether a draft still open when its round's cut-off passes moves on to the call's next round instead of being cancelled. Without a later round the draft is cancelled either way.
+     */
+    carry_over_drafts?: boolean;
+    /**
+     * What completing a round does with its proposals that still have no decision: refuse to complete the round, or reject them. A round may override it.
+     */
+    undecided_at_round_completion?: UndecidedAtRoundCompletionEnum;
 };
 
 export type PatchedProtectedRoundRequest = {
@@ -22350,6 +22906,10 @@ export type PatchedProtectedRoundRequest = {
     cutoff_time?: string;
     allocation_date?: string | null;
     review_duration_in_days?: number;
+    /**
+     * Overrides the call's rule for proposals still without a decision when the round is completed. Empty: the call's rule applies.
+     */
+    undecided_at_round_completion?: UndecidedAtRoundCompletionEnum | BlankEnum | NullEnum | null;
 };
 
 export type PatchedProviderCannedResponseRequest = {
@@ -22669,6 +23229,23 @@ export type PatchedRequestedResourceRequest = {
     call_resource_template_uuid?: string;
 };
 
+export type PatchedResourceApiKeyUpdateRequest = {
+    /**
+     * Assignee. When set, only this user can reveal the key.
+     */
+    user?: string | null;
+    /**
+     * Limits per component type; zero or absent means no limit.
+     */
+    limits?: {
+        [key: string]: number;
+    } | null;
+    /**
+     * Models the key may call; empty or absent allows every model.
+     */
+    allowed_models?: Array<string> | null;
+};
+
 export type PatchedResourceProjectRequest = {
     resource?: string;
     name?: string;
@@ -22688,6 +23265,16 @@ export type PatchedResourceUpdateRequest = {
      * The date is inclusive. Once reached, a resource will be scheduled for termination.
      */
     end_date?: string | null;
+};
+
+export type PatchedRetentionPolicyRequest = {
+    name?: string;
+    raw_days?: number;
+    hourly_days?: number;
+    /**
+     * Empty keeps daily roll-ups forever.
+     */
+    daily_days?: number | null;
 };
 
 export type PatchedReviewerAffiliationRequest = {
@@ -23461,19 +24048,19 @@ export type PermissionMetadataResponse = {
      * Map of role keys to role enum values from RoleEnum
      */
     roles: {
-        [key: string]: 'CUSTOMER.OWNER' | 'CUSTOMER.SUPPORT' | 'CUSTOMER.MANAGER' | 'CUSTOMER.READER' | 'PROJECT.ADMIN' | 'PROJECT.MANAGER' | 'PROJECT.MEMBER' | 'OFFERING.MANAGER' | 'CALL.REVIEWER' | 'CALL.MANAGER' | 'CALL.PANEL_MEMBER' | 'PROPOSAL.MEMBER' | 'PROPOSAL.MANAGER';
+        [key: string]: 'CUSTOMER.OWNER' | 'CUSTOMER.SUPPORT' | 'CUSTOMER.MANAGER' | 'CUSTOMER.READER' | 'PROJECT.ADMIN' | 'PROJECT.MANAGER' | 'PROJECT.MEMBER' | 'OFFERING.MANAGER' | 'CALL.REVIEWER' | 'CALL.MANAGER' | 'CALL.PANEL_MEMBER' | 'PROPOSAL.MEMBER' | 'PROPOSAL.MANAGER' | 'PROPOSAL.ADMIN';
     };
     /**
      * Map of permission keys to permission enum values from PermissionEnum
      */
     permissions: {
-        [key: string]: 'SERVICE_PROVIDER.REGISTER' | 'OFFERING.CREATE' | 'OFFERING.DELETE' | 'OFFERING.UPDATE_THUMBNAIL' | 'OFFERING.UPDATE' | 'OFFERING.UPDATE_ATTRIBUTES' | 'OFFERING.UPDATE_LOCATION' | 'OFFERING.UPDATE_DESCRIPTION' | 'OFFERING.UPDATE_OPTIONS' | 'OFFERING.UPDATE_INTEGRATION' | 'OFFERING.ADD_ENDPOINT' | 'OFFERING.DELETE_ENDPOINT' | 'OFFERING.UPDATE_COMPONENTS' | 'OFFERING.PAUSE' | 'OFFERING.UNPAUSE' | 'OFFERING.ARCHIVE' | 'OFFERING.DRY_RUN_SCRIPT' | 'OFFERING.MANAGE_CAMPAIGN' | 'OFFERING.MANAGE_USER_GROUP' | 'OFFERING.CREATE_PLAN' | 'OFFERING.UPDATE_PLAN' | 'OFFERING.ARCHIVE_PLAN' | 'OFFERING.CREATE_SCREENSHOT' | 'OFFERING.UPDATE_SCREENSHOT' | 'OFFERING.DELETE_SCREENSHOT' | 'OFFERING.CREATE_USER' | 'OFFERING.UPDATE_USER' | 'OFFERING.DELETE_USER' | 'OFFERING.MANAGE_USER_ROLE' | 'POSIX_ID_POOL.MANAGE' | 'RESOURCE.CREATE_ROBOT_ACCOUNT' | 'RESOURCE.UPDATE_ROBOT_ACCOUNT' | 'RESOURCE.DELETE_ROBOT_ACCOUNT' | 'ORDER.LIST' | 'ORDER.CREATE' | 'ORDER.APPROVE_PRIVATE' | 'ORDER.APPROVE' | 'ORDER.REJECT' | 'ORDER.DESTROY' | 'ORDER.CANCEL' | 'ORDER.SET_CONSUMER_INFO' | 'RESOURCE.LIST' | 'RESOURCE.UPDATE' | 'RESOURCE.TERMINATE' | 'RESOURCE.LIST_IMPORTABLE' | 'RESOURCE.SET_END_DATE' | 'RESOURCE.SET_USAGE' | 'RESOURCE.SET_PLAN' | 'RESOURCE.SET_LIMITS' | 'RESOURCE.SET_BACKEND_ID' | 'RESOURCE.SUBMIT_REPORT' | 'RESOURCE.SET_BACKEND_METADATA' | 'RESOURCE.MANAGE_API_KEY' | 'RESOURCE.SET_STATE' | 'RESOURCE.UPDATE_OPTIONS' | 'RESOURCE.ACCEPT_BOOKING_REQUEST' | 'RESOURCE.REJECT_BOOKING_REQUEST' | 'RESOURCE.MANAGE_USERS' | 'RESOURCE.CREATE_PERMISSION' | 'RESOURCE.UPDATE_PERMISSION' | 'RESOURCE.DELETE_PERMISSION' | 'RESOURCE_PROJECT.CREATE_PERMISSION' | 'RESOURCE_PROJECT.UPDATE_PERMISSION' | 'RESOURCE_PROJECT.DELETE_PERMISSION' | 'RESOURCE.CONSUMPTION_LIMITATION' | 'OFFERING.MANAGE_BACKEND_RESOURCES' | 'SERVICE_PROVIDER.GET_API_SECRET_CODE' | 'SERVICE_PROVIDER.GENERATE_API_SECRET_CODE' | 'SERVICE_PROVIDER.LIST_CUSTOMERS' | 'SERVICE_PROVIDER.LIST_CUSTOMER_PROJECTS' | 'SERVICE_PROVIDER.LIST_PROJECTS' | 'SERVICE_PROVIDER.LIST_PROJECT_PERMISSIONS' | 'SERVICE_PROVIDER.LIST_KEYS' | 'SERVICE_PROVIDER.LIST_USERS' | 'SERVICE_PROVIDER.LIST_USER_CUSTOMERS' | 'SERVICE_PROVIDER.LIST_SERVICE_ACCOUNTS' | 'SERVICE_PROVIDER.LIST_COURSE_ACCOUNTS' | 'SERVICE_PROVIDER.SET_OFFERINGS_USERNAME' | 'SERVICE_PROVIDER.GET_STATISTICS' | 'SERVICE_PROVIDER.GET_REVENUE' | 'SERVICE_PROVIDER.GET_ROBOT_ACCOUNT_CUSTOMERS' | 'SERVICE_PROVIDER.GET_ROBOT_ACCOUNT_PROJECTS' | 'SERVICE_PROVIDER.MANAGE_MAINTENANCE_ANNOUNCEMENT' | 'MATRIX_ROOM.CREATE' | 'PROJECT.CREATE_PERMISSION' | 'CUSTOMER.CREATE_PERMISSION' | 'OFFERING.CREATE_PERMISSION' | 'CALL.CREATE_PERMISSION' | 'PROPOSAL.MANAGE' | 'PROPOSAL.MANAGE_REVIEW' | 'PROJECT.UPDATE_PERMISSION' | 'CUSTOMER.UPDATE_PERMISSION' | 'OFFERING.UPDATE_PERMISSION' | 'CALL.UPDATE_PERMISSION' | 'PROPOSAL.UPDATE_PERMISSION' | 'PROJECT.DELETE_PERMISSION' | 'CUSTOMER.DELETE_PERMISSION' | 'OFFERING.DELETE_PERMISSION' | 'CALL.DELETE_PERMISSION' | 'PROPOSAL.DELETE_PERMISSION' | 'LEXIS_LINK.CREATE' | 'LEXIS_LINK.DELETE' | 'PROJECT.LIST' | 'PROJECT.CREATE' | 'PROJECT.DELETE' | 'PROJECT.UPDATE' | 'PROJECT.UPDATE_METADATA' | 'PROJECT.REVIEW_MEMBERSHIP' | 'CUSTOMER.UPDATE' | 'CUSTOMER.CONTACT_UPDATE' | 'CUSTOMER.LIST_USERS' | 'CUSTOMER.VIEW_TEAM' | 'PROJECT.VIEW_TEAM' | 'OFFERING.ACCEPT_CALL_REQUEST' | 'CALL.APPROVE_AND_REJECT_PROPOSALS' | 'CALL.CLOSE_ROUNDS' | 'ACCESS_SUBNET.CREATE' | 'ACCESS_SUBNET.UPDATE' | 'ACCESS_SUBNET.DELETE' | 'OFFERING_ACCESS_SUBNET.CREATE' | 'OFFERING_ACCESS_SUBNET.UPDATE' | 'OFFERING_ACCESS_SUBNET.DELETE' | 'OFFERINGUSER.UPDATE_RESTRICTION' | 'INVITATION.LIST' | 'CUSTOMER.LIST_PERMISSION_REVIEWS' | 'CALL.LIST' | 'CALL.CREATE' | 'CALL.UPDATE' | 'ROUND.LIST' | 'PROPOSAL.LIST' | 'SERVICE_ACCOUNT.MANAGE' | 'PROJECT.COURSE_ACCOUNT_MANAGE' | 'SERVICE_PROVIDER.OPENSTACK_IMAGE_MANAGEMENT' | 'OPENSTACK_INSTANCE.CONSOLE_ACCESS' | 'OPENSTACK_INSTANCE.MANAGE_POWER' | 'OPENSTACK_INSTANCE.MANAGE' | 'OPENSTACK_ROUTER.MANAGE_GATEWAY' | 'STAFF.ACCESS' | 'SUPPORT.ACCESS';
+        [key: string]: 'SERVICE_PROVIDER.REGISTER' | 'OFFERING.CREATE' | 'OFFERING.DELETE' | 'OFFERING.UPDATE_THUMBNAIL' | 'OFFERING.UPDATE' | 'OFFERING.UPDATE_ATTRIBUTES' | 'OFFERING.UPDATE_LOCATION' | 'OFFERING.UPDATE_DESCRIPTION' | 'OFFERING.UPDATE_OPTIONS' | 'OFFERING.UPDATE_INTEGRATION' | 'OFFERING.ADD_ENDPOINT' | 'OFFERING.DELETE_ENDPOINT' | 'OFFERING.UPDATE_COMPONENTS' | 'OFFERING.PAUSE' | 'OFFERING.UNPAUSE' | 'OFFERING.ARCHIVE' | 'OFFERING.DRY_RUN_SCRIPT' | 'OFFERING.MANAGE_CAMPAIGN' | 'OFFERING.MANAGE_USER_GROUP' | 'OFFERING.CREATE_PLAN' | 'OFFERING.UPDATE_PLAN' | 'OFFERING.ARCHIVE_PLAN' | 'OFFERING.CREATE_SCREENSHOT' | 'OFFERING.UPDATE_SCREENSHOT' | 'OFFERING.DELETE_SCREENSHOT' | 'OFFERING.CREATE_USER' | 'OFFERING.UPDATE_USER' | 'OFFERING.DELETE_USER' | 'OFFERING.MANAGE_USER_ROLE' | 'POSIX_ID_POOL.MANAGE' | 'RESOURCE.CREATE_ROBOT_ACCOUNT' | 'RESOURCE.UPDATE_ROBOT_ACCOUNT' | 'RESOURCE.DELETE_ROBOT_ACCOUNT' | 'ORDER.LIST' | 'ORDER.CREATE' | 'ORDER.APPROVE_PRIVATE' | 'ORDER.APPROVE' | 'ORDER.REJECT' | 'ORDER.DESTROY' | 'ORDER.CANCEL' | 'ORDER.SET_CONSUMER_INFO' | 'RESOURCE.LIST' | 'RESOURCE.UPDATE' | 'RESOURCE.TERMINATE' | 'RESOURCE.LIST_IMPORTABLE' | 'RESOURCE.SET_END_DATE' | 'RESOURCE.SET_USAGE' | 'RESOURCE.SET_PLAN' | 'RESOURCE.SET_LIMITS' | 'RESOURCE.SET_BACKEND_ID' | 'RESOURCE.SET_SLUG' | 'RESOURCE.SUBMIT_REPORT' | 'RESOURCE.SET_BACKEND_METADATA' | 'RESOURCE.MANAGE_API_KEY' | 'RESOURCE.SET_STATE' | 'RESOURCE.UPDATE_OPTIONS' | 'RESOURCE.ACCEPT_BOOKING_REQUEST' | 'RESOURCE.REJECT_BOOKING_REQUEST' | 'RESOURCE.MANAGE_USERS' | 'RESOURCE.CREATE_PERMISSION' | 'RESOURCE.UPDATE_PERMISSION' | 'RESOURCE.DELETE_PERMISSION' | 'RESOURCE_PROJECT.CREATE_PERMISSION' | 'RESOURCE_PROJECT.UPDATE_PERMISSION' | 'RESOURCE_PROJECT.DELETE_PERMISSION' | 'RESOURCE.CONSUMPTION_LIMITATION' | 'OFFERING.MANAGE_BACKEND_RESOURCES' | 'SERVICE_PROVIDER.GET_API_SECRET_CODE' | 'SERVICE_PROVIDER.GENERATE_API_SECRET_CODE' | 'SERVICE_PROVIDER.LIST_CUSTOMERS' | 'SERVICE_PROVIDER.LIST_CUSTOMER_PROJECTS' | 'SERVICE_PROVIDER.LIST_PROJECTS' | 'SERVICE_PROVIDER.LIST_PROJECT_PERMISSIONS' | 'SERVICE_PROVIDER.LIST_KEYS' | 'SERVICE_PROVIDER.LIST_USERS' | 'SERVICE_PROVIDER.LIST_USER_CUSTOMERS' | 'SERVICE_PROVIDER.LIST_SERVICE_ACCOUNTS' | 'SERVICE_PROVIDER.LIST_COURSE_ACCOUNTS' | 'SERVICE_PROVIDER.SET_OFFERINGS_USERNAME' | 'SERVICE_PROVIDER.GET_STATISTICS' | 'SERVICE_PROVIDER.GET_REVENUE' | 'SERVICE_PROVIDER.GET_ROBOT_ACCOUNT_CUSTOMERS' | 'SERVICE_PROVIDER.GET_ROBOT_ACCOUNT_PROJECTS' | 'SERVICE_PROVIDER.MANAGE_MAINTENANCE_ANNOUNCEMENT' | 'MATRIX_ROOM.CREATE' | 'PROJECT.CREATE_PERMISSION' | 'CUSTOMER.CREATE_PERMISSION' | 'OFFERING.CREATE_PERMISSION' | 'CALL.CREATE_PERMISSION' | 'PROPOSAL.MANAGE' | 'PROPOSAL.UPDATE' | 'PROPOSAL.MANAGE_REVIEW' | 'PROJECT.UPDATE_PERMISSION' | 'CUSTOMER.UPDATE_PERMISSION' | 'OFFERING.UPDATE_PERMISSION' | 'CALL.UPDATE_PERMISSION' | 'PROPOSAL.UPDATE_PERMISSION' | 'PROJECT.DELETE_PERMISSION' | 'CUSTOMER.DELETE_PERMISSION' | 'OFFERING.DELETE_PERMISSION' | 'CALL.DELETE_PERMISSION' | 'PROPOSAL.DELETE_PERMISSION' | 'LEXIS_LINK.CREATE' | 'LEXIS_LINK.DELETE' | 'PROJECT.LIST' | 'PROJECT.CREATE' | 'PROJECT.DELETE' | 'PROJECT.UPDATE' | 'PROJECT.UPDATE_METADATA' | 'PROJECT.SET_SLUG' | 'PROJECT.REVIEW_MEMBERSHIP' | 'CUSTOMER.UPDATE' | 'CUSTOMER.CONTACT_UPDATE' | 'CUSTOMER.LIST_USERS' | 'CUSTOMER.VIEW_TEAM' | 'PROJECT.VIEW_TEAM' | 'OFFERING.ACCEPT_CALL_REQUEST' | 'CALL.APPROVE_AND_REJECT_PROPOSALS' | 'CALL.CLOSE_ROUNDS' | 'ACCESS_SUBNET.CREATE' | 'ACCESS_SUBNET.UPDATE' | 'ACCESS_SUBNET.DELETE' | 'OFFERING_ACCESS_SUBNET.CREATE' | 'OFFERING_ACCESS_SUBNET.UPDATE' | 'OFFERING_ACCESS_SUBNET.DELETE' | 'OFFERINGUSER.UPDATE_RESTRICTION' | 'INVITATION.LIST' | 'CUSTOMER.LIST_PERMISSION_REVIEWS' | 'CALL.LIST' | 'CALL.CREATE' | 'CALL.UPDATE' | 'ROUND.LIST' | 'PROPOSAL.LIST' | 'SERVICE_ACCOUNT.MANAGE' | 'PROJECT.COURSE_ACCOUNT_MANAGE' | 'SERVICE_PROVIDER.OPENSTACK_IMAGE_MANAGEMENT' | 'OPENSTACK_INSTANCE.CONSOLE_ACCESS' | 'OPENSTACK_INSTANCE.MANAGE_POWER' | 'OPENSTACK_INSTANCE.MANAGE' | 'OPENSTACK_ROUTER.MANAGE_GATEWAY' | 'STAFF.ACCESS' | 'SUPPORT.ACCESS';
     };
     /**
      * Map of resource types to create permission enums
      */
     permission_map: {
-        [key: string]: 'SERVICE_PROVIDER.REGISTER' | 'OFFERING.CREATE' | 'OFFERING.DELETE' | 'OFFERING.UPDATE_THUMBNAIL' | 'OFFERING.UPDATE' | 'OFFERING.UPDATE_ATTRIBUTES' | 'OFFERING.UPDATE_LOCATION' | 'OFFERING.UPDATE_DESCRIPTION' | 'OFFERING.UPDATE_OPTIONS' | 'OFFERING.UPDATE_INTEGRATION' | 'OFFERING.ADD_ENDPOINT' | 'OFFERING.DELETE_ENDPOINT' | 'OFFERING.UPDATE_COMPONENTS' | 'OFFERING.PAUSE' | 'OFFERING.UNPAUSE' | 'OFFERING.ARCHIVE' | 'OFFERING.DRY_RUN_SCRIPT' | 'OFFERING.MANAGE_CAMPAIGN' | 'OFFERING.MANAGE_USER_GROUP' | 'OFFERING.CREATE_PLAN' | 'OFFERING.UPDATE_PLAN' | 'OFFERING.ARCHIVE_PLAN' | 'OFFERING.CREATE_SCREENSHOT' | 'OFFERING.UPDATE_SCREENSHOT' | 'OFFERING.DELETE_SCREENSHOT' | 'OFFERING.CREATE_USER' | 'OFFERING.UPDATE_USER' | 'OFFERING.DELETE_USER' | 'OFFERING.MANAGE_USER_ROLE' | 'POSIX_ID_POOL.MANAGE' | 'RESOURCE.CREATE_ROBOT_ACCOUNT' | 'RESOURCE.UPDATE_ROBOT_ACCOUNT' | 'RESOURCE.DELETE_ROBOT_ACCOUNT' | 'ORDER.LIST' | 'ORDER.CREATE' | 'ORDER.APPROVE_PRIVATE' | 'ORDER.APPROVE' | 'ORDER.REJECT' | 'ORDER.DESTROY' | 'ORDER.CANCEL' | 'ORDER.SET_CONSUMER_INFO' | 'RESOURCE.LIST' | 'RESOURCE.UPDATE' | 'RESOURCE.TERMINATE' | 'RESOURCE.LIST_IMPORTABLE' | 'RESOURCE.SET_END_DATE' | 'RESOURCE.SET_USAGE' | 'RESOURCE.SET_PLAN' | 'RESOURCE.SET_LIMITS' | 'RESOURCE.SET_BACKEND_ID' | 'RESOURCE.SUBMIT_REPORT' | 'RESOURCE.SET_BACKEND_METADATA' | 'RESOURCE.MANAGE_API_KEY' | 'RESOURCE.SET_STATE' | 'RESOURCE.UPDATE_OPTIONS' | 'RESOURCE.ACCEPT_BOOKING_REQUEST' | 'RESOURCE.REJECT_BOOKING_REQUEST' | 'RESOURCE.MANAGE_USERS' | 'RESOURCE.CREATE_PERMISSION' | 'RESOURCE.UPDATE_PERMISSION' | 'RESOURCE.DELETE_PERMISSION' | 'RESOURCE_PROJECT.CREATE_PERMISSION' | 'RESOURCE_PROJECT.UPDATE_PERMISSION' | 'RESOURCE_PROJECT.DELETE_PERMISSION' | 'RESOURCE.CONSUMPTION_LIMITATION' | 'OFFERING.MANAGE_BACKEND_RESOURCES' | 'SERVICE_PROVIDER.GET_API_SECRET_CODE' | 'SERVICE_PROVIDER.GENERATE_API_SECRET_CODE' | 'SERVICE_PROVIDER.LIST_CUSTOMERS' | 'SERVICE_PROVIDER.LIST_CUSTOMER_PROJECTS' | 'SERVICE_PROVIDER.LIST_PROJECTS' | 'SERVICE_PROVIDER.LIST_PROJECT_PERMISSIONS' | 'SERVICE_PROVIDER.LIST_KEYS' | 'SERVICE_PROVIDER.LIST_USERS' | 'SERVICE_PROVIDER.LIST_USER_CUSTOMERS' | 'SERVICE_PROVIDER.LIST_SERVICE_ACCOUNTS' | 'SERVICE_PROVIDER.LIST_COURSE_ACCOUNTS' | 'SERVICE_PROVIDER.SET_OFFERINGS_USERNAME' | 'SERVICE_PROVIDER.GET_STATISTICS' | 'SERVICE_PROVIDER.GET_REVENUE' | 'SERVICE_PROVIDER.GET_ROBOT_ACCOUNT_CUSTOMERS' | 'SERVICE_PROVIDER.GET_ROBOT_ACCOUNT_PROJECTS' | 'SERVICE_PROVIDER.MANAGE_MAINTENANCE_ANNOUNCEMENT' | 'MATRIX_ROOM.CREATE' | 'PROJECT.CREATE_PERMISSION' | 'CUSTOMER.CREATE_PERMISSION' | 'OFFERING.CREATE_PERMISSION' | 'CALL.CREATE_PERMISSION' | 'PROPOSAL.MANAGE' | 'PROPOSAL.MANAGE_REVIEW' | 'PROJECT.UPDATE_PERMISSION' | 'CUSTOMER.UPDATE_PERMISSION' | 'OFFERING.UPDATE_PERMISSION' | 'CALL.UPDATE_PERMISSION' | 'PROPOSAL.UPDATE_PERMISSION' | 'PROJECT.DELETE_PERMISSION' | 'CUSTOMER.DELETE_PERMISSION' | 'OFFERING.DELETE_PERMISSION' | 'CALL.DELETE_PERMISSION' | 'PROPOSAL.DELETE_PERMISSION' | 'LEXIS_LINK.CREATE' | 'LEXIS_LINK.DELETE' | 'PROJECT.LIST' | 'PROJECT.CREATE' | 'PROJECT.DELETE' | 'PROJECT.UPDATE' | 'PROJECT.UPDATE_METADATA' | 'PROJECT.REVIEW_MEMBERSHIP' | 'CUSTOMER.UPDATE' | 'CUSTOMER.CONTACT_UPDATE' | 'CUSTOMER.LIST_USERS' | 'CUSTOMER.VIEW_TEAM' | 'PROJECT.VIEW_TEAM' | 'OFFERING.ACCEPT_CALL_REQUEST' | 'CALL.APPROVE_AND_REJECT_PROPOSALS' | 'CALL.CLOSE_ROUNDS' | 'ACCESS_SUBNET.CREATE' | 'ACCESS_SUBNET.UPDATE' | 'ACCESS_SUBNET.DELETE' | 'OFFERING_ACCESS_SUBNET.CREATE' | 'OFFERING_ACCESS_SUBNET.UPDATE' | 'OFFERING_ACCESS_SUBNET.DELETE' | 'OFFERINGUSER.UPDATE_RESTRICTION' | 'INVITATION.LIST' | 'CUSTOMER.LIST_PERMISSION_REVIEWS' | 'CALL.LIST' | 'CALL.CREATE' | 'CALL.UPDATE' | 'ROUND.LIST' | 'PROPOSAL.LIST' | 'SERVICE_ACCOUNT.MANAGE' | 'PROJECT.COURSE_ACCOUNT_MANAGE' | 'SERVICE_PROVIDER.OPENSTACK_IMAGE_MANAGEMENT' | 'OPENSTACK_INSTANCE.CONSOLE_ACCESS' | 'OPENSTACK_INSTANCE.MANAGE_POWER' | 'OPENSTACK_INSTANCE.MANAGE' | 'OPENSTACK_ROUTER.MANAGE_GATEWAY' | 'STAFF.ACCESS' | 'SUPPORT.ACCESS';
+        [key: string]: 'SERVICE_PROVIDER.REGISTER' | 'OFFERING.CREATE' | 'OFFERING.DELETE' | 'OFFERING.UPDATE_THUMBNAIL' | 'OFFERING.UPDATE' | 'OFFERING.UPDATE_ATTRIBUTES' | 'OFFERING.UPDATE_LOCATION' | 'OFFERING.UPDATE_DESCRIPTION' | 'OFFERING.UPDATE_OPTIONS' | 'OFFERING.UPDATE_INTEGRATION' | 'OFFERING.ADD_ENDPOINT' | 'OFFERING.DELETE_ENDPOINT' | 'OFFERING.UPDATE_COMPONENTS' | 'OFFERING.PAUSE' | 'OFFERING.UNPAUSE' | 'OFFERING.ARCHIVE' | 'OFFERING.DRY_RUN_SCRIPT' | 'OFFERING.MANAGE_CAMPAIGN' | 'OFFERING.MANAGE_USER_GROUP' | 'OFFERING.CREATE_PLAN' | 'OFFERING.UPDATE_PLAN' | 'OFFERING.ARCHIVE_PLAN' | 'OFFERING.CREATE_SCREENSHOT' | 'OFFERING.UPDATE_SCREENSHOT' | 'OFFERING.DELETE_SCREENSHOT' | 'OFFERING.CREATE_USER' | 'OFFERING.UPDATE_USER' | 'OFFERING.DELETE_USER' | 'OFFERING.MANAGE_USER_ROLE' | 'POSIX_ID_POOL.MANAGE' | 'RESOURCE.CREATE_ROBOT_ACCOUNT' | 'RESOURCE.UPDATE_ROBOT_ACCOUNT' | 'RESOURCE.DELETE_ROBOT_ACCOUNT' | 'ORDER.LIST' | 'ORDER.CREATE' | 'ORDER.APPROVE_PRIVATE' | 'ORDER.APPROVE' | 'ORDER.REJECT' | 'ORDER.DESTROY' | 'ORDER.CANCEL' | 'ORDER.SET_CONSUMER_INFO' | 'RESOURCE.LIST' | 'RESOURCE.UPDATE' | 'RESOURCE.TERMINATE' | 'RESOURCE.LIST_IMPORTABLE' | 'RESOURCE.SET_END_DATE' | 'RESOURCE.SET_USAGE' | 'RESOURCE.SET_PLAN' | 'RESOURCE.SET_LIMITS' | 'RESOURCE.SET_BACKEND_ID' | 'RESOURCE.SET_SLUG' | 'RESOURCE.SUBMIT_REPORT' | 'RESOURCE.SET_BACKEND_METADATA' | 'RESOURCE.MANAGE_API_KEY' | 'RESOURCE.SET_STATE' | 'RESOURCE.UPDATE_OPTIONS' | 'RESOURCE.ACCEPT_BOOKING_REQUEST' | 'RESOURCE.REJECT_BOOKING_REQUEST' | 'RESOURCE.MANAGE_USERS' | 'RESOURCE.CREATE_PERMISSION' | 'RESOURCE.UPDATE_PERMISSION' | 'RESOURCE.DELETE_PERMISSION' | 'RESOURCE_PROJECT.CREATE_PERMISSION' | 'RESOURCE_PROJECT.UPDATE_PERMISSION' | 'RESOURCE_PROJECT.DELETE_PERMISSION' | 'RESOURCE.CONSUMPTION_LIMITATION' | 'OFFERING.MANAGE_BACKEND_RESOURCES' | 'SERVICE_PROVIDER.GET_API_SECRET_CODE' | 'SERVICE_PROVIDER.GENERATE_API_SECRET_CODE' | 'SERVICE_PROVIDER.LIST_CUSTOMERS' | 'SERVICE_PROVIDER.LIST_CUSTOMER_PROJECTS' | 'SERVICE_PROVIDER.LIST_PROJECTS' | 'SERVICE_PROVIDER.LIST_PROJECT_PERMISSIONS' | 'SERVICE_PROVIDER.LIST_KEYS' | 'SERVICE_PROVIDER.LIST_USERS' | 'SERVICE_PROVIDER.LIST_USER_CUSTOMERS' | 'SERVICE_PROVIDER.LIST_SERVICE_ACCOUNTS' | 'SERVICE_PROVIDER.LIST_COURSE_ACCOUNTS' | 'SERVICE_PROVIDER.SET_OFFERINGS_USERNAME' | 'SERVICE_PROVIDER.GET_STATISTICS' | 'SERVICE_PROVIDER.GET_REVENUE' | 'SERVICE_PROVIDER.GET_ROBOT_ACCOUNT_CUSTOMERS' | 'SERVICE_PROVIDER.GET_ROBOT_ACCOUNT_PROJECTS' | 'SERVICE_PROVIDER.MANAGE_MAINTENANCE_ANNOUNCEMENT' | 'MATRIX_ROOM.CREATE' | 'PROJECT.CREATE_PERMISSION' | 'CUSTOMER.CREATE_PERMISSION' | 'OFFERING.CREATE_PERMISSION' | 'CALL.CREATE_PERMISSION' | 'PROPOSAL.MANAGE' | 'PROPOSAL.UPDATE' | 'PROPOSAL.MANAGE_REVIEW' | 'PROJECT.UPDATE_PERMISSION' | 'CUSTOMER.UPDATE_PERMISSION' | 'OFFERING.UPDATE_PERMISSION' | 'CALL.UPDATE_PERMISSION' | 'PROPOSAL.UPDATE_PERMISSION' | 'PROJECT.DELETE_PERMISSION' | 'CUSTOMER.DELETE_PERMISSION' | 'OFFERING.DELETE_PERMISSION' | 'CALL.DELETE_PERMISSION' | 'PROPOSAL.DELETE_PERMISSION' | 'LEXIS_LINK.CREATE' | 'LEXIS_LINK.DELETE' | 'PROJECT.LIST' | 'PROJECT.CREATE' | 'PROJECT.DELETE' | 'PROJECT.UPDATE' | 'PROJECT.UPDATE_METADATA' | 'PROJECT.SET_SLUG' | 'PROJECT.REVIEW_MEMBERSHIP' | 'CUSTOMER.UPDATE' | 'CUSTOMER.CONTACT_UPDATE' | 'CUSTOMER.LIST_USERS' | 'CUSTOMER.VIEW_TEAM' | 'PROJECT.VIEW_TEAM' | 'OFFERING.ACCEPT_CALL_REQUEST' | 'CALL.APPROVE_AND_REJECT_PROPOSALS' | 'CALL.CLOSE_ROUNDS' | 'ACCESS_SUBNET.CREATE' | 'ACCESS_SUBNET.UPDATE' | 'ACCESS_SUBNET.DELETE' | 'OFFERING_ACCESS_SUBNET.CREATE' | 'OFFERING_ACCESS_SUBNET.UPDATE' | 'OFFERING_ACCESS_SUBNET.DELETE' | 'OFFERINGUSER.UPDATE_RESTRICTION' | 'INVITATION.LIST' | 'CUSTOMER.LIST_PERMISSION_REVIEWS' | 'CALL.LIST' | 'CALL.CREATE' | 'CALL.UPDATE' | 'ROUND.LIST' | 'PROPOSAL.LIST' | 'SERVICE_ACCOUNT.MANAGE' | 'PROJECT.COURSE_ACCOUNT_MANAGE' | 'SERVICE_PROVIDER.OPENSTACK_IMAGE_MANAGEMENT' | 'OPENSTACK_INSTANCE.CONSOLE_ACCESS' | 'OPENSTACK_INSTANCE.MANAGE_POWER' | 'OPENSTACK_INSTANCE.MANAGE' | 'OPENSTACK_ROUTER.MANAGE_GATEWAY' | 'STAFF.ACCESS' | 'SUPPORT.ACCESS';
     };
     /**
      * Grouped permission descriptions for UI
@@ -23922,7 +24509,7 @@ export type Project = {
     readonly uuid: string;
     name: string;
     /**
-     * URL-friendly identifier. Only editable by staff users.
+     * URL-friendly identifier. Editable by staff; on create also by holders of PROJECT.SET_SLUG on the organization, otherwise ignored.
      */
     slug?: string;
     /**
@@ -24037,6 +24624,7 @@ export type Project = {
         [key: string]: number;
     };
     billing_price_estimate: NestedPriceEstimate;
+    readonly has_metrics: boolean;
 };
 
 export type ProjectAccountingSummary = {
@@ -24060,6 +24648,8 @@ export type ProjectActionEnum = 'create' | 'existing' | 'not_recreated';
 export type ProjectAffiliationUpdateRequest = {
     affiliation?: string | null;
 };
+
+export type ProjectAggregationEnum = 'sum' | 'mean';
 
 export type ProjectAnswer = {
     readonly project_uuid: string;
@@ -24461,6 +25051,17 @@ export type ProjectMetadataAnswer = {
     modified: string;
 };
 
+export type ProjectMetric = {
+    offering_metric: OfferingMetric;
+    period: string;
+    period_start: string;
+    current: number | null;
+    previous: number | null;
+    goal: MetricGoal | null;
+    goal_is_project: boolean;
+    goal_met: boolean | null;
+};
+
 export type ProjectOrderAutoApproval = {
     readonly uuid: string;
     readonly url: string;
@@ -24583,7 +25184,7 @@ export type ProjectRecoveryRequest = {
 export type ProjectRequest = {
     name: string;
     /**
-     * URL-friendly identifier. Only editable by staff users.
+     * URL-friendly identifier. Editable by staff; on create also by holders of PROJECT.SET_SLUG on the organization, otherwise ignored.
      */
     slug?: string;
     /**
@@ -24658,6 +25259,10 @@ export type ProjectServiceAccountRequest = {
     email?: string;
     preferred_identifier?: string;
     project: string | null;
+};
+
+export type ProjectSlugRequest = {
+    slug: string;
 };
 
 export type ProjectStorageReport = {
@@ -24794,7 +25399,12 @@ export type ProjectType = {
 export type ProjectUsageEntry = {
     readonly project_uuid: string;
     readonly project_name: string;
+    readonly is_removed: boolean;
     readonly usage: number;
+    /**
+     * Part of usage that came from terminated resources.
+     */
+    readonly usage_terminated: number;
     readonly buckets: Array<UsageTimeseriesBucket>;
 };
 
@@ -24971,6 +25581,7 @@ export type Proposal = {
     compliance_status: ProposalComplianceStatus | null;
     can_submit: ProposalCanSubmitResponse;
     readonly awaiting_manual_advance: boolean;
+    readonly decision_held: boolean | null;
     /**
      * Current active workflow step for this proposal.
      */
@@ -25243,6 +25854,10 @@ export type ProtectedCall = {
      * When a submitted proposal's evaluation starts: on submission, or for all proposals of a round together at its cut-off. Cannot be changed while the call has proposals submitted or in review.
      */
     evaluation_start?: EvaluationStartEnum;
+    /**
+     * When applicants learn the allocation decision: immediately, or for every proposal of a round together when a call manager publishes the round's results. Cannot be changed while decisions are held.
+     */
+    publish_results?: PublishResultsEnum;
     created_by?: string | null;
     reference_code?: string;
     /**
@@ -25300,6 +25915,14 @@ export type ProtectedCall = {
     order_author_user?: string | null;
     readonly order_author_user_uuid: string | null;
     readonly order_author_user_name: string | null;
+    /**
+     * Whether a draft still open when its round's cut-off passes moves on to the call's next round instead of being cancelled. Without a later round the draft is cancelled either way.
+     */
+    carry_over_drafts?: boolean;
+    /**
+     * What completing a round does with its proposals that still have no decision: refuse to complete the round, or reject them. A round may override it.
+     */
+    undecided_at_round_completion?: UndecidedAtRoundCompletionEnum;
 };
 
 export type ProtectedCallRequest = {
@@ -25326,6 +25949,10 @@ export type ProtectedCallRequest = {
      * When a submitted proposal's evaluation starts: on submission, or for all proposals of a round together at its cut-off. Cannot be changed while the call has proposals submitted or in review.
      */
     evaluation_start?: EvaluationStartEnum;
+    /**
+     * When applicants learn the allocation decision: immediately, or for every proposal of a round together when a call manager publishes the round's results. Cannot be changed while decisions are held.
+     */
+    publish_results?: PublishResultsEnum;
     created_by?: string | null;
     reference_code?: string;
     /**
@@ -25370,6 +25997,14 @@ export type ProtectedCallRequest = {
      * The person orders are attributed to when the author is a named contact. Must hold a role on this call or on the organisation managing it.
      */
     order_author_user?: string | null;
+    /**
+     * Whether a draft still open when its round's cut-off passes moves on to the call's next round instead of being cancelled. Without a later round the draft is cancelled either way.
+     */
+    carry_over_drafts?: boolean;
+    /**
+     * What completing a round does with its proposals that still have no decision: refuse to complete the round, or reject them. A round may override it.
+     */
+    undecided_at_round_completion?: UndecidedAtRoundCompletionEnum;
 };
 
 export type ProtectedProposalList = {
@@ -25388,11 +26023,6 @@ export type ProtectedProposalList = {
     readonly created: string;
 };
 
-export type ProtectedProposalListRequest = {
-    slug: string;
-    name: string;
-};
-
 export type ProtectedRound = {
     readonly uuid: string;
     readonly slug: string;
@@ -25402,8 +26032,39 @@ export type ProtectedRound = {
     status: RoundStatus;
     allocation_date?: string | null;
     review_duration_in_days?: number;
+    /**
+     * Where the round stands after its cut-off: evaluating, deciding, results_published or closed. Empty before the cut-off.
+     */
+    lifecycle_state: LifecycleStateEnum | NullEnum | null;
+    readonly evaluation_started_at: string | null;
+    readonly deciding_started_at: string | null;
+    readonly results_published_at: string | null;
+    readonly closed_at: string | null;
     readonly url: string;
     readonly proposals: Array<ProtectedProposalList>;
+    readonly results_published_by_name: string | null;
+    /**
+     * Proposals of the round whose decision is recorded but not yet published. After publication, decisions that could not be carried out; publishing the results again retries them. Null for anyone who may not see held decisions.
+     */
+    readonly held_decisions_count: number | null;
+    /**
+     * Whether the round holds any proposal, in any state. A round with proposals cannot be deleted. Unlike the proposals list, which leaves out what the viewer may not see, this counts every one.
+     */
+    readonly has_proposals: boolean;
+    /**
+     * Why results were published while some proposals of the round still had no decision.
+     */
+    readonly results_forced_reason: string | null;
+    /**
+     * When the round's results were adopted.
+     */
+    readonly adopted_at: string | null;
+    readonly adoption_note: string | null;
+    readonly adoption_document: string | null;
+    /**
+     * Overrides the call's rule for proposals still without a decision when the round is completed. Empty: the call's rule applies.
+     */
+    undecided_at_round_completion?: UndecidedAtRoundCompletionEnum | BlankEnum | NullEnum | null;
 };
 
 export type ProtectedRoundRequest = {
@@ -25411,6 +26072,10 @@ export type ProtectedRoundRequest = {
     cutoff_time: string;
     allocation_date?: string | null;
     review_duration_in_days?: number;
+    /**
+     * Overrides the call's rule for proposals still without a decision when the round is completed. Empty: the call's rule applies.
+     */
+    undecided_at_round_completion?: UndecidedAtRoundCompletionEnum | BlankEnum | NullEnum | null;
 };
 
 export type ProviderAccountOptions = {
@@ -26140,6 +26805,96 @@ export type ProviderUser = {
     image?: string | null;
 };
 
+export type ProviderUserRoleDetails = {
+    readonly uuid: string;
+    readonly created: string;
+    expiration_time?: string | null;
+    readonly role_name: string;
+    readonly role_uuid: string;
+    /**
+     * Email address
+     */
+    readonly user_email: string;
+    readonly user_full_name: string;
+    /**
+     * Required. 128 characters or fewer. Lowercase letters, numbers and @/./+/-/_ characters
+     */
+    readonly user_username: string;
+    readonly user_slug: string | null;
+    readonly user_uuid: string;
+    readonly user_image: string;
+    readonly created_by_full_name: string;
+    readonly created_by_uuid: string;
+    readonly source: string;
+    readonly user_phone_number: string;
+    readonly user_organization: string;
+    readonly user_job_title: string;
+    /**
+     * Person's affiliation within organization such as student, faculty, staff.
+     */
+    readonly user_affiliations: Array<string>;
+    /**
+     * User's gender (male, female, or unknown)
+     */
+    user_gender: GenderEnum | BlankEnum | NullEnum | null;
+    /**
+     * Honorific title (Mr, Ms, Dr, Prof, etc.)
+     */
+    readonly user_personal_title: string;
+    readonly user_place_of_birth: string;
+    readonly user_address: string;
+    readonly user_country_of_residence: string;
+    /**
+     * Primary citizenship (ISO 3166-1 alpha-2 code)
+     */
+    readonly user_nationality: string;
+    /**
+     * List of all citizenships (ISO 3166-1 alpha-2 codes)
+     */
+    readonly user_nationalities: Array<string>;
+    readonly user_organization_country: string;
+    /**
+     * SCHAC URN (e.g., urn:schac:homeOrganizationType:int:university)
+     */
+    readonly user_organization_type: string;
+    /**
+     * Company registration code of the user's organization, if known
+     */
+    readonly user_organization_registry_code: string;
+    /**
+     * VAT code of the user's organization
+     */
+    readonly user_organization_vat_code: string;
+    /**
+     * Postal address of the user's organization
+     */
+    readonly user_organization_address: string;
+    /**
+     * REFEDS assurance profile URIs from identity provider
+     */
+    readonly user_eduperson_assurance: Array<string>;
+    readonly user_civil_number: string | null;
+    readonly user_birth_date: string | null;
+    /**
+     * Source of identity
+     *
+     * Indicates what identity provider was used.
+     */
+    readonly user_identity_source: string;
+    /**
+     * POSIX UID from the identity provider; used when an offering's uid_source is 'user_attribute'.
+     */
+    readonly user_uid_number: number | null;
+    /**
+     * POSIX primary GID from the identity provider; used when an offering's gid_source is 'user_attribute'.
+     */
+    readonly user_primary_gid: number | null;
+    /**
+     * List of ISDs that have asserted this user exists. User is deactivated when this becomes empty.
+     */
+    readonly user_active_isds: Array<string>;
+};
+
 export type ProviderUsernameCandidate = {
     username: string;
     offering_count: number;
@@ -26203,6 +26958,10 @@ export type PublicCall = {
      * When a submitted proposal's evaluation starts: at once on submission, or for every proposal of a round together at the round's cut-off. Cannot be changed while proposals are submitted or in review.
      */
     evaluation_start?: EvaluationStartEnum;
+    /**
+     * When applicants learn the allocation decision: as soon as it is made, or for every proposal of a round together when a call manager publishes the round's results. Cannot be changed while decisions are held.
+     */
+    publish_results?: PublishResultsEnum;
 };
 
 export type PublicInvitation = {
@@ -26407,6 +27166,80 @@ export type PublicOfferingDetails = {
      */
     readonly google_calendar_link: string | null;
     readonly promotion_campaigns: Array<NestedCampaign>;
+};
+
+export type PublishResultsEnum = 'immediately' | 'with_round';
+
+export type PublishRoundResultsFailure = {
+    readonly uuid: string;
+    readonly name: string;
+};
+
+export type PublishRoundResultsRefusal = {
+    readonly detail: string;
+    /**
+     * Proposals of the round without a decision. Present when publishing is refused because of them; publish with force and a reason to go ahead anyway.
+     */
+    readonly undecided_count: number;
+};
+
+export type PublishRoundResultsRequest = {
+    /**
+     * Publish although some proposals of the round have no decision.
+     */
+    force?: boolean;
+    /**
+     * Why results are published early. Required with force.
+     */
+    reason?: string;
+};
+
+export type PublishRoundResultsResponse = {
+    readonly uuid: string;
+    readonly slug: string;
+    readonly name: string;
+    start_time: string;
+    cutoff_time: string;
+    status: RoundStatus;
+    allocation_date?: string | null;
+    review_duration_in_days?: number;
+    /**
+     * Where the round stands after its cut-off: evaluating, deciding, results_published or closed. Empty before the cut-off.
+     */
+    lifecycle_state: LifecycleStateEnum | NullEnum | null;
+    readonly evaluation_started_at: string | null;
+    readonly deciding_started_at: string | null;
+    readonly results_published_at: string | null;
+    readonly closed_at: string | null;
+    readonly url: string;
+    readonly proposals: Array<ProtectedProposalList>;
+    readonly results_published_by_name: string | null;
+    /**
+     * Proposals of the round whose decision is recorded but not yet published. After publication, decisions that could not be carried out; publishing the results again retries them. Null for anyone who may not see held decisions.
+     */
+    readonly held_decisions_count: number | null;
+    /**
+     * Whether the round holds any proposal, in any state. A round with proposals cannot be deleted. Unlike the proposals list, which leaves out what the viewer may not see, this counts every one.
+     */
+    readonly has_proposals: boolean;
+    /**
+     * Why results were published while some proposals of the round still had no decision.
+     */
+    readonly results_forced_reason: string | null;
+    /**
+     * When the round's results were adopted.
+     */
+    readonly adopted_at: string | null;
+    readonly adoption_note: string | null;
+    readonly adoption_document: string | null;
+    /**
+     * Overrides the call's rule for proposals still without a decision when the round is completed. Empty: the call's rule applies.
+     */
+    undecided_at_round_completion?: UndecidedAtRoundCompletionEnum | BlankEnum | NullEnum | null;
+    /**
+     * Proposals whose held decision could not be carried out. They stay held; publishing the round's results again retries them.
+     */
+    readonly failed_proposals: Array<PublishRoundResultsFailure>;
 };
 
 export type PublishingMetrics = {
@@ -27986,6 +28819,11 @@ export type RejectWorkflowStepResponse = {
     proposal_state: string;
 };
 
+export type RejectedPoint = {
+    index: number;
+    reason: string;
+};
+
 export type RelationshipTypeEnum = 'employment' | 'consulting' | 'equity' | 'board' | 'royalties' | 'gifts' | 'other';
 
 export type RelevantWhen = {
@@ -28427,6 +29265,17 @@ export type RenewalEstimateResponse = {
     new_end_date: string;
 };
 
+export type ReopenDecisionRequest = {
+    /**
+     * Why the held decision is taken back, e.g. the board changed the outcome when adopting the list. Never sent to the applicant and kept out of the proposal's event feed, which the applicant team reads; recorded in the server log.
+     */
+    reason: string;
+    /**
+     * New deadline for the decision. Without one, a deadline that has passed is cleared and one still ahead is kept.
+     */
+    deadline?: string | null;
+};
+
 export type ReplicationStats = {
     /**
      * Whether this database is a replica
@@ -28785,9 +29634,45 @@ export type ResourceApiKey = {
     readonly resource_backend_id: string;
     client_id?: string;
     state?: ResourceApiKeyState;
+    pending_action: ResourceApiKeyAction | BlankEnum;
     readonly modified: string;
+    /**
+     * When the agent last stored a value for this key: its creation or its latest rotation. Unlike modified, a pause or an edit leaves it alone.
+     */
+    issued_at?: string | null;
     error_message?: string;
+    readonly user_uuid: string | null;
+    readonly user_full_name: string | null;
+    readonly limits: {
+        [key: string]: number;
+    } | null;
+    readonly allowed_models: Array<string> | null;
+    readonly current_usages: {
+        [key: string]: number;
+    } | null;
+    readonly usage_period: string | null;
+    readonly paused_by_limit: boolean | null;
     readonly api_key: string;
+};
+
+export type ResourceApiKeyAction = 'create' | 'rotate' | 'pause' | 'resume' | 'delete' | 'update';
+
+export type ResourceApiKeyCreateRequest = {
+    /**
+     * Assignee. When set, only this user can reveal the key.
+     */
+    user?: string | null;
+    /**
+     * Limits per component type; zero or absent means no limit.
+     */
+    limits?: {
+        [key: string]: number;
+    } | null;
+    /**
+     * Models the key may call; empty or absent allows every model.
+     */
+    allowed_models?: Array<string> | null;
+    resource: string;
 };
 
 export type ResourceApiKeyReportCreatedRequest = {
@@ -28805,7 +29690,7 @@ export type ResourceApiKeySetKeyRequest = {
     client_id?: string;
 };
 
-export type ResourceApiKeyState = 'Creating' | 'OK' | 'Updating' | 'Erred';
+export type ResourceApiKeyState = 'Creating' | 'OK' | 'Updating' | 'Paused' | 'Deleting' | 'Deleted' | 'Erred';
 
 export type ResourceApiKeyStatus = {
     readonly uuid: string;
@@ -28813,8 +29698,46 @@ export type ResourceApiKeyStatus = {
     readonly resource_backend_id: string;
     client_id?: string;
     state?: ResourceApiKeyState;
+    pending_action: ResourceApiKeyAction | BlankEnum;
     readonly modified: string;
+    /**
+     * When the agent last stored a value for this key: its creation or its latest rotation. Unlike modified, a pause or an edit leaves it alone.
+     */
+    issued_at?: string | null;
     error_message?: string;
+    readonly user_uuid: string | null;
+    readonly user_full_name: string | null;
+    readonly limits: {
+        [key: string]: number;
+    } | null;
+    readonly allowed_models: Array<string> | null;
+    readonly current_usages: {
+        [key: string]: number;
+    } | null;
+    readonly usage_period: string | null;
+    readonly paused_by_limit: boolean | null;
+};
+
+export type ResourceApiKeyUsageRequest = {
+    /**
+     * The key's usage so far in billing_period, per component type.
+     */
+    usages: {
+        [key: string]: number;
+    };
+    /**
+     * Any day of the month the usage belongs to; the current month when omitted. Limits are monthly, so a later month starts them afresh.
+     */
+    billing_period?: string;
+};
+
+export type ResourceApiKeyUsageTotals = {
+    /**
+     * Usage per component type in the current month, summed over the resource's keys, deleted ones included.
+     */
+    usages: {
+        [key: string]: number;
+    };
 };
 
 export type ResourceBackendIdRequest = {
@@ -29066,6 +29989,14 @@ export type ResourceLimitPeriod = {
      * Total amount for this period
      */
     total: string;
+};
+
+export type ResourceMetric = {
+    offering_metric: OfferingMetric;
+    period: string;
+    period_start: string;
+    current: number | null;
+    previous: number | null;
 };
 
 export type ResourceMissingUsage = {
@@ -29531,6 +30462,27 @@ export type ResourcesLimits = {
 };
 
 export type ResponsibleRoleEnum = 'call_manager' | 'offering_manager' | 'reviewer' | 'panel_member' | 'applicant';
+
+export type RetentionPolicy = {
+    readonly uuid: string;
+    name: string;
+    raw_days?: number;
+    hourly_days?: number;
+    /**
+     * Empty keeps daily roll-ups forever.
+     */
+    daily_days?: number | null;
+};
+
+export type RetentionPolicyRequest = {
+    name: string;
+    raw_days?: number;
+    hourly_days?: number;
+    /**
+     * Empty keeps daily roll-ups forever.
+     */
+    daily_days?: number | null;
+};
 
 export type ReviewCommentRequest = {
     /**
@@ -30382,6 +31334,7 @@ export type RobotAccountDetails = {
     readonly user_keys: Array<SshKey>;
     readonly resource_name: string;
     readonly resource_uuid: string;
+    readonly resource_backend_id: string;
     readonly project_name: string;
     readonly project_uuid: string;
     readonly customer_uuid: string;
@@ -30765,6 +31718,15 @@ export type RoleTemplate = {
 };
 
 export type RoleType = 'customer' | 'service_provider' | 'call_organizer' | 'project' | 'offering' | 'resource' | 'resource_project' | 'call' | 'proposal';
+
+export type RoundAdoptionRequest = {
+    /**
+     * When the round's results were adopted.
+     */
+    adopted_at: string | null;
+    adoption_note?: string;
+    adoption_document?: Blob | File | null;
+};
 
 export type RoundReviewer = {
     readonly full_name: string;
@@ -31394,6 +32356,7 @@ export type ServiceProviderProjectGroup = {
     readonly project_slug: string | null;
     readonly customer_uuid: string | null;
     readonly customer_name: string | null;
+    readonly customer_slug: string | null;
     /**
      * The provider's offerings where the project has a non-terminated resource.
      */
@@ -33339,6 +34302,8 @@ export type TriggerSyncRequestRequest = {
     resource_uuid?: string;
 };
 
+export type UndecidedAtRoundCompletionEnum = 'refuse' | 'reject';
+
 export type UpdateActionsRequest = {
     /**
      * Optional provider action type to update. If not provided, updates all providers.
@@ -33494,6 +34459,10 @@ export type UsageLimitRestrictionEnum = 'paused' | 'downscaled';
 export type UsageTimeseriesBucket = {
     readonly billing_period: string;
     readonly usage: number;
+    /**
+     * Part of usage that came from terminated resources.
+     */
+    readonly usage_terminated: number;
 };
 
 export type User = {
@@ -34394,7 +35363,7 @@ export type ValidationDecisionEnum = 'approved' | 'rejected' | 'pending';
 
 export type ValidationMethodEnum = 'ariregister' | 'wirtschaftscompass' | 'bolagsverket' | 'breg' | 'dnb_se' | 'dnb_no' | 'dnb_dk' | 'dnb_fi';
 
-export type ValueEnum = 'SERVICE_PROVIDER.REGISTER' | 'OFFERING.CREATE' | 'OFFERING.DELETE' | 'OFFERING.UPDATE_THUMBNAIL' | 'OFFERING.UPDATE' | 'OFFERING.UPDATE_ATTRIBUTES' | 'OFFERING.UPDATE_LOCATION' | 'OFFERING.UPDATE_DESCRIPTION' | 'OFFERING.UPDATE_OPTIONS' | 'OFFERING.UPDATE_INTEGRATION' | 'OFFERING.ADD_ENDPOINT' | 'OFFERING.DELETE_ENDPOINT' | 'OFFERING.UPDATE_COMPONENTS' | 'OFFERING.PAUSE' | 'OFFERING.UNPAUSE' | 'OFFERING.ARCHIVE' | 'OFFERING.DRY_RUN_SCRIPT' | 'OFFERING.MANAGE_CAMPAIGN' | 'OFFERING.MANAGE_USER_GROUP' | 'OFFERING.CREATE_PLAN' | 'OFFERING.UPDATE_PLAN' | 'OFFERING.ARCHIVE_PLAN' | 'OFFERING.CREATE_SCREENSHOT' | 'OFFERING.UPDATE_SCREENSHOT' | 'OFFERING.DELETE_SCREENSHOT' | 'OFFERING.CREATE_USER' | 'OFFERING.UPDATE_USER' | 'OFFERING.DELETE_USER' | 'OFFERING.MANAGE_USER_ROLE' | 'POSIX_ID_POOL.MANAGE' | 'RESOURCE.CREATE_ROBOT_ACCOUNT' | 'RESOURCE.UPDATE_ROBOT_ACCOUNT' | 'RESOURCE.DELETE_ROBOT_ACCOUNT' | 'ORDER.LIST' | 'ORDER.CREATE' | 'ORDER.APPROVE_PRIVATE' | 'ORDER.APPROVE' | 'ORDER.REJECT' | 'ORDER.DESTROY' | 'ORDER.CANCEL' | 'ORDER.SET_CONSUMER_INFO' | 'RESOURCE.LIST' | 'RESOURCE.UPDATE' | 'RESOURCE.TERMINATE' | 'RESOURCE.LIST_IMPORTABLE' | 'RESOURCE.SET_END_DATE' | 'RESOURCE.SET_USAGE' | 'RESOURCE.SET_PLAN' | 'RESOURCE.SET_LIMITS' | 'RESOURCE.SET_BACKEND_ID' | 'RESOURCE.SUBMIT_REPORT' | 'RESOURCE.SET_BACKEND_METADATA' | 'RESOURCE.MANAGE_API_KEY' | 'RESOURCE.SET_STATE' | 'RESOURCE.UPDATE_OPTIONS' | 'RESOURCE.ACCEPT_BOOKING_REQUEST' | 'RESOURCE.REJECT_BOOKING_REQUEST' | 'RESOURCE.MANAGE_USERS' | 'RESOURCE.CREATE_PERMISSION' | 'RESOURCE.UPDATE_PERMISSION' | 'RESOURCE.DELETE_PERMISSION' | 'RESOURCE_PROJECT.CREATE_PERMISSION' | 'RESOURCE_PROJECT.UPDATE_PERMISSION' | 'RESOURCE_PROJECT.DELETE_PERMISSION' | 'RESOURCE.CONSUMPTION_LIMITATION' | 'OFFERING.MANAGE_BACKEND_RESOURCES' | 'SERVICE_PROVIDER.GET_API_SECRET_CODE' | 'SERVICE_PROVIDER.GENERATE_API_SECRET_CODE' | 'SERVICE_PROVIDER.LIST_CUSTOMERS' | 'SERVICE_PROVIDER.LIST_CUSTOMER_PROJECTS' | 'SERVICE_PROVIDER.LIST_PROJECTS' | 'SERVICE_PROVIDER.LIST_PROJECT_PERMISSIONS' | 'SERVICE_PROVIDER.LIST_KEYS' | 'SERVICE_PROVIDER.LIST_USERS' | 'SERVICE_PROVIDER.LIST_USER_CUSTOMERS' | 'SERVICE_PROVIDER.LIST_SERVICE_ACCOUNTS' | 'SERVICE_PROVIDER.LIST_COURSE_ACCOUNTS' | 'SERVICE_PROVIDER.SET_OFFERINGS_USERNAME' | 'SERVICE_PROVIDER.GET_STATISTICS' | 'SERVICE_PROVIDER.GET_REVENUE' | 'SERVICE_PROVIDER.GET_ROBOT_ACCOUNT_CUSTOMERS' | 'SERVICE_PROVIDER.GET_ROBOT_ACCOUNT_PROJECTS' | 'SERVICE_PROVIDER.MANAGE_MAINTENANCE_ANNOUNCEMENT' | 'MATRIX_ROOM.CREATE' | 'PROJECT.CREATE_PERMISSION' | 'CUSTOMER.CREATE_PERMISSION' | 'OFFERING.CREATE_PERMISSION' | 'CALL.CREATE_PERMISSION' | 'PROPOSAL.MANAGE' | 'PROPOSAL.MANAGE_REVIEW' | 'PROJECT.UPDATE_PERMISSION' | 'CUSTOMER.UPDATE_PERMISSION' | 'OFFERING.UPDATE_PERMISSION' | 'CALL.UPDATE_PERMISSION' | 'PROPOSAL.UPDATE_PERMISSION' | 'PROJECT.DELETE_PERMISSION' | 'CUSTOMER.DELETE_PERMISSION' | 'OFFERING.DELETE_PERMISSION' | 'CALL.DELETE_PERMISSION' | 'PROPOSAL.DELETE_PERMISSION' | 'LEXIS_LINK.CREATE' | 'LEXIS_LINK.DELETE' | 'PROJECT.LIST' | 'PROJECT.CREATE' | 'PROJECT.DELETE' | 'PROJECT.UPDATE' | 'PROJECT.UPDATE_METADATA' | 'PROJECT.REVIEW_MEMBERSHIP' | 'CUSTOMER.UPDATE' | 'CUSTOMER.CONTACT_UPDATE' | 'CUSTOMER.LIST_USERS' | 'CUSTOMER.VIEW_TEAM' | 'PROJECT.VIEW_TEAM' | 'OFFERING.ACCEPT_CALL_REQUEST' | 'CALL.APPROVE_AND_REJECT_PROPOSALS' | 'CALL.CLOSE_ROUNDS' | 'ACCESS_SUBNET.CREATE' | 'ACCESS_SUBNET.UPDATE' | 'ACCESS_SUBNET.DELETE' | 'OFFERING_ACCESS_SUBNET.CREATE' | 'OFFERING_ACCESS_SUBNET.UPDATE' | 'OFFERING_ACCESS_SUBNET.DELETE' | 'OFFERINGUSER.UPDATE_RESTRICTION' | 'INVITATION.LIST' | 'CUSTOMER.LIST_PERMISSION_REVIEWS' | 'CALL.LIST' | 'CALL.CREATE' | 'CALL.UPDATE' | 'ROUND.LIST' | 'PROPOSAL.LIST' | 'SERVICE_ACCOUNT.MANAGE' | 'PROJECT.COURSE_ACCOUNT_MANAGE' | 'SERVICE_PROVIDER.OPENSTACK_IMAGE_MANAGEMENT' | 'OPENSTACK_INSTANCE.CONSOLE_ACCESS' | 'OPENSTACK_INSTANCE.MANAGE_POWER' | 'OPENSTACK_INSTANCE.MANAGE' | 'OPENSTACK_ROUTER.MANAGE_GATEWAY' | 'STAFF.ACCESS' | 'SUPPORT.ACCESS';
+export type ValueEnum = 'SERVICE_PROVIDER.REGISTER' | 'OFFERING.CREATE' | 'OFFERING.DELETE' | 'OFFERING.UPDATE_THUMBNAIL' | 'OFFERING.UPDATE' | 'OFFERING.UPDATE_ATTRIBUTES' | 'OFFERING.UPDATE_LOCATION' | 'OFFERING.UPDATE_DESCRIPTION' | 'OFFERING.UPDATE_OPTIONS' | 'OFFERING.UPDATE_INTEGRATION' | 'OFFERING.ADD_ENDPOINT' | 'OFFERING.DELETE_ENDPOINT' | 'OFFERING.UPDATE_COMPONENTS' | 'OFFERING.PAUSE' | 'OFFERING.UNPAUSE' | 'OFFERING.ARCHIVE' | 'OFFERING.DRY_RUN_SCRIPT' | 'OFFERING.MANAGE_CAMPAIGN' | 'OFFERING.MANAGE_USER_GROUP' | 'OFFERING.CREATE_PLAN' | 'OFFERING.UPDATE_PLAN' | 'OFFERING.ARCHIVE_PLAN' | 'OFFERING.CREATE_SCREENSHOT' | 'OFFERING.UPDATE_SCREENSHOT' | 'OFFERING.DELETE_SCREENSHOT' | 'OFFERING.CREATE_USER' | 'OFFERING.UPDATE_USER' | 'OFFERING.DELETE_USER' | 'OFFERING.MANAGE_USER_ROLE' | 'POSIX_ID_POOL.MANAGE' | 'RESOURCE.CREATE_ROBOT_ACCOUNT' | 'RESOURCE.UPDATE_ROBOT_ACCOUNT' | 'RESOURCE.DELETE_ROBOT_ACCOUNT' | 'ORDER.LIST' | 'ORDER.CREATE' | 'ORDER.APPROVE_PRIVATE' | 'ORDER.APPROVE' | 'ORDER.REJECT' | 'ORDER.DESTROY' | 'ORDER.CANCEL' | 'ORDER.SET_CONSUMER_INFO' | 'RESOURCE.LIST' | 'RESOURCE.UPDATE' | 'RESOURCE.TERMINATE' | 'RESOURCE.LIST_IMPORTABLE' | 'RESOURCE.SET_END_DATE' | 'RESOURCE.SET_USAGE' | 'RESOURCE.SET_PLAN' | 'RESOURCE.SET_LIMITS' | 'RESOURCE.SET_BACKEND_ID' | 'RESOURCE.SET_SLUG' | 'RESOURCE.SUBMIT_REPORT' | 'RESOURCE.SET_BACKEND_METADATA' | 'RESOURCE.MANAGE_API_KEY' | 'RESOURCE.SET_STATE' | 'RESOURCE.UPDATE_OPTIONS' | 'RESOURCE.ACCEPT_BOOKING_REQUEST' | 'RESOURCE.REJECT_BOOKING_REQUEST' | 'RESOURCE.MANAGE_USERS' | 'RESOURCE.CREATE_PERMISSION' | 'RESOURCE.UPDATE_PERMISSION' | 'RESOURCE.DELETE_PERMISSION' | 'RESOURCE_PROJECT.CREATE_PERMISSION' | 'RESOURCE_PROJECT.UPDATE_PERMISSION' | 'RESOURCE_PROJECT.DELETE_PERMISSION' | 'RESOURCE.CONSUMPTION_LIMITATION' | 'OFFERING.MANAGE_BACKEND_RESOURCES' | 'SERVICE_PROVIDER.GET_API_SECRET_CODE' | 'SERVICE_PROVIDER.GENERATE_API_SECRET_CODE' | 'SERVICE_PROVIDER.LIST_CUSTOMERS' | 'SERVICE_PROVIDER.LIST_CUSTOMER_PROJECTS' | 'SERVICE_PROVIDER.LIST_PROJECTS' | 'SERVICE_PROVIDER.LIST_PROJECT_PERMISSIONS' | 'SERVICE_PROVIDER.LIST_KEYS' | 'SERVICE_PROVIDER.LIST_USERS' | 'SERVICE_PROVIDER.LIST_USER_CUSTOMERS' | 'SERVICE_PROVIDER.LIST_SERVICE_ACCOUNTS' | 'SERVICE_PROVIDER.LIST_COURSE_ACCOUNTS' | 'SERVICE_PROVIDER.SET_OFFERINGS_USERNAME' | 'SERVICE_PROVIDER.GET_STATISTICS' | 'SERVICE_PROVIDER.GET_REVENUE' | 'SERVICE_PROVIDER.GET_ROBOT_ACCOUNT_CUSTOMERS' | 'SERVICE_PROVIDER.GET_ROBOT_ACCOUNT_PROJECTS' | 'SERVICE_PROVIDER.MANAGE_MAINTENANCE_ANNOUNCEMENT' | 'MATRIX_ROOM.CREATE' | 'PROJECT.CREATE_PERMISSION' | 'CUSTOMER.CREATE_PERMISSION' | 'OFFERING.CREATE_PERMISSION' | 'CALL.CREATE_PERMISSION' | 'PROPOSAL.MANAGE' | 'PROPOSAL.UPDATE' | 'PROPOSAL.MANAGE_REVIEW' | 'PROJECT.UPDATE_PERMISSION' | 'CUSTOMER.UPDATE_PERMISSION' | 'OFFERING.UPDATE_PERMISSION' | 'CALL.UPDATE_PERMISSION' | 'PROPOSAL.UPDATE_PERMISSION' | 'PROJECT.DELETE_PERMISSION' | 'CUSTOMER.DELETE_PERMISSION' | 'OFFERING.DELETE_PERMISSION' | 'CALL.DELETE_PERMISSION' | 'PROPOSAL.DELETE_PERMISSION' | 'LEXIS_LINK.CREATE' | 'LEXIS_LINK.DELETE' | 'PROJECT.LIST' | 'PROJECT.CREATE' | 'PROJECT.DELETE' | 'PROJECT.UPDATE' | 'PROJECT.UPDATE_METADATA' | 'PROJECT.SET_SLUG' | 'PROJECT.REVIEW_MEMBERSHIP' | 'CUSTOMER.UPDATE' | 'CUSTOMER.CONTACT_UPDATE' | 'CUSTOMER.LIST_USERS' | 'CUSTOMER.VIEW_TEAM' | 'PROJECT.VIEW_TEAM' | 'OFFERING.ACCEPT_CALL_REQUEST' | 'CALL.APPROVE_AND_REJECT_PROPOSALS' | 'CALL.CLOSE_ROUNDS' | 'ACCESS_SUBNET.CREATE' | 'ACCESS_SUBNET.UPDATE' | 'ACCESS_SUBNET.DELETE' | 'OFFERING_ACCESS_SUBNET.CREATE' | 'OFFERING_ACCESS_SUBNET.UPDATE' | 'OFFERING_ACCESS_SUBNET.DELETE' | 'OFFERINGUSER.UPDATE_RESTRICTION' | 'INVITATION.LIST' | 'CUSTOMER.LIST_PERMISSION_REVIEWS' | 'CALL.LIST' | 'CALL.CREATE' | 'CALL.UPDATE' | 'ROUND.LIST' | 'PROPOSAL.LIST' | 'SERVICE_ACCOUNT.MANAGE' | 'PROJECT.COURSE_ACCOUNT_MANAGE' | 'SERVICE_PROVIDER.OPENSTACK_IMAGE_MANAGEMENT' | 'OPENSTACK_INSTANCE.CONSOLE_ACCESS' | 'OPENSTACK_INSTANCE.MANAGE_POWER' | 'OPENSTACK_INSTANCE.MANAGE' | 'OPENSTACK_ROUTER.MANAGE_GATEWAY' | 'STAFF.ACCESS' | 'SUPPORT.ACCESS';
 
 export type VariantEnum = 'info' | 'warning' | 'error';
 
@@ -36031,7 +37000,7 @@ export type OnboardingJustificationDocumentationRequestMultipart = {
 export type ProjectRequestForm = {
     name: string;
     /**
-     * URL-friendly identifier. Only editable by staff users.
+     * URL-friendly identifier. Editable by staff; on create also by holders of PROJECT.SET_SLUG on the organization, otherwise ignored.
      */
     slug?: string;
     /**
@@ -36080,7 +37049,7 @@ export type ProjectRequestForm = {
 export type ProjectRequestMultipart = {
     name: string;
     /**
-     * URL-friendly identifier. Only editable by staff users.
+     * URL-friendly identifier. Editable by staff; on create also by holders of PROJECT.SET_SLUG on the organization, otherwise ignored.
      */
     slug?: string;
     /**
@@ -36129,7 +37098,7 @@ export type ProjectRequestMultipart = {
 export type PatchedProjectRequestForm = {
     name?: string;
     /**
-     * URL-friendly identifier. Only editable by staff users.
+     * URL-friendly identifier. Editable by staff; on create also by holders of PROJECT.SET_SLUG on the organization, otherwise ignored.
      */
     slug?: string;
     /**
@@ -36178,7 +37147,7 @@ export type PatchedProjectRequestForm = {
 export type PatchedProjectRequestMultipart = {
     name?: string;
     /**
-     * URL-friendly identifier. Only editable by staff users.
+     * URL-friendly identifier. Editable by staff; on create also by holders of PROJECT.SET_SLUG on the organization, otherwise ignored.
      */
     slug?: string;
     /**
@@ -36530,6 +37499,12 @@ export type ConstanceSettingsRequestForm = {
     ARROW_CONSUMPTION_SYNC_ENABLED?: boolean;
     ARROW_CONSUMPTION_SYNC_INTERVAL_HOURS?: number;
     ARROW_BILLING_CHECK_INTERVAL_HOURS?: number;
+    METRICS_LATE_DATA_DAYS?: number;
+    METRICS_MAX_SERIES_PER_RESOURCE_METRIC?: number;
+    METRICS_MAX_POINTS_PER_REQUEST?: number;
+    METRICS_MAX_OTLP_BODY_BYTES?: number;
+    METRICS_DEFAULT_RETENTION_POLICY?: string;
+    METRICS_ARCHIVE_GRACE_DAYS?: number;
     USAGE_POLL_RECORD_RETENTION_MONTHS?: number;
     SLURM_POLICY_EVALUATION_LOG_RETENTION_DAYS?: number;
     FEDERATED_IDENTITY_SYNC_ENABLED?: boolean;
@@ -36551,15 +37526,18 @@ export type ConstanceSettingsRequestForm = {
     MATRIX_APPSERVICE_AS_TOKEN?: string;
     MATRIX_APPSERVICE_HS_TOKEN?: string;
     MATRIX_APPSERVICE_SENDER_LOCALPART?: string;
+    MATRIX_TOKENS_MANAGED_BY?: string;
     MATRIX_HISTORY_EXPORT_ENABLED?: boolean;
     MATRIX_EXPORT_MEDIA?: boolean;
+    MATRIX_HISTORY_EXPORT_RETENTION_DAYS?: number;
     MATRIX_USER_REGISTRATION_SECRET?: string;
     MATRIX_USER_ID_FORMAT?: string;
-    MATRIX_LOGIN_METHOD?: string;
-    MATRIX_OIDC_PROVIDER_URL?: string;
+    MATRIX_EXTERNAL_LOGIN_METHOD?: MatrixExternalLoginMethodEnum;
+    MATRIX_SSO_REGISTRATION_METHOD?: string;
     MATRIX_LIVEKIT_KEY?: string;
     MATRIX_LIVEKIT_SECRET?: string;
     MATRIX_LIVEKIT_URL?: string;
+    MATRIX_LIVEKIT_PUBLIC_URL?: string;
     SITE_AGENT_LOG_MAX_ROWS_PER_IDENTITY?: number;
     PAT_ENABLED?: boolean;
     PAT_MAX_LIFETIME_DAYS?: number;
@@ -36874,6 +37852,12 @@ export type ConstanceSettingsRequestMultipart = {
     ARROW_CONSUMPTION_SYNC_ENABLED?: boolean;
     ARROW_CONSUMPTION_SYNC_INTERVAL_HOURS?: number;
     ARROW_BILLING_CHECK_INTERVAL_HOURS?: number;
+    METRICS_LATE_DATA_DAYS?: number;
+    METRICS_MAX_SERIES_PER_RESOURCE_METRIC?: number;
+    METRICS_MAX_POINTS_PER_REQUEST?: number;
+    METRICS_MAX_OTLP_BODY_BYTES?: number;
+    METRICS_DEFAULT_RETENTION_POLICY?: string;
+    METRICS_ARCHIVE_GRACE_DAYS?: number;
     USAGE_POLL_RECORD_RETENTION_MONTHS?: number;
     SLURM_POLICY_EVALUATION_LOG_RETENTION_DAYS?: number;
     FEDERATED_IDENTITY_SYNC_ENABLED?: boolean;
@@ -36895,15 +37879,18 @@ export type ConstanceSettingsRequestMultipart = {
     MATRIX_APPSERVICE_AS_TOKEN?: string;
     MATRIX_APPSERVICE_HS_TOKEN?: string;
     MATRIX_APPSERVICE_SENDER_LOCALPART?: string;
+    MATRIX_TOKENS_MANAGED_BY?: string;
     MATRIX_HISTORY_EXPORT_ENABLED?: boolean;
     MATRIX_EXPORT_MEDIA?: boolean;
+    MATRIX_HISTORY_EXPORT_RETENTION_DAYS?: number;
     MATRIX_USER_REGISTRATION_SECRET?: string;
     MATRIX_USER_ID_FORMAT?: string;
-    MATRIX_LOGIN_METHOD?: string;
-    MATRIX_OIDC_PROVIDER_URL?: string;
+    MATRIX_EXTERNAL_LOGIN_METHOD?: MatrixExternalLoginMethodEnum;
+    MATRIX_SSO_REGISTRATION_METHOD?: string;
     MATRIX_LIVEKIT_KEY?: string;
     MATRIX_LIVEKIT_SECRET?: string;
     MATRIX_LIVEKIT_URL?: string;
+    MATRIX_LIVEKIT_PUBLIC_URL?: string;
     SITE_AGENT_LOG_MAX_ROWS_PER_IDENTITY?: number;
     PAT_ENABLED?: boolean;
     PAT_MAX_LIFETIME_DAYS?: number;
@@ -37536,6 +38523,10 @@ export type IntegrationStatusDetailsOEnum = '-last_request_timestamp' | 'last_re
 
 export type IntegrationStatusDetailsStatusEnum = 'Active' | 'Disconnected' | 'Unknown';
 
+export type MetricSeriesResponseAggregateEnum = 'last' | 'max' | 'mean' | 'min';
+
+export type MetricSeriesResponseGranularityEnum = 'auto' | 'day' | 'hour' | 'raw';
+
 export type OfferingEstimatedCostPolicyFieldEnum = 'actions' | 'affected_resources_count' | 'apply_to_all' | 'created' | 'created_by_full_name' | 'created_by_username' | 'current_cost' | 'eta_date' | 'eta_days' | 'fired_datetime' | 'has_fired' | 'limit_cost' | 'options' | 'organization_groups' | 'period' | 'period_name' | 'scope' | 'scope_name' | 'scope_uuid' | 'url' | 'uuid';
 
 export type OfferingFileFieldEnum = 'created' | 'file' | 'name' | 'offering' | 'url' | 'uuid';
@@ -37550,7 +38541,7 @@ export type OfferingTermsOfServiceOEnum = '-created' | '-modified' | '-version' 
 
 export type UserChecklistCompletionOEnum = '-is_completed' | '-modified' | 'is_completed' | 'modified';
 
-export type OfferingUserFieldEnum = 'consent_data' | 'created' | 'customer_name' | 'customer_uuid' | 'has_compliance_checklist' | 'has_consent' | 'home_directory' | 'is_profile_complete' | 'is_restricted' | 'login_shell' | 'missing_profile_attributes' | 'modified' | 'offering' | 'offering_has_active_tos' | 'offering_name' | 'offering_uuid' | 'primarygroup' | 'requires_reconsent' | 'runtime_state' | 'service_provider_comment' | 'service_provider_comment_url' | 'state' | 'uidnumber' | 'url' | 'user' | 'user_active_isds' | 'user_address' | 'user_affiliations' | 'user_birth_date' | 'user_civil_number' | 'user_country_of_residence' | 'user_eduperson_assurance' | 'user_email' | 'user_first_name' | 'user_full_name' | 'user_gender' | 'user_identity_source' | 'user_job_title' | 'user_last_name' | 'user_nationalities' | 'user_nationality' | 'user_organization' | 'user_organization_address' | 'user_organization_country' | 'user_organization_registry_code' | 'user_organization_type' | 'user_organization_vat_code' | 'user_personal_title' | 'user_phone_number' | 'user_place_of_birth' | 'user_primary_gid' | 'user_uid_number' | 'user_username' | 'user_uuid' | 'username' | 'uuid';
+export type OfferingUserFieldEnum = 'consent_data' | 'created' | 'customer_name' | 'customer_uuid' | 'has_compliance_checklist' | 'has_consent' | 'home_directory' | 'is_profile_complete' | 'is_restricted' | 'login_shell' | 'missing_profile_attributes' | 'modified' | 'offering' | 'offering_has_active_tos' | 'offering_name' | 'offering_uuid' | 'primarygroup' | 'requires_reconsent' | 'runtime_state' | 'service_provider_account_username' | 'service_provider_account_uuid' | 'service_provider_comment' | 'service_provider_comment_url' | 'state' | 'uidnumber' | 'url' | 'user' | 'user_active_isds' | 'user_address' | 'user_affiliations' | 'user_birth_date' | 'user_civil_number' | 'user_country_of_residence' | 'user_eduperson_assurance' | 'user_email' | 'user_first_name' | 'user_full_name' | 'user_gender' | 'user_identity_source' | 'user_job_title' | 'user_last_name' | 'user_nationalities' | 'user_nationality' | 'user_organization' | 'user_organization_address' | 'user_organization_country' | 'user_organization_registry_code' | 'user_organization_type' | 'user_organization_vat_code' | 'user_personal_title' | 'user_phone_number' | 'user_place_of_birth' | 'user_primary_gid' | 'user_uid_number' | 'user_username' | 'user_uuid' | 'username' | 'uuid';
 
 export type OfferingUserOEnum = '-created' | '-modified' | '-user_first_name' | '-user_last_name' | '-username' | 'created' | 'modified' | 'user_first_name' | 'user_last_name' | 'username';
 
@@ -37576,7 +38567,7 @@ export type ProviderOfferingDetailsOEnum = '-created' | '-name' | '-state' | '-t
 
 export type ProviderOfferingCustomerFieldEnum = 'abbreviation' | 'email' | 'name' | 'phone_number' | 'slug' | 'uuid';
 
-export type ProjectFieldEnum = 'affiliation' | 'affiliation_code' | 'affiliation_name' | 'affiliation_uuid' | 'backend_id' | 'billing_price_estimate' | 'created' | 'customer' | 'customer_abbreviation' | 'customer_display_billing_info_in_projects' | 'customer_grace_period_days' | 'customer_name' | 'customer_native_name' | 'customer_slug' | 'customer_uuid' | 'description' | 'effective_end_date' | 'end_date' | 'end_date_requested_by' | 'end_date_updated_at' | 'grace_period_days' | 'image' | 'is_in_grace_period' | 'is_industry' | 'is_removed' | 'kind' | 'marketplace_resource_count' | 'max_service_accounts' | 'name' | 'oecd_fos_2007_code' | 'oecd_fos_2007_label' | 'project_credit' | 'project_metadata' | 'resources_count' | 'science_domain_code' | 'science_domain_name' | 'science_domain_uuid' | 'science_sub_domain' | 'science_sub_domain_code' | 'science_sub_domain_name' | 'slug' | 'staff_notes' | 'start_date' | 'termination_metadata' | 'type' | 'type_name' | 'type_uuid' | 'url' | 'user_affiliations' | 'user_email_patterns' | 'user_identity_sources' | 'uuid';
+export type ProjectFieldEnum = 'affiliation' | 'affiliation_code' | 'affiliation_name' | 'affiliation_uuid' | 'backend_id' | 'billing_price_estimate' | 'created' | 'customer' | 'customer_abbreviation' | 'customer_display_billing_info_in_projects' | 'customer_grace_period_days' | 'customer_name' | 'customer_native_name' | 'customer_slug' | 'customer_uuid' | 'description' | 'effective_end_date' | 'end_date' | 'end_date_requested_by' | 'end_date_updated_at' | 'grace_period_days' | 'has_metrics' | 'image' | 'is_in_grace_period' | 'is_industry' | 'is_removed' | 'kind' | 'marketplace_resource_count' | 'max_service_accounts' | 'name' | 'oecd_fos_2007_code' | 'oecd_fos_2007_label' | 'project_credit' | 'project_metadata' | 'resources_count' | 'science_domain_code' | 'science_domain_name' | 'science_domain_uuid' | 'science_sub_domain' | 'science_sub_domain_code' | 'science_sub_domain_name' | 'slug' | 'staff_notes' | 'start_date' | 'termination_metadata' | 'type' | 'type_name' | 'type_uuid' | 'url' | 'user_affiliations' | 'user_email_patterns' | 'user_identity_sources' | 'uuid';
 
 export type UserFieldEnum = 'active_isds' | 'address' | 'affiliations' | 'agree_with_policy' | 'agreement_date' | 'attribute_sources' | 'birth_date' | 'can_use_personal_access_tokens' | 'civil_number' | 'country_of_residence' | 'date_joined' | 'deactivation_reason' | 'description' | 'details' | 'eduperson_assurance' | 'email' | 'first_name' | 'full_name' | 'gender' | 'has_active_session' | 'has_passkey' | 'has_usable_password' | 'identity_provider_fields' | 'identity_provider_label' | 'identity_provider_management_url' | 'identity_provider_name' | 'identity_source' | 'image' | 'ip_address' | 'is_active' | 'is_admin_deactivated' | 'is_identity_manager' | 'is_staff' | 'is_support' | 'job_title' | 'last_name' | 'managed_isds' | 'nationalities' | 'nationality' | 'native_name' | 'notifications_enabled' | 'organization' | 'organization_address' | 'organization_country' | 'organization_registry_code' | 'organization_type' | 'organization_vat_code' | 'passkey_count' | 'permissions' | 'personal_title' | 'phone_number' | 'place_of_birth' | 'preferred_language' | 'primary_gid' | 'registration_method' | 'requested_email' | 'should_protect_user_details' | 'slug' | 'token' | 'token_expires_at' | 'token_lifetime' | 'uid_number' | 'url' | 'username' | 'uuid';
 
@@ -37584,7 +38575,7 @@ export type ResourceOEnum = '-backend_id' | '-created' | '-customer_name' | '-en
 
 export type ResourceTeamMemberFieldEnum = 'email' | 'expiration_time' | 'full_name' | 'image' | 'resource_projects' | 'role_name' | 'role_uuid' | 'roles' | 'url' | 'username' | 'uuid';
 
-export type RobotAccountDetailsFieldEnum = 'backend_id' | 'created' | 'customer_name' | 'customer_uuid' | 'description' | 'error_message' | 'error_traceback' | 'fingerprints' | 'keys' | 'modified' | 'offering_plugin_options' | 'project_name' | 'project_uuid' | 'provider_name' | 'provider_uuid' | 'resource' | 'resource_name' | 'resource_uuid' | 'responsible_user' | 'state' | 'type' | 'url' | 'user_keys' | 'username' | 'users' | 'uuid';
+export type RobotAccountDetailsFieldEnum = 'backend_id' | 'created' | 'customer_name' | 'customer_uuid' | 'description' | 'error_message' | 'error_traceback' | 'fingerprints' | 'keys' | 'modified' | 'offering_plugin_options' | 'project_name' | 'project_uuid' | 'provider_name' | 'provider_uuid' | 'resource' | 'resource_backend_id' | 'resource_name' | 'resource_uuid' | 'responsible_user' | 'state' | 'type' | 'url' | 'user_keys' | 'username' | 'users' | 'uuid';
 
 export type ServiceProviderAccountFieldEnum = 'created' | 'home_directory' | 'is_restricted' | 'login_shell' | 'modified' | 'offering_count' | 'primarygroup' | 'runtime_state' | 'service_provider' | 'service_provider_comment' | 'service_provider_comment_url' | 'service_provider_name' | 'service_provider_uuid' | 'state' | 'uidnumber' | 'url' | 'user' | 'user_email' | 'user_full_name' | 'user_username' | 'user_uuid' | 'username' | 'uuid';
 
@@ -37658,7 +38649,7 @@ export type OpenStackLoadBalancerFieldEnum = 'access_url' | 'attached_floating_i
 
 export type NetworkRbacPolicyDirectionEnum = 'all' | 'inbound' | 'outbound';
 
-export type OpenStackNetworkFieldEnum = 'access_url' | 'backend_id' | 'created' | 'customer' | 'customer_abbreviation' | 'customer_name' | 'customer_native_name' | 'customer_uuid' | 'description' | 'error_message' | 'error_traceback' | 'is_external' | 'is_limit_based' | 'is_usage_based' | 'marketplace_category_name' | 'marketplace_category_uuid' | 'marketplace_offering_name' | 'marketplace_offering_plugin_options' | 'marketplace_offering_type' | 'marketplace_offering_uuid' | 'marketplace_plan_uuid' | 'marketplace_resource_state' | 'marketplace_resource_uuid' | 'modified' | 'mtu' | 'name' | 'port_security_enabled' | 'project' | 'project_name' | 'project_uuid' | 'rbac_policies' | 'resource_type' | 'segmentation_id' | 'service_name' | 'service_settings' | 'service_settings_error_message' | 'service_settings_state' | 'service_settings_uuid' | 'state' | 'subnets' | 'tenant' | 'tenant_name' | 'tenant_uuid' | 'type' | 'url' | 'uuid';
+export type OpenStackNetworkFieldEnum = 'access_url' | 'backend_id' | 'created' | 'customer' | 'customer_abbreviation' | 'customer_name' | 'customer_native_name' | 'customer_uuid' | 'description' | 'error_message' | 'error_traceback' | 'is_external' | 'is_limit_based' | 'is_usage_based' | 'marketplace_category_name' | 'marketplace_category_uuid' | 'marketplace_offering_name' | 'marketplace_offering_plugin_options' | 'marketplace_offering_type' | 'marketplace_offering_uuid' | 'marketplace_plan_uuid' | 'marketplace_resource_state' | 'marketplace_resource_uuid' | 'modified' | 'mtu' | 'name' | 'port_security_enabled' | 'project' | 'project_name' | 'project_uuid' | 'rbac_policies' | 'resource_type' | 'segmentation_id' | 'service_name' | 'service_settings' | 'service_settings_error_message' | 'service_settings_state' | 'service_settings_uuid' | 'state' | 'subnets' | 'tenant' | 'tenant_is_managed' | 'tenant_name' | 'tenant_uuid' | 'type' | 'url' | 'uuid';
 
 export type OpenStackPoolMemberFieldEnum = 'access_url' | 'address' | 'backend_id' | 'created' | 'customer' | 'customer_abbreviation' | 'customer_name' | 'customer_native_name' | 'customer_uuid' | 'description' | 'error_message' | 'error_traceback' | 'is_limit_based' | 'is_usage_based' | 'load_balancer_uuid' | 'marketplace_category_name' | 'marketplace_category_uuid' | 'marketplace_offering_name' | 'marketplace_offering_plugin_options' | 'marketplace_offering_type' | 'marketplace_offering_uuid' | 'marketplace_plan_uuid' | 'marketplace_resource_state' | 'marketplace_resource_uuid' | 'modified' | 'name' | 'operating_status' | 'pool' | 'pool_name' | 'pool_uuid' | 'project' | 'project_name' | 'project_uuid' | 'protocol_port' | 'provisioning_status' | 'resource_type' | 'service_name' | 'service_settings' | 'service_settings_error_message' | 'service_settings_state' | 'service_settings_uuid' | 'state' | 'subnet' | 'url' | 'uuid' | 'weight';
 
@@ -37676,9 +38667,9 @@ export type OpenStackServerGroupFieldEnum = 'access_url' | 'backend_id' | 'creat
 
 export type OpenStackSnapshotFieldEnum = 'access_url' | 'action' | 'action_details' | 'backend_id' | 'backups' | 'created' | 'customer' | 'customer_abbreviation' | 'customer_name' | 'customer_native_name' | 'customer_uuid' | 'description' | 'error_message' | 'error_traceback' | 'is_limit_based' | 'is_usage_based' | 'kept_until' | 'marketplace_category_name' | 'marketplace_category_uuid' | 'marketplace_offering_name' | 'marketplace_offering_plugin_options' | 'marketplace_offering_type' | 'marketplace_offering_uuid' | 'marketplace_plan_uuid' | 'marketplace_resource_state' | 'marketplace_resource_uuid' | 'metadata' | 'modified' | 'name' | 'project' | 'project_name' | 'project_uuid' | 'resource_type' | 'restorations' | 'runtime_state' | 'service_name' | 'service_settings' | 'service_settings_error_message' | 'service_settings_state' | 'service_settings_uuid' | 'size' | 'source_volume' | 'source_volume_marketplace_uuid' | 'source_volume_name' | 'state' | 'url' | 'uuid';
 
-export type OpenStackSubNetFieldEnum = 'access_url' | 'allocation_pools' | 'backend_id' | 'cidr' | 'created' | 'customer' | 'customer_abbreviation' | 'customer_name' | 'customer_native_name' | 'customer_uuid' | 'description' | 'disable_gateway' | 'dns_nameservers' | 'enable_dhcp' | 'error_message' | 'error_traceback' | 'gateway_ip' | 'host_routes' | 'ip_version' | 'ipv6_address_mode' | 'ipv6_ra_mode' | 'is_connected' | 'is_limit_based' | 'is_usage_based' | 'marketplace_category_name' | 'marketplace_category_uuid' | 'marketplace_offering_name' | 'marketplace_offering_plugin_options' | 'marketplace_offering_type' | 'marketplace_offering_uuid' | 'marketplace_plan_uuid' | 'marketplace_resource_state' | 'marketplace_resource_uuid' | 'modified' | 'name' | 'network' | 'network_name' | 'port_security_enabled' | 'project' | 'project_name' | 'project_uuid' | 'resource_type' | 'router' | 'router_name' | 'router_uuid' | 'service_name' | 'service_settings' | 'service_settings_error_message' | 'service_settings_state' | 'service_settings_uuid' | 'skip_router_connection' | 'state' | 'tenant' | 'tenant_name' | 'url' | 'uuid';
+export type OpenStackSubNetFieldEnum = 'access_url' | 'allocation_pools' | 'backend_id' | 'cidr' | 'created' | 'customer' | 'customer_abbreviation' | 'customer_name' | 'customer_native_name' | 'customer_uuid' | 'description' | 'disable_gateway' | 'dns_nameservers' | 'enable_dhcp' | 'error_message' | 'error_traceback' | 'gateway_ip' | 'host_routes' | 'ip_version' | 'ipv6_address_mode' | 'ipv6_ra_mode' | 'is_connected' | 'is_limit_based' | 'is_usage_based' | 'marketplace_category_name' | 'marketplace_category_uuid' | 'marketplace_offering_name' | 'marketplace_offering_plugin_options' | 'marketplace_offering_type' | 'marketplace_offering_uuid' | 'marketplace_plan_uuid' | 'marketplace_resource_state' | 'marketplace_resource_uuid' | 'modified' | 'name' | 'network' | 'network_name' | 'port_security_enabled' | 'project' | 'project_name' | 'project_uuid' | 'resource_type' | 'router' | 'router_name' | 'router_uuid' | 'service_name' | 'service_settings' | 'service_settings_error_message' | 'service_settings_state' | 'service_settings_uuid' | 'skip_router_connection' | 'state' | 'tenant' | 'tenant_is_managed' | 'tenant_name' | 'url' | 'uuid';
 
-export type OpenStackTenantFieldEnum = 'availability_zone' | 'backend_id' | 'created' | 'customer' | 'customer_abbreviation' | 'customer_name' | 'customer_native_name' | 'customer_uuid' | 'default_volume_type_name' | 'description' | 'error_message' | 'error_traceback' | 'external_network_id' | 'external_network_ref_name' | 'external_network_ref_uuid' | 'internal_network_id' | 'is_limit_based' | 'is_usage_based' | 'marketplace_category_name' | 'marketplace_category_uuid' | 'marketplace_offering_name' | 'marketplace_offering_plugin_options' | 'marketplace_offering_type' | 'marketplace_offering_uuid' | 'marketplace_plan_uuid' | 'marketplace_resource_state' | 'marketplace_resource_uuid' | 'modified' | 'name' | 'project' | 'project_name' | 'project_uuid' | 'quotas' | 'resource_type' | 'security_groups' | 'service_name' | 'service_settings' | 'service_settings_error_message' | 'service_settings_state' | 'service_settings_uuid' | 'skip_creation_of_default_router' | 'skip_creation_of_default_subnet' | 'state' | 'subnet_cidr' | 'url' | 'uuid';
+export type OpenStackTenantFieldEnum = 'availability_zone' | 'backend_id' | 'created' | 'customer' | 'customer_abbreviation' | 'customer_name' | 'customer_native_name' | 'customer_uuid' | 'default_volume_type_name' | 'description' | 'error_message' | 'error_traceback' | 'external_network_id' | 'external_network_ref_name' | 'external_network_ref_uuid' | 'internal_network_id' | 'is_limit_based' | 'is_managed' | 'is_usage_based' | 'marketplace_category_name' | 'marketplace_category_uuid' | 'marketplace_offering_name' | 'marketplace_offering_plugin_options' | 'marketplace_offering_type' | 'marketplace_offering_uuid' | 'marketplace_plan_uuid' | 'marketplace_resource_state' | 'marketplace_resource_uuid' | 'modified' | 'name' | 'project' | 'project_name' | 'project_uuid' | 'quotas' | 'resource_type' | 'security_groups' | 'service_name' | 'service_settings' | 'service_settings_error_message' | 'service_settings_state' | 'service_settings_uuid' | 'skip_creation_of_default_router' | 'skip_creation_of_default_subnet' | 'state' | 'subnet_cidr' | 'url' | 'uuid';
 
 export type OpenStackVolumeFieldEnum = 'access_url' | 'action' | 'action_details' | 'availability_zone' | 'availability_zone_name' | 'backend_id' | 'bootable' | 'created' | 'customer' | 'customer_abbreviation' | 'customer_name' | 'customer_native_name' | 'customer_uuid' | 'description' | 'device' | 'error_message' | 'error_traceback' | 'extend_enabled' | 'image' | 'image_metadata' | 'image_name' | 'instance' | 'instance_marketplace_uuid' | 'instance_name' | 'is_limit_based' | 'is_usage_based' | 'marketplace_category_name' | 'marketplace_category_uuid' | 'marketplace_offering_name' | 'marketplace_offering_plugin_options' | 'marketplace_offering_type' | 'marketplace_offering_uuid' | 'marketplace_plan_uuid' | 'marketplace_resource_state' | 'marketplace_resource_uuid' | 'metadata' | 'modified' | 'name' | 'project' | 'project_name' | 'project_uuid' | 'resource_type' | 'runtime_state' | 'service_name' | 'service_settings' | 'service_settings_error_message' | 'service_settings_state' | 'service_settings_uuid' | 'size' | 'source_snapshot' | 'state' | 'tenant' | 'tenant_uuid' | 'type' | 'type_name' | 'url' | 'uuid';
 
@@ -37704,13 +38695,13 @@ export type UserRequestedResourceOEnum = '-call__name' | '-created' | '-offering
 
 export type ProposalOEnum = '-created' | '-round__call__name' | '-round__cutoff_time' | '-round__start_time' | '-slug' | '-state' | 'created' | 'round__call__name' | 'round__cutoff_time' | 'round__start_time' | 'slug' | 'state';
 
-export type ProtectedCallFieldEnum = 'applicant_visibility_config' | 'backend_id' | 'compliance_checklist' | 'compliance_checklist_name' | 'created' | 'created_by' | 'customer_name' | 'customer_uuid' | 'description' | 'documents' | 'end_date' | 'evaluation_start' | 'external_url' | 'fixed_duration_in_days' | 'has_eligibility_restrictions' | 'has_proposals' | 'manager' | 'manager_uuid' | 'max_prepaid_duration_months' | 'name' | 'offerings' | 'order_author' | 'order_author_user' | 'order_author_user_name' | 'order_author_user_uuid' | 'panel_chair' | 'panel_chair_name' | 'panel_chair_uuid' | 'proposal_field_config' | 'proposal_field_metadata' | 'proposal_slug_template' | 'reference_code' | 'resource_templates' | 'reviewer_identity_visible_to_submitters' | 'reviews_visible_to_submitters' | 'rounds' | 'slug' | 'start_date' | 'state' | 'url' | 'user_affiliations' | 'user_assurance_levels' | 'user_email_patterns' | 'user_identity_sources' | 'user_nationalities' | 'user_organization_types' | 'uuid';
+export type ProtectedCallFieldEnum = 'applicant_visibility_config' | 'backend_id' | 'carry_over_drafts' | 'compliance_checklist' | 'compliance_checklist_name' | 'created' | 'created_by' | 'customer_name' | 'customer_uuid' | 'description' | 'documents' | 'end_date' | 'evaluation_start' | 'external_url' | 'fixed_duration_in_days' | 'has_eligibility_restrictions' | 'has_proposals' | 'manager' | 'manager_uuid' | 'max_prepaid_duration_months' | 'name' | 'offerings' | 'order_author' | 'order_author_user' | 'order_author_user_name' | 'order_author_user_uuid' | 'panel_chair' | 'panel_chair_name' | 'panel_chair_uuid' | 'proposal_field_config' | 'proposal_field_metadata' | 'proposal_slug_template' | 'publish_results' | 'reference_code' | 'resource_templates' | 'reviewer_identity_visible_to_submitters' | 'reviews_visible_to_submitters' | 'rounds' | 'slug' | 'start_date' | 'state' | 'undecided_at_round_completion' | 'url' | 'user_affiliations' | 'user_assurance_levels' | 'user_email_patterns' | 'user_identity_sources' | 'user_nationalities' | 'user_organization_types' | 'uuid';
 
 export type ProtectedCallOEnum = '-created' | '-manager__customer__name' | '-name' | 'created' | 'manager__customer__name' | 'name';
 
 export type AffinityMatrixResponseScopeEnum = 'all' | 'pool' | 'suggestions';
 
-export type PublicCallFieldEnum = 'backend_id' | 'created' | 'customer_name' | 'customer_uuid' | 'description' | 'documents' | 'end_date' | 'evaluation_start' | 'external_url' | 'fixed_duration_in_days' | 'has_eligibility_restrictions' | 'manager' | 'manager_uuid' | 'max_prepaid_duration_months' | 'name' | 'offerings' | 'proposal_field_config' | 'resource_templates' | 'reviewer_identity_visible_to_submitters' | 'reviews_visible_to_submitters' | 'rounds' | 'slug' | 'start_date' | 'state' | 'url' | 'uuid';
+export type PublicCallFieldEnum = 'backend_id' | 'created' | 'customer_name' | 'customer_uuid' | 'description' | 'documents' | 'end_date' | 'evaluation_start' | 'external_url' | 'fixed_duration_in_days' | 'has_eligibility_restrictions' | 'manager' | 'manager_uuid' | 'max_prepaid_duration_months' | 'name' | 'offerings' | 'proposal_field_config' | 'publish_results' | 'resource_templates' | 'reviewer_identity_visible_to_submitters' | 'reviews_visible_to_submitters' | 'rounds' | 'slug' | 'start_date' | 'state' | 'url' | 'uuid';
 
 export type ProviderRequestedOfferingOEnum = '-call__name' | '-created' | '-offering__name' | '-state' | 'call__name' | 'created' | 'offering__name' | 'state';
 
@@ -37785,6 +38776,20 @@ export type Page = number;
  * Number of results to return per page.
  */
 export type PageSize = number;
+
+export type MatrixAppV1PingData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/_matrix/app/v1/ping';
+};
+
+export type MatrixAppV1PingResponses = {
+    /**
+     * No response body
+     */
+    200: unknown;
+};
 
 export type MatrixAppV1TransactionsUpdateData = {
     body?: never;
@@ -39583,6 +40588,13 @@ export type AdminMatrixAppserviceSetupData = {
     path?: never;
     query?: never;
     url: '/api/admin/matrix-appservice/setup/';
+};
+
+export type AdminMatrixAppserviceSetupErrors = {
+    /**
+     * The deployment owns the appservice tokens and re-seeds them on every sync. Rotate its Matrix secret and redeploy instead, or clear MATRIX_TOKENS_MANAGED_BY if the deployment no longer manages Matrix.
+     */
+    409: unknown;
 };
 
 export type AdminMatrixAppserviceSetupResponses = {
@@ -47922,6 +48934,10 @@ export type CustomersStatsRetrieveData = {
          * If true, returns usage data for the current month only. Otherwise, returns total usage.
          */
         for_current_month?: boolean;
+        /**
+         * If true, also counts terminated resources that reported usage in the current month. Their share is returned as usage_terminated and limit_usage_terminated; limit never includes them. Ignored unless the dashboard.usage_include_terminated feature is enabled.
+         */
+        include_terminated?: boolean;
     };
     url: '/api/customers/{uuid}/stats/';
 };
@@ -55887,7 +56903,12 @@ export type MarketplaceCustomerUsageComponentsUsageRetrieveData = {
     path: {
         uuid: string;
     };
-    query?: never;
+    query?: {
+        /**
+         * If true, also counts terminated resources. Their share of usage is returned as usage_terminated (and limit_usage_terminated); limit never includes them. Ignored unless the dashboard.usage_include_terminated feature is enabled.
+         */
+        include_terminated?: boolean;
+    };
     url: '/api/marketplace-customer-usage/{uuid}/components-usage/';
 };
 
@@ -55904,6 +56925,10 @@ export type MarketplaceCustomerUsageComponentsUsageByProjectRetrieveData = {
     };
     query: {
         component_type?: string;
+        /**
+         * If true, also counts terminated resources. Their share of usage is returned as usage_terminated (and limit_usage_terminated); limit never includes them. Ignored unless the dashboard.usage_include_terminated feature is enabled.
+         */
+        include_terminated?: boolean;
         offering_uuid: string;
         period_offset?: number;
     };
@@ -55923,6 +56948,10 @@ export type MarketplaceCustomerUsageComponentsUsageTimeseriesRetrieveData = {
     };
     query: {
         component_type?: string;
+        /**
+         * If true, also counts terminated resources. Their share of usage is returned as usage_terminated (and limit_usage_terminated); limit never includes them. Ignored unless the dashboard.usage_include_terminated feature is enabled.
+         */
+        include_terminated?: boolean;
         offering_uuid: string;
         period_offset?: number;
     };
@@ -56196,6 +57225,459 @@ export type MarketplaceIntegrationStatusesRetrieveResponses = {
 };
 
 export type MarketplaceIntegrationStatusesRetrieveResponse = MarketplaceIntegrationStatusesRetrieveResponses[keyof MarketplaceIntegrationStatusesRetrieveResponses];
+
+export type MarketplaceMetricBreakdownListData = {
+    body?: never;
+    path?: never;
+    query: {
+        end?: string;
+        /**
+         * An attribute the metric declares, or 'resource' to break a project's figure down by its resources.
+         */
+        group_by: string;
+        offering_metric_uuid: string;
+        /**
+         * The project whose figure to break down. Either this or resource_uuid.
+         */
+        project_uuid?: string;
+        /**
+         * The resource whose figure to break down. Either this or project_uuid.
+         */
+        resource_uuid?: string;
+        start: string;
+    };
+    url: '/api/marketplace-metric-breakdown/';
+};
+
+export type MarketplaceMetricBreakdownListResponses = {
+    200: Array<MetricBreakdownItem>;
+};
+
+export type MarketplaceMetricBreakdownListResponse = MarketplaceMetricBreakdownListResponses[keyof MarketplaceMetricBreakdownListResponses];
+
+export type MarketplaceMetricDefinitionsListData = {
+    body?: never;
+    path?: never;
+    query?: {
+        is_global?: boolean;
+        key?: string;
+        kind?: MetricKindEnum;
+        name?: string;
+        owner_customer_uuid?: string;
+        /**
+         * A page number within the paginated result set.
+         */
+        page?: number;
+        /**
+         * Number of results to return per page.
+         */
+        page_size?: number;
+        state?: MetricDefinitionStateEnum;
+    };
+    url: '/api/marketplace-metric-definitions/';
+};
+
+export type MarketplaceMetricDefinitionsListResponses = {
+    200: Array<MetricDefinition>;
+};
+
+export type MarketplaceMetricDefinitionsListResponse = MarketplaceMetricDefinitionsListResponses[keyof MarketplaceMetricDefinitionsListResponses];
+
+export type MarketplaceMetricDefinitionsCountData = {
+    body?: never;
+    path?: never;
+    query?: {
+        is_global?: boolean;
+        key?: string;
+        kind?: MetricKindEnum;
+        name?: string;
+        owner_customer_uuid?: string;
+        /**
+         * A page number within the paginated result set.
+         */
+        page?: number;
+        /**
+         * Number of results to return per page.
+         */
+        page_size?: number;
+        state?: MetricDefinitionStateEnum;
+    };
+    url: '/api/marketplace-metric-definitions/';
+};
+
+export type MarketplaceMetricDefinitionsCountResponses = {
+    /**
+     * No response body
+     */
+    200: unknown;
+};
+
+export type MarketplaceMetricDefinitionsCreateData = {
+    body: MetricDefinitionRequest;
+    path?: never;
+    query?: never;
+    url: '/api/marketplace-metric-definitions/';
+};
+
+export type MarketplaceMetricDefinitionsCreateResponses = {
+    201: MetricDefinition;
+};
+
+export type MarketplaceMetricDefinitionsCreateResponse = MarketplaceMetricDefinitionsCreateResponses[keyof MarketplaceMetricDefinitionsCreateResponses];
+
+export type MarketplaceMetricDefinitionsDestroyData = {
+    body?: never;
+    path: {
+        uuid: string;
+    };
+    query?: never;
+    url: '/api/marketplace-metric-definitions/{uuid}/';
+};
+
+export type MarketplaceMetricDefinitionsDestroyResponses = {
+    /**
+     * No response body
+     */
+    204: void;
+};
+
+export type MarketplaceMetricDefinitionsDestroyResponse = MarketplaceMetricDefinitionsDestroyResponses[keyof MarketplaceMetricDefinitionsDestroyResponses];
+
+export type MarketplaceMetricDefinitionsRetrieveData = {
+    body?: never;
+    path: {
+        uuid: string;
+    };
+    query?: never;
+    url: '/api/marketplace-metric-definitions/{uuid}/';
+};
+
+export type MarketplaceMetricDefinitionsRetrieveResponses = {
+    200: MetricDefinition;
+};
+
+export type MarketplaceMetricDefinitionsRetrieveResponse = MarketplaceMetricDefinitionsRetrieveResponses[keyof MarketplaceMetricDefinitionsRetrieveResponses];
+
+export type MarketplaceMetricDefinitionsPartialUpdateData = {
+    body?: PatchedMetricDefinitionRequest;
+    path: {
+        uuid: string;
+    };
+    query?: never;
+    url: '/api/marketplace-metric-definitions/{uuid}/';
+};
+
+export type MarketplaceMetricDefinitionsPartialUpdateResponses = {
+    200: MetricDefinition;
+};
+
+export type MarketplaceMetricDefinitionsPartialUpdateResponse = MarketplaceMetricDefinitionsPartialUpdateResponses[keyof MarketplaceMetricDefinitionsPartialUpdateResponses];
+
+export type MarketplaceMetricDefinitionsUpdateData = {
+    body: MetricDefinitionRequest;
+    path: {
+        uuid: string;
+    };
+    query?: never;
+    url: '/api/marketplace-metric-definitions/{uuid}/';
+};
+
+export type MarketplaceMetricDefinitionsUpdateResponses = {
+    200: MetricDefinition;
+};
+
+export type MarketplaceMetricDefinitionsUpdateResponse = MarketplaceMetricDefinitionsUpdateResponses[keyof MarketplaceMetricDefinitionsUpdateResponses];
+
+export type MarketplaceMetricGoalsListData = {
+    body?: never;
+    path?: never;
+    query?: {
+        is_default?: boolean;
+        offering_metric_uuid?: string;
+        /**
+         * A page number within the paginated result set.
+         */
+        page?: number;
+        /**
+         * Number of results to return per page.
+         */
+        page_size?: number;
+        period?: MetricGoalPeriodEnum;
+        project_uuid?: string;
+    };
+    url: '/api/marketplace-metric-goals/';
+};
+
+export type MarketplaceMetricGoalsListResponses = {
+    200: Array<MetricGoal>;
+};
+
+export type MarketplaceMetricGoalsListResponse = MarketplaceMetricGoalsListResponses[keyof MarketplaceMetricGoalsListResponses];
+
+export type MarketplaceMetricGoalsCountData = {
+    body?: never;
+    path?: never;
+    query?: {
+        is_default?: boolean;
+        offering_metric_uuid?: string;
+        /**
+         * A page number within the paginated result set.
+         */
+        page?: number;
+        /**
+         * Number of results to return per page.
+         */
+        page_size?: number;
+        period?: MetricGoalPeriodEnum;
+        project_uuid?: string;
+    };
+    url: '/api/marketplace-metric-goals/';
+};
+
+export type MarketplaceMetricGoalsCountResponses = {
+    /**
+     * No response body
+     */
+    200: unknown;
+};
+
+export type MarketplaceMetricGoalsCreateData = {
+    body: MetricGoalRequest;
+    path?: never;
+    query?: never;
+    url: '/api/marketplace-metric-goals/';
+};
+
+export type MarketplaceMetricGoalsCreateResponses = {
+    201: MetricGoal;
+};
+
+export type MarketplaceMetricGoalsCreateResponse = MarketplaceMetricGoalsCreateResponses[keyof MarketplaceMetricGoalsCreateResponses];
+
+export type MarketplaceMetricGoalsDestroyData = {
+    body?: never;
+    path: {
+        uuid: string;
+    };
+    query?: never;
+    url: '/api/marketplace-metric-goals/{uuid}/';
+};
+
+export type MarketplaceMetricGoalsDestroyResponses = {
+    /**
+     * No response body
+     */
+    204: void;
+};
+
+export type MarketplaceMetricGoalsDestroyResponse = MarketplaceMetricGoalsDestroyResponses[keyof MarketplaceMetricGoalsDestroyResponses];
+
+export type MarketplaceMetricGoalsRetrieveData = {
+    body?: never;
+    path: {
+        uuid: string;
+    };
+    query?: never;
+    url: '/api/marketplace-metric-goals/{uuid}/';
+};
+
+export type MarketplaceMetricGoalsRetrieveResponses = {
+    200: MetricGoal;
+};
+
+export type MarketplaceMetricGoalsRetrieveResponse = MarketplaceMetricGoalsRetrieveResponses[keyof MarketplaceMetricGoalsRetrieveResponses];
+
+export type MarketplaceMetricGoalsPartialUpdateData = {
+    body?: PatchedMetricGoalRequest;
+    path: {
+        uuid: string;
+    };
+    query?: never;
+    url: '/api/marketplace-metric-goals/{uuid}/';
+};
+
+export type MarketplaceMetricGoalsPartialUpdateResponses = {
+    200: MetricGoal;
+};
+
+export type MarketplaceMetricGoalsPartialUpdateResponse = MarketplaceMetricGoalsPartialUpdateResponses[keyof MarketplaceMetricGoalsPartialUpdateResponses];
+
+export type MarketplaceMetricGoalsUpdateData = {
+    body: MetricGoalRequest;
+    path: {
+        uuid: string;
+    };
+    query?: never;
+    url: '/api/marketplace-metric-goals/{uuid}/';
+};
+
+export type MarketplaceMetricGoalsUpdateResponses = {
+    200: MetricGoal;
+};
+
+export type MarketplaceMetricGoalsUpdateResponse = MarketplaceMetricGoalsUpdateResponses[keyof MarketplaceMetricGoalsUpdateResponses];
+
+export type MarketplaceMetricPointsCreateData = {
+    body?: MetricPointReportRequest;
+    path?: never;
+    query?: never;
+    url: '/api/marketplace-metric-points/';
+};
+
+export type MarketplaceMetricPointsCreateResponses = {
+    200: MetricReportResult;
+};
+
+export type MarketplaceMetricPointsCreateResponse = MarketplaceMetricPointsCreateResponses[keyof MarketplaceMetricPointsCreateResponses];
+
+export type MarketplaceMetricRetentionPoliciesListData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * A page number within the paginated result set.
+         */
+        page?: number;
+        /**
+         * Number of results to return per page.
+         */
+        page_size?: number;
+    };
+    url: '/api/marketplace-metric-retention-policies/';
+};
+
+export type MarketplaceMetricRetentionPoliciesListResponses = {
+    200: Array<RetentionPolicy>;
+};
+
+export type MarketplaceMetricRetentionPoliciesListResponse = MarketplaceMetricRetentionPoliciesListResponses[keyof MarketplaceMetricRetentionPoliciesListResponses];
+
+export type MarketplaceMetricRetentionPoliciesCountData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * A page number within the paginated result set.
+         */
+        page?: number;
+        /**
+         * Number of results to return per page.
+         */
+        page_size?: number;
+    };
+    url: '/api/marketplace-metric-retention-policies/';
+};
+
+export type MarketplaceMetricRetentionPoliciesCountResponses = {
+    /**
+     * No response body
+     */
+    200: unknown;
+};
+
+export type MarketplaceMetricRetentionPoliciesCreateData = {
+    body: RetentionPolicyRequest;
+    path?: never;
+    query?: never;
+    url: '/api/marketplace-metric-retention-policies/';
+};
+
+export type MarketplaceMetricRetentionPoliciesCreateResponses = {
+    201: RetentionPolicy;
+};
+
+export type MarketplaceMetricRetentionPoliciesCreateResponse = MarketplaceMetricRetentionPoliciesCreateResponses[keyof MarketplaceMetricRetentionPoliciesCreateResponses];
+
+export type MarketplaceMetricRetentionPoliciesDestroyData = {
+    body?: never;
+    path: {
+        uuid: string;
+    };
+    query?: never;
+    url: '/api/marketplace-metric-retention-policies/{uuid}/';
+};
+
+export type MarketplaceMetricRetentionPoliciesDestroyResponses = {
+    /**
+     * No response body
+     */
+    204: void;
+};
+
+export type MarketplaceMetricRetentionPoliciesDestroyResponse = MarketplaceMetricRetentionPoliciesDestroyResponses[keyof MarketplaceMetricRetentionPoliciesDestroyResponses];
+
+export type MarketplaceMetricRetentionPoliciesRetrieveData = {
+    body?: never;
+    path: {
+        uuid: string;
+    };
+    query?: never;
+    url: '/api/marketplace-metric-retention-policies/{uuid}/';
+};
+
+export type MarketplaceMetricRetentionPoliciesRetrieveResponses = {
+    200: RetentionPolicy;
+};
+
+export type MarketplaceMetricRetentionPoliciesRetrieveResponse = MarketplaceMetricRetentionPoliciesRetrieveResponses[keyof MarketplaceMetricRetentionPoliciesRetrieveResponses];
+
+export type MarketplaceMetricRetentionPoliciesPartialUpdateData = {
+    body?: PatchedRetentionPolicyRequest;
+    path: {
+        uuid: string;
+    };
+    query?: never;
+    url: '/api/marketplace-metric-retention-policies/{uuid}/';
+};
+
+export type MarketplaceMetricRetentionPoliciesPartialUpdateResponses = {
+    200: RetentionPolicy;
+};
+
+export type MarketplaceMetricRetentionPoliciesPartialUpdateResponse = MarketplaceMetricRetentionPoliciesPartialUpdateResponses[keyof MarketplaceMetricRetentionPoliciesPartialUpdateResponses];
+
+export type MarketplaceMetricRetentionPoliciesUpdateData = {
+    body: RetentionPolicyRequest;
+    path: {
+        uuid: string;
+    };
+    query?: never;
+    url: '/api/marketplace-metric-retention-policies/{uuid}/';
+};
+
+export type MarketplaceMetricRetentionPoliciesUpdateResponses = {
+    200: RetentionPolicy;
+};
+
+export type MarketplaceMetricRetentionPoliciesUpdateResponse = MarketplaceMetricRetentionPoliciesUpdateResponses[keyof MarketplaceMetricRetentionPoliciesUpdateResponses];
+
+export type MarketplaceMetricSeriesRetrieveData = {
+    body?: never;
+    path?: never;
+    query: {
+        /**
+         * How a gauge's points in a bucket combine; counters sum.
+         */
+        aggregate?: MetricSeriesResponseAggregateEnum;
+        end?: string;
+        granularity?: MetricSeriesResponseGranularityEnum;
+        /**
+         * Attribute key to break the figure down by
+         */
+        group_by?: string;
+        offering_metric_uuid: string;
+        project_uuid?: string;
+        resource_uuid?: string;
+        start: string;
+    };
+    url: '/api/marketplace-metric-series/';
+};
+
+export type MarketplaceMetricSeriesRetrieveResponses = {
+    200: MetricSeriesResponse;
+};
+
+export type MarketplaceMetricSeriesRetrieveResponse = MarketplaceMetricSeriesRetrieveResponses[keyof MarketplaceMetricSeriesRetrieveResponses];
 
 export type MarketplaceOfferingAccessSubnetsListData = {
     body?: never;
@@ -57058,6 +58540,196 @@ export type MarketplaceOfferingMergesSuggestMappingRetrieveResponses = {
 };
 
 export type MarketplaceOfferingMergesSuggestMappingRetrieveResponse = MarketplaceOfferingMergesSuggestMappingRetrieveResponses[keyof MarketplaceOfferingMergesSuggestMappingRetrieveResponses];
+
+export type MarketplaceOfferingMetricsListData = {
+    body?: never;
+    path?: never;
+    query?: {
+        definition_uuid?: string;
+        key?: string;
+        offering_uuid?: string;
+        /**
+         * A page number within the paginated result set.
+         */
+        page?: number;
+        /**
+         * Number of results to return per page.
+         */
+        page_size?: number;
+        state?: OfferingMetricStateEnum;
+    };
+    url: '/api/marketplace-offering-metrics/';
+};
+
+export type MarketplaceOfferingMetricsListResponses = {
+    200: Array<OfferingMetric>;
+};
+
+export type MarketplaceOfferingMetricsListResponse = MarketplaceOfferingMetricsListResponses[keyof MarketplaceOfferingMetricsListResponses];
+
+export type MarketplaceOfferingMetricsCountData = {
+    body?: never;
+    path?: never;
+    query?: {
+        definition_uuid?: string;
+        key?: string;
+        offering_uuid?: string;
+        /**
+         * A page number within the paginated result set.
+         */
+        page?: number;
+        /**
+         * Number of results to return per page.
+         */
+        page_size?: number;
+        state?: OfferingMetricStateEnum;
+    };
+    url: '/api/marketplace-offering-metrics/';
+};
+
+export type MarketplaceOfferingMetricsCountResponses = {
+    /**
+     * No response body
+     */
+    200: unknown;
+};
+
+export type MarketplaceOfferingMetricsCreateData = {
+    body: OfferingMetricRequest;
+    path?: never;
+    query?: never;
+    url: '/api/marketplace-offering-metrics/';
+};
+
+export type MarketplaceOfferingMetricsCreateResponses = {
+    201: OfferingMetric;
+};
+
+export type MarketplaceOfferingMetricsCreateResponse = MarketplaceOfferingMetricsCreateResponses[keyof MarketplaceOfferingMetricsCreateResponses];
+
+export type MarketplaceOfferingMetricsDestroyData = {
+    body?: never;
+    path: {
+        uuid: string;
+    };
+    query?: never;
+    url: '/api/marketplace-offering-metrics/{uuid}/';
+};
+
+export type MarketplaceOfferingMetricsDestroyResponses = {
+    /**
+     * No response body
+     */
+    204: void;
+};
+
+export type MarketplaceOfferingMetricsDestroyResponse = MarketplaceOfferingMetricsDestroyResponses[keyof MarketplaceOfferingMetricsDestroyResponses];
+
+export type MarketplaceOfferingMetricsRetrieveData = {
+    body?: never;
+    path: {
+        uuid: string;
+    };
+    query?: never;
+    url: '/api/marketplace-offering-metrics/{uuid}/';
+};
+
+export type MarketplaceOfferingMetricsRetrieveResponses = {
+    200: OfferingMetric;
+};
+
+export type MarketplaceOfferingMetricsRetrieveResponse = MarketplaceOfferingMetricsRetrieveResponses[keyof MarketplaceOfferingMetricsRetrieveResponses];
+
+export type MarketplaceOfferingMetricsPartialUpdateData = {
+    body?: PatchedOfferingMetricRequest;
+    path: {
+        uuid: string;
+    };
+    query?: never;
+    url: '/api/marketplace-offering-metrics/{uuid}/';
+};
+
+export type MarketplaceOfferingMetricsPartialUpdateResponses = {
+    200: OfferingMetric;
+};
+
+export type MarketplaceOfferingMetricsPartialUpdateResponse = MarketplaceOfferingMetricsPartialUpdateResponses[keyof MarketplaceOfferingMetricsPartialUpdateResponses];
+
+export type MarketplaceOfferingMetricsUpdateData = {
+    body: OfferingMetricRequest;
+    path: {
+        uuid: string;
+    };
+    query?: never;
+    url: '/api/marketplace-offering-metrics/{uuid}/';
+};
+
+export type MarketplaceOfferingMetricsUpdateResponses = {
+    200: OfferingMetric;
+};
+
+export type MarketplaceOfferingMetricsUpdateResponse = MarketplaceOfferingMetricsUpdateResponses[keyof MarketplaceOfferingMetricsUpdateResponses];
+
+export type MarketplaceOfferingMetricsArchiveData = {
+    body?: never;
+    path: {
+        uuid: string;
+    };
+    query?: never;
+    url: '/api/marketplace-offering-metrics/{uuid}/archive/';
+};
+
+export type MarketplaceOfferingMetricsArchiveResponses = {
+    200: OfferingMetric;
+};
+
+export type MarketplaceOfferingMetricsArchiveResponse = MarketplaceOfferingMetricsArchiveResponses[keyof MarketplaceOfferingMetricsArchiveResponses];
+
+export type MarketplaceOfferingMetricsPauseData = {
+    body?: never;
+    path: {
+        uuid: string;
+    };
+    query?: never;
+    url: '/api/marketplace-offering-metrics/{uuid}/pause/';
+};
+
+export type MarketplaceOfferingMetricsPauseResponses = {
+    200: OfferingMetric;
+};
+
+export type MarketplaceOfferingMetricsPauseResponse = MarketplaceOfferingMetricsPauseResponses[keyof MarketplaceOfferingMetricsPauseResponses];
+
+export type MarketplaceOfferingMetricsPurgeData = {
+    body?: never;
+    path: {
+        uuid: string;
+    };
+    query?: never;
+    url: '/api/marketplace-offering-metrics/{uuid}/purge/';
+};
+
+export type MarketplaceOfferingMetricsPurgeResponses = {
+    /**
+     * No response body
+     */
+    202: unknown;
+};
+
+export type MarketplaceOfferingMetricsResumeData = {
+    body?: never;
+    path: {
+        uuid: string;
+    };
+    query?: never;
+    url: '/api/marketplace-offering-metrics/{uuid}/resume/';
+};
+
+export type MarketplaceOfferingMetricsResumeResponses = {
+    200: OfferingMetric;
+};
+
+export type MarketplaceOfferingMetricsResumeResponse = MarketplaceOfferingMetricsResumeResponses[keyof MarketplaceOfferingMetricsResumeResponses];
 
 export type MarketplaceOfferingPermissionsListData = {
     body?: never;
@@ -58259,6 +59931,10 @@ export type MarketplaceOfferingUsersListData = {
          */
         has_consent?: boolean;
         /**
+         * Backed by a service provider account
+         */
+        is_provider_backed?: boolean;
+        /**
          * Is restricted
          */
         is_restricted?: boolean;
@@ -58312,6 +59988,10 @@ export type MarketplaceOfferingUsersListData = {
          *
          */
         runtime_state?: Array<RuntimeStateEnum>;
+        /**
+         * Service provider account UUID
+         */
+        service_provider_account_uuid?: string;
         /**
          * Offering user state
          *
@@ -58361,6 +60041,10 @@ export type MarketplaceOfferingUsersCountData = {
          */
         has_consent?: boolean;
         /**
+         * Backed by a service provider account
+         */
+        is_provider_backed?: boolean;
+        /**
          * Is restricted
          */
         is_restricted?: boolean;
@@ -58414,6 +60098,10 @@ export type MarketplaceOfferingUsersCountData = {
          *
          */
         runtime_state?: Array<RuntimeStateEnum>;
+        /**
+         * Service provider account UUID
+         */
+        service_provider_account_uuid?: string;
         /**
          * Offering user state
          *
@@ -58669,6 +60357,10 @@ export type MarketplaceOfferingUsersPosixAllocationsListData = {
          */
         has_consent?: boolean;
         /**
+         * Backed by a service provider account
+         */
+        is_provider_backed?: boolean;
+        /**
          * Is restricted
          */
         is_restricted?: boolean;
@@ -58722,6 +60414,10 @@ export type MarketplaceOfferingUsersPosixAllocationsListData = {
          *
          */
         runtime_state?: Array<RuntimeStateEnum>;
+        /**
+         * Service provider account UUID
+         */
+        service_provider_account_uuid?: string;
         /**
          * Offering user state
          *
@@ -58773,6 +60469,10 @@ export type MarketplaceOfferingUsersPosixGroupsListData = {
          */
         has_consent?: boolean;
         /**
+         * Backed by a service provider account
+         */
+        is_provider_backed?: boolean;
+        /**
          * Is restricted
          */
         is_restricted?: boolean;
@@ -58826,6 +60526,10 @@ export type MarketplaceOfferingUsersPosixGroupsListData = {
          *
          */
         runtime_state?: Array<RuntimeStateEnum>;
+        /**
+         * Service provider account UUID
+         */
+        service_provider_account_uuid?: string;
         /**
          * Offering user state
          *
@@ -59155,6 +60859,10 @@ export type MarketplaceOfferingUsersPosixIdentitiesListData = {
          */
         has_consent?: boolean;
         /**
+         * Backed by a service provider account
+         */
+        is_provider_backed?: boolean;
+        /**
          * Is restricted
          */
         is_restricted?: boolean;
@@ -59208,6 +60916,10 @@ export type MarketplaceOfferingUsersPosixIdentitiesListData = {
          *
          */
         runtime_state?: Array<RuntimeStateEnum>;
+        /**
+         * Service provider account UUID
+         */
+        service_provider_account_uuid?: string;
         /**
          * Offering user state
          *
@@ -59254,6 +60966,10 @@ export type MarketplaceOfferingUsersPosixIdentitiesCountData = {
          */
         has_consent?: boolean;
         /**
+         * Backed by a service provider account
+         */
+        is_provider_backed?: boolean;
+        /**
          * Is restricted
          */
         is_restricted?: boolean;
@@ -59307,6 +61023,10 @@ export type MarketplaceOfferingUsersPosixIdentitiesCountData = {
          *
          */
         runtime_state?: Array<RuntimeStateEnum>;
+        /**
+         * Service provider account UUID
+         */
+        service_provider_account_uuid?: string;
         /**
          * Offering user state
          *
@@ -61307,6 +63027,21 @@ export type MarketplaceProjectEstimatedCostPoliciesActionsCountResponses = {
     200: unknown;
 };
 
+export type MarketplaceProjectMetricsListData = {
+    body?: never;
+    path?: never;
+    query: {
+        project_uuid: string;
+    };
+    url: '/api/marketplace-project-metrics/';
+};
+
+export type MarketplaceProjectMetricsListResponses = {
+    200: Array<ProjectMetric>;
+};
+
+export type MarketplaceProjectMetricsListResponse = MarketplaceProjectMetricsListResponses[keyof MarketplaceProjectMetricsListResponses];
+
 export type MarketplaceProjectOrderAutoApprovalsListData = {
     body?: never;
     path?: never;
@@ -61764,7 +63499,12 @@ export type MarketplaceProjectUsageComponentsUsageRetrieveData = {
     path: {
         uuid: string;
     };
-    query?: never;
+    query?: {
+        /**
+         * If true, also counts terminated resources. Their share of usage is returned as usage_terminated (and limit_usage_terminated); limit never includes them. Ignored unless the dashboard.usage_include_terminated feature is enabled.
+         */
+        include_terminated?: boolean;
+    };
     url: '/api/marketplace-project-usage/{uuid}/components-usage/';
 };
 
@@ -61781,6 +63521,10 @@ export type MarketplaceProjectUsageComponentsUsageTimeseriesRetrieveData = {
     };
     query: {
         component_type?: string;
+        /**
+         * If true, also counts terminated resources. Their share of usage is returned as usage_terminated (and limit_usage_terminated); limit never includes them. Ignored unless the dashboard.usage_include_terminated feature is enabled.
+         */
+        include_terminated?: boolean;
         offering_uuid: string;
         period_offset?: number;
     };
@@ -65690,7 +67434,7 @@ export type MarketplaceProviderResourceProjectsListUsersListData = {
 };
 
 export type MarketplaceProviderResourceProjectsListUsersListResponses = {
-    200: Array<UserRoleDetails>;
+    200: Array<ProviderUserRoleDetails>;
 };
 
 export type MarketplaceProviderResourceProjectsListUsersListResponse = MarketplaceProviderResourceProjectsListUsersListResponses[keyof MarketplaceProviderResourceProjectsListUsersListResponses];
@@ -66688,7 +68432,7 @@ export type MarketplaceProviderResourcesListUsersListData = {
 };
 
 export type MarketplaceProviderResourcesListUsersListResponses = {
-    200: Array<UserRoleDetails>;
+    200: Array<ProviderUserRoleDetails>;
 };
 
 export type MarketplaceProviderResourcesListUsersListResponse = MarketplaceProviderResourcesListUsersListResponses[keyof MarketplaceProviderResourcesListUsersListResponses];
@@ -67943,6 +69687,10 @@ export type MarketplaceResourceApiKeysListData = {
     path?: never;
     query?: {
         /**
+         * Has a pending command
+         */
+        has_pending_action?: boolean;
+        /**
          * Modified before
          */
         modified_before?: string;
@@ -67959,6 +69707,12 @@ export type MarketplaceResourceApiKeysListData = {
          */
         page_size?: number;
         /**
+         * Pending command
+         *
+         *
+         */
+        pending_action?: Array<ResourceApiKeyAction>;
+        /**
          * Resource UUID
          */
         resource_uuid?: string;
@@ -67968,6 +69722,10 @@ export type MarketplaceResourceApiKeysListData = {
          *
          */
         state?: Array<ResourceApiKeyState>;
+        /**
+         * Assignee UUID
+         */
+        user_uuid?: string;
     };
     url: '/api/marketplace-resource-api-keys/';
 };
@@ -67983,6 +69741,10 @@ export type MarketplaceResourceApiKeysCountData = {
     path?: never;
     query?: {
         /**
+         * Has a pending command
+         */
+        has_pending_action?: boolean;
+        /**
          * Modified before
          */
         modified_before?: string;
@@ -67999,6 +69761,12 @@ export type MarketplaceResourceApiKeysCountData = {
          */
         page_size?: number;
         /**
+         * Pending command
+         *
+         *
+         */
+        pending_action?: Array<ResourceApiKeyAction>;
+        /**
          * Resource UUID
          */
         resource_uuid?: string;
@@ -68008,6 +69776,10 @@ export type MarketplaceResourceApiKeysCountData = {
          *
          */
         state?: Array<ResourceApiKeyState>;
+        /**
+         * Assignee UUID
+         */
+        user_uuid?: string;
     };
     url: '/api/marketplace-resource-api-keys/';
 };
@@ -68018,6 +69790,34 @@ export type MarketplaceResourceApiKeysCountResponses = {
      */
     200: unknown;
 };
+
+export type MarketplaceResourceApiKeysCreateData = {
+    body: ResourceApiKeyCreateRequest;
+    path?: never;
+    query?: never;
+    url: '/api/marketplace-resource-api-keys/';
+};
+
+export type MarketplaceResourceApiKeysCreateResponses = {
+    201: ResourceApiKeyStatus;
+};
+
+export type MarketplaceResourceApiKeysCreateResponse = MarketplaceResourceApiKeysCreateResponses[keyof MarketplaceResourceApiKeysCreateResponses];
+
+export type MarketplaceResourceApiKeysDestroyData = {
+    body?: never;
+    path: {
+        uuid: string;
+    };
+    query?: never;
+    url: '/api/marketplace-resource-api-keys/{uuid}/';
+};
+
+export type MarketplaceResourceApiKeysDestroyResponses = {
+    202: Status;
+};
+
+export type MarketplaceResourceApiKeysDestroyResponse = MarketplaceResourceApiKeysDestroyResponses[keyof MarketplaceResourceApiKeysDestroyResponses];
 
 export type MarketplaceResourceApiKeysRetrieveData = {
     body?: never;
@@ -68033,6 +69833,81 @@ export type MarketplaceResourceApiKeysRetrieveResponses = {
 };
 
 export type MarketplaceResourceApiKeysRetrieveResponse = MarketplaceResourceApiKeysRetrieveResponses[keyof MarketplaceResourceApiKeysRetrieveResponses];
+
+export type MarketplaceResourceApiKeysPartialUpdateData = {
+    body?: PatchedResourceApiKeyUpdateRequest;
+    path: {
+        uuid: string;
+    };
+    query?: never;
+    url: '/api/marketplace-resource-api-keys/{uuid}/';
+};
+
+export type MarketplaceResourceApiKeysPartialUpdateResponses = {
+    200: ResourceApiKeyStatus;
+};
+
+export type MarketplaceResourceApiKeysPartialUpdateResponse = MarketplaceResourceApiKeysPartialUpdateResponses[keyof MarketplaceResourceApiKeysPartialUpdateResponses];
+
+export type MarketplaceResourceApiKeysPauseData = {
+    body?: never;
+    path: {
+        uuid: string;
+    };
+    query?: never;
+    url: '/api/marketplace-resource-api-keys/{uuid}/pause/';
+};
+
+export type MarketplaceResourceApiKeysPauseResponses = {
+    202: Status;
+};
+
+export type MarketplaceResourceApiKeysPauseResponse = MarketplaceResourceApiKeysPauseResponses[keyof MarketplaceResourceApiKeysPauseResponses];
+
+export type MarketplaceResourceApiKeysReportUsageData = {
+    body: ResourceApiKeyUsageRequest;
+    path: {
+        uuid: string;
+    };
+    query?: never;
+    url: '/api/marketplace-resource-api-keys/{uuid}/report_usage/';
+};
+
+export type MarketplaceResourceApiKeysReportUsageResponses = {
+    200: ResourceApiKeyStatus;
+};
+
+export type MarketplaceResourceApiKeysReportUsageResponse = MarketplaceResourceApiKeysReportUsageResponses[keyof MarketplaceResourceApiKeysReportUsageResponses];
+
+export type MarketplaceResourceApiKeysResumeData = {
+    body?: never;
+    path: {
+        uuid: string;
+    };
+    query?: never;
+    url: '/api/marketplace-resource-api-keys/{uuid}/resume/';
+};
+
+export type MarketplaceResourceApiKeysResumeResponses = {
+    202: Status;
+};
+
+export type MarketplaceResourceApiKeysResumeResponse = MarketplaceResourceApiKeysResumeResponses[keyof MarketplaceResourceApiKeysResumeResponses];
+
+export type MarketplaceResourceApiKeysRetryData = {
+    body?: never;
+    path: {
+        uuid: string;
+    };
+    query?: never;
+    url: '/api/marketplace-resource-api-keys/{uuid}/retry/';
+};
+
+export type MarketplaceResourceApiKeysRetryResponses = {
+    202: Status;
+};
+
+export type MarketplaceResourceApiKeysRetryResponse = MarketplaceResourceApiKeysRetryResponses[keyof MarketplaceResourceApiKeysRetryResponses];
 
 export type MarketplaceResourceApiKeysRevealRetrieveData = {
     body?: never;
@@ -68064,6 +69939,21 @@ export type MarketplaceResourceApiKeysRotateResponses = {
 
 export type MarketplaceResourceApiKeysRotateResponse = MarketplaceResourceApiKeysRotateResponses[keyof MarketplaceResourceApiKeysRotateResponses];
 
+export type MarketplaceResourceApiKeysSetDeletedData = {
+    body?: never;
+    path: {
+        uuid: string;
+    };
+    query?: never;
+    url: '/api/marketplace-resource-api-keys/{uuid}/set_deleted/';
+};
+
+export type MarketplaceResourceApiKeysSetDeletedResponses = {
+    200: ResourceApiKeyStatus;
+};
+
+export type MarketplaceResourceApiKeysSetDeletedResponse = MarketplaceResourceApiKeysSetDeletedResponses[keyof MarketplaceResourceApiKeysSetDeletedResponses];
+
 export type MarketplaceResourceApiKeysSetErredData = {
     body: ResourceApiKeySetErredRequest;
     path: {
@@ -68094,6 +69984,36 @@ export type MarketplaceResourceApiKeysSetKeyResponses = {
 
 export type MarketplaceResourceApiKeysSetKeyResponse = MarketplaceResourceApiKeysSetKeyResponses[keyof MarketplaceResourceApiKeysSetKeyResponses];
 
+export type MarketplaceResourceApiKeysSetOkData = {
+    body?: never;
+    path: {
+        uuid: string;
+    };
+    query?: never;
+    url: '/api/marketplace-resource-api-keys/{uuid}/set_ok/';
+};
+
+export type MarketplaceResourceApiKeysSetOkResponses = {
+    200: ResourceApiKeyStatus;
+};
+
+export type MarketplaceResourceApiKeysSetOkResponse = MarketplaceResourceApiKeysSetOkResponses[keyof MarketplaceResourceApiKeysSetOkResponses];
+
+export type MarketplaceResourceApiKeysSetPausedData = {
+    body?: never;
+    path: {
+        uuid: string;
+    };
+    query?: never;
+    url: '/api/marketplace-resource-api-keys/{uuid}/set_paused/';
+};
+
+export type MarketplaceResourceApiKeysSetPausedResponses = {
+    200: ResourceApiKeyStatus;
+};
+
+export type MarketplaceResourceApiKeysSetPausedResponse = MarketplaceResourceApiKeysSetPausedResponses[keyof MarketplaceResourceApiKeysSetPausedResponses];
+
 export type MarketplaceResourceApiKeysReportCreatedData = {
     body: ResourceApiKeyReportCreatedRequest;
     path?: never;
@@ -68106,6 +70026,37 @@ export type MarketplaceResourceApiKeysReportCreatedResponses = {
 };
 
 export type MarketplaceResourceApiKeysReportCreatedResponse = MarketplaceResourceApiKeysReportCreatedResponses[keyof MarketplaceResourceApiKeysReportCreatedResponses];
+
+export type MarketplaceResourceApiKeysUsageTotalsRetrieveData = {
+    body?: never;
+    path?: never;
+    query: {
+        resource_uuid: string;
+    };
+    url: '/api/marketplace-resource-api-keys/usage_totals/';
+};
+
+export type MarketplaceResourceApiKeysUsageTotalsRetrieveResponses = {
+    200: ResourceApiKeyUsageTotals;
+};
+
+export type MarketplaceResourceApiKeysUsageTotalsRetrieveResponse = MarketplaceResourceApiKeysUsageTotalsRetrieveResponses[keyof MarketplaceResourceApiKeysUsageTotalsRetrieveResponses];
+
+export type MarketplaceResourceApiKeysUsageTotalsCountData = {
+    body?: never;
+    path?: never;
+    query: {
+        resource_uuid: string;
+    };
+    url: '/api/marketplace-resource-api-keys/usage_totals/';
+};
+
+export type MarketplaceResourceApiKeysUsageTotalsCountResponses = {
+    /**
+     * No response body
+     */
+    200: unknown;
+};
 
 export type MarketplaceResourceEndDateChangeRequestsListData = {
     body?: never;
@@ -68436,6 +70387,21 @@ export type MarketplaceResourceLimitChangeRequestsRejectResponses = {
      */
     200: unknown;
 };
+
+export type MarketplaceResourceMetricsListData = {
+    body?: never;
+    path?: never;
+    query: {
+        resource_uuid: string;
+    };
+    url: '/api/marketplace-resource-metrics/';
+};
+
+export type MarketplaceResourceMetricsListResponses = {
+    200: Array<ResourceMetric>;
+};
+
+export type MarketplaceResourceMetricsListResponse = MarketplaceResourceMetricsListResponses[keyof MarketplaceResourceMetricsListResponses];
 
 export type MarketplaceResourceOfferingsListData = {
     body?: never;
@@ -79497,6 +81463,142 @@ export type MatrixCredentialsRetrieveResponses = {
 
 export type MatrixCredentialsRetrieveResponse = MatrixCredentialsRetrieveResponses[keyof MatrixCredentialsRetrieveResponses];
 
+export type MatrixCredentialsPasswordData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/matrix/credentials/password/';
+};
+
+export type MatrixCredentialsPasswordErrors = {
+    /**
+     * The user was deactivated while the request ran.
+     */
+    403: unknown;
+    /**
+     * Matrix chat is not enabled.
+     */
+    404: unknown;
+    /**
+     * Matrix passwords are not in use.
+     */
+    409: unknown;
+    /**
+     * The homeserver did not set it: either the Waldur bot is not a homeserver admin yet, the homeserver's admin API is not reachable or the account is a homeserver admin's, which needs an operator, or the homeserver failed and a later try may succeed. The detail says which.
+     */
+    503: unknown;
+};
+
+export type MatrixCredentialsPasswordResponses = {
+    200: MatrixPassword;
+};
+
+export type MatrixCredentialsPasswordResponse = MatrixCredentialsPasswordResponses[keyof MatrixCredentialsPasswordResponses];
+
+export type MatrixCredentialsRecoveryKeyData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/matrix/credentials/recovery-key/';
+};
+
+export type MatrixCredentialsRecoveryKeyErrors = {
+    /**
+     * Not the user's own sign-in: a personal or OIDC access token, or staff impersonating the user.
+     */
+    403: unknown;
+    /**
+     * Matrix chat is not enabled.
+     */
+    404: unknown;
+    /**
+     * The homeserver could not be asked.
+     */
+    503: unknown;
+};
+
+export type MatrixCredentialsRecoveryKeyResponses = {
+    200: MatrixRecoveryKey;
+};
+
+export type MatrixCredentialsRecoveryKeyResponse = MatrixCredentialsRecoveryKeyResponses[keyof MatrixCredentialsRecoveryKeyResponses];
+
+export type MatrixCryptoEscrowData = {
+    body: MatrixCryptoEscrowRequest;
+    path?: never;
+    query?: never;
+    url: '/api/matrix/crypto/escrow/';
+};
+
+export type MatrixCryptoEscrowErrors = {
+    /**
+     * Matrix chat is not enabled.
+     */
+    404: unknown;
+    409: MatrixCryptoConflict;
+};
+
+export type MatrixCryptoEscrowError = MatrixCryptoEscrowErrors[keyof MatrixCryptoEscrowErrors];
+
+export type MatrixCryptoEscrowResponses = {
+    /**
+     * No response body
+     */
+    204: void;
+};
+
+export type MatrixCryptoEscrowResponse = MatrixCryptoEscrowResponses[keyof MatrixCryptoEscrowResponses];
+
+export type MatrixCryptoLeaseData = {
+    body: MatrixCryptoLeaseRequestRequest;
+    path?: never;
+    query?: never;
+    url: '/api/matrix/crypto/lease/';
+};
+
+export type MatrixCryptoLeaseErrors = {
+    /**
+     * Matrix chat is not enabled.
+     */
+    404: unknown;
+    409: MatrixCryptoConflict;
+    /**
+     * The homeserver could not be asked, or the bot is not a homeserver admin (needed for a reset).
+     */
+    503: unknown;
+};
+
+export type MatrixCryptoLeaseError = MatrixCryptoLeaseErrors[keyof MatrixCryptoLeaseErrors];
+
+export type MatrixCryptoLeaseResponses = {
+    200: MatrixCryptoLease;
+};
+
+export type MatrixCryptoLeaseResponse = MatrixCryptoLeaseResponses[keyof MatrixCryptoLeaseResponses];
+
+export type MatrixCryptoLeaseReleaseData = {
+    body: MatrixCryptoLeaseReleaseRequest;
+    path?: never;
+    query?: never;
+    url: '/api/matrix/crypto/lease/release/';
+};
+
+export type MatrixCryptoLeaseReleaseErrors = {
+    /**
+     * Chat disabled.
+     */
+    404: unknown;
+};
+
+export type MatrixCryptoLeaseReleaseResponses = {
+    /**
+     * No response body
+     */
+    204: void;
+};
+
+export type MatrixCryptoLeaseReleaseResponse = MatrixCryptoLeaseReleaseResponses[keyof MatrixCryptoLeaseReleaseResponses];
+
 export type MatrixExportsListData = {
     body?: never;
     path?: never;
@@ -79722,6 +81824,7 @@ export type MatrixRoomsExportHistoryData = {
 };
 
 export type MatrixRoomsExportHistoryResponses = {
+    200: MatrixHistoryExport;
     202: MatrixHistoryExport;
 };
 
@@ -79789,6 +81892,32 @@ export type MatrixRoomsMembersListResponses = {
 };
 
 export type MatrixRoomsMembersListResponse = MatrixRoomsMembersListResponses[keyof MatrixRoomsMembersListResponses];
+
+export type MatrixRoomsOpenData = {
+    body?: never;
+    path: {
+        uuid: string;
+    };
+    query?: never;
+    url: '/api/matrix/rooms/{uuid}/open/';
+};
+
+export type MatrixRoomsOpenErrors = {
+    /**
+     * The caller is not a member of the room.
+     */
+    403: unknown;
+    /**
+     * The room is not active.
+     */
+    409: unknown;
+};
+
+export type MatrixRoomsOpenResponses = {
+    200: MatrixRoomOpen;
+};
+
+export type MatrixRoomsOpenResponse = MatrixRoomsOpenResponses[keyof MatrixRoomsOpenResponses];
 
 export type MatrixRoomsReactivateData = {
     body?: never;
@@ -79906,6 +82035,30 @@ export type MatrixRoomsEligibleProjectsCountResponses = {
      */
     200: unknown;
 };
+
+export type MatrixSessionData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/matrix/session/';
+};
+
+export type MatrixSessionErrors = {
+    /**
+     * Matrix chat is not enabled.
+     */
+    404: unknown;
+    /**
+     * The homeserver could not start a session: either it failed and a later try may succeed, or the user's Matrix account is locked, which needs an operator. The detail says which.
+     */
+    503: unknown;
+};
+
+export type MatrixSessionResponses = {
+    200: MatrixSession;
+};
+
+export type MatrixSessionResponse = MatrixSessionResponses[keyof MatrixSessionResponses];
 
 export type MediaRetrieveData = {
     body?: never;
@@ -84229,6 +86382,21 @@ export type OpenportalUnmanagedProjectsRecoverResponses = {
 
 export type OpenportalUnmanagedProjectsRecoverResponse = OpenportalUnmanagedProjectsRecoverResponses[keyof OpenportalUnmanagedProjectsRecoverResponses];
 
+export type OpenportalUnmanagedProjectsSetSlugData = {
+    body: ProjectSlugRequest;
+    path: {
+        uuid: string;
+    };
+    query?: never;
+    url: '/api/openportal-unmanaged-projects/{uuid}/set_slug/';
+};
+
+export type OpenportalUnmanagedProjectsSetSlugResponses = {
+    200: Status;
+};
+
+export type OpenportalUnmanagedProjectsSetSlugResponse = OpenportalUnmanagedProjectsSetSlugResponses[keyof OpenportalUnmanagedProjectsSetSlugResponses];
+
 export type OpenportalUnmanagedProjectsStatsRetrieveData = {
     body?: never;
     path: {
@@ -84239,6 +86407,10 @@ export type OpenportalUnmanagedProjectsStatsRetrieveData = {
          * If true, returns usage data for the current month only. Otherwise, returns total usage.
          */
         for_current_month?: boolean;
+        /**
+         * If true, also counts terminated resources that reported usage in the current month. Their share is returned as usage_terminated and limit_usage_terminated; limit never includes them. Ignored unless the dashboard.usage_include_terminated feature is enabled.
+         */
+        include_terminated?: boolean;
     };
     url: '/api/openportal-unmanaged-projects/{uuid}/stats/';
 };
@@ -92851,6 +95023,23 @@ export type OrganizationGroupsUpdateResponses = {
 
 export type OrganizationGroupsUpdateResponse = OrganizationGroupsUpdateResponses[keyof OrganizationGroupsUpdateResponses];
 
+export type OtlpV1MetricsData = {
+    body?: {
+        [key: string]: unknown;
+    };
+    path?: never;
+    query?: never;
+    url: '/api/otlp/v1/metrics/';
+};
+
+export type OtlpV1MetricsResponses = {
+    200: {
+        [key: string]: unknown;
+    };
+};
+
+export type OtlpV1MetricsResponse = OtlpV1MetricsResponses[keyof OtlpV1MetricsResponses];
+
 export type OverrideSettingsRetrieveData = {
     body?: never;
     path?: never;
@@ -94938,6 +97127,21 @@ export type ProjectsRecoverResponses = {
 
 export type ProjectsRecoverResponse = ProjectsRecoverResponses[keyof ProjectsRecoverResponses];
 
+export type ProjectsSetSlugData = {
+    body: ProjectSlugRequest;
+    path: {
+        uuid: string;
+    };
+    query?: never;
+    url: '/api/projects/{uuid}/set_slug/';
+};
+
+export type ProjectsSetSlugResponses = {
+    200: Status;
+};
+
+export type ProjectsSetSlugResponse = ProjectsSetSlugResponses[keyof ProjectsSetSlugResponses];
+
 export type ProjectsStatsRetrieveData = {
     body?: never;
     path: {
@@ -94948,6 +97152,10 @@ export type ProjectsStatsRetrieveData = {
          * If true, returns usage data for the current month only. Otherwise, returns total usage.
          */
         for_current_month?: boolean;
+        /**
+         * If true, also counts terminated resources that reported usage in the current month. Their share is returned as usage_terminated and limit_usage_terminated; limit never includes them. Ignored unless the dashboard.usage_include_terminated feature is enabled.
+         */
+        include_terminated?: boolean;
     };
     url: '/api/projects/{uuid}/stats/';
 };
@@ -96083,6 +98291,109 @@ export type ProposalProposalsAttachDocumentResponses = {
     200: unknown;
 };
 
+export type ProposalProposalsAwardedResourcesListData = {
+    body?: never;
+    path: {
+        uuid: string;
+    };
+    query?: {
+        /**
+         * A page number within the paginated result set.
+         */
+        page?: number;
+        /**
+         * Number of results to return per page.
+         */
+        page_size?: number;
+    };
+    url: '/api/proposal-proposals/{uuid}/awarded_resources/';
+};
+
+export type ProposalProposalsAwardedResourcesListResponses = {
+    200: Array<AwardedResource>;
+};
+
+export type ProposalProposalsAwardedResourcesListResponse = ProposalProposalsAwardedResourcesListResponses[keyof ProposalProposalsAwardedResourcesListResponses];
+
+export type ProposalProposalsAwardedResourcesSetData = {
+    body?: AwardedResourceRequest;
+    path: {
+        uuid: string;
+    };
+    query?: never;
+    url: '/api/proposal-proposals/{uuid}/awarded_resources/';
+};
+
+export type ProposalProposalsAwardedResourcesSetResponses = {
+    200: AwardedResource;
+};
+
+export type ProposalProposalsAwardedResourcesSetResponse = ProposalProposalsAwardedResourcesSetResponses[keyof ProposalProposalsAwardedResourcesSetResponses];
+
+export type ProposalProposalsAwardedResourcesDestroyData = {
+    body?: never;
+    path: {
+        obj_uuid: string;
+        uuid: string;
+    };
+    query?: never;
+    url: '/api/proposal-proposals/{uuid}/awarded_resources/{obj_uuid}/';
+};
+
+export type ProposalProposalsAwardedResourcesDestroyResponses = {
+    200: AwardedResource;
+};
+
+export type ProposalProposalsAwardedResourcesDestroyResponse = ProposalProposalsAwardedResourcesDestroyResponses[keyof ProposalProposalsAwardedResourcesDestroyResponses];
+
+export type ProposalProposalsAwardedResourcesRetrieveData = {
+    body?: never;
+    path: {
+        obj_uuid: string;
+        uuid: string;
+    };
+    query?: never;
+    url: '/api/proposal-proposals/{uuid}/awarded_resources/{obj_uuid}/';
+};
+
+export type ProposalProposalsAwardedResourcesRetrieveResponses = {
+    200: AwardedResource;
+};
+
+export type ProposalProposalsAwardedResourcesRetrieveResponse = ProposalProposalsAwardedResourcesRetrieveResponses[keyof ProposalProposalsAwardedResourcesRetrieveResponses];
+
+export type ProposalProposalsAwardedResourcesPartialUpdateData = {
+    body?: PatchedAwardedResourceRequest;
+    path: {
+        obj_uuid: string;
+        uuid: string;
+    };
+    query?: never;
+    url: '/api/proposal-proposals/{uuid}/awarded_resources/{obj_uuid}/';
+};
+
+export type ProposalProposalsAwardedResourcesPartialUpdateResponses = {
+    200: AwardedResource;
+};
+
+export type ProposalProposalsAwardedResourcesPartialUpdateResponse = ProposalProposalsAwardedResourcesPartialUpdateResponses[keyof ProposalProposalsAwardedResourcesPartialUpdateResponses];
+
+export type ProposalProposalsAwardedResourcesUpdateData = {
+    body?: AwardedResourceRequest;
+    path: {
+        obj_uuid: string;
+        uuid: string;
+    };
+    query?: never;
+    url: '/api/proposal-proposals/{uuid}/awarded_resources/{obj_uuid}/';
+};
+
+export type ProposalProposalsAwardedResourcesUpdateResponses = {
+    200: AwardedResource;
+};
+
+export type ProposalProposalsAwardedResourcesUpdateResponse = ProposalProposalsAwardedResourcesUpdateResponses[keyof ProposalProposalsAwardedResourcesUpdateResponses];
+
 export type ProposalProposalsChecklistRetrieveData = {
     body?: never;
     path: {
@@ -96382,6 +98693,21 @@ export type ProposalProposalsRejectWorkflowStepResponses = {
 };
 
 export type ProposalProposalsRejectWorkflowStepResponse = ProposalProposalsRejectWorkflowStepResponses[keyof ProposalProposalsRejectWorkflowStepResponses];
+
+export type ProposalProposalsReopenDecisionData = {
+    body: ReopenDecisionRequest;
+    path: {
+        uuid: string;
+    };
+    query?: never;
+    url: '/api/proposal-proposals/{uuid}/reopen_decision/';
+};
+
+export type ProposalProposalsReopenDecisionResponses = {
+    200: ProposalWorkflowStepInstance;
+};
+
+export type ProposalProposalsReopenDecisionResponse = ProposalProposalsReopenDecisionResponses[keyof ProposalProposalsReopenDecisionResponses];
 
 export type ProposalProposalsResourcesListData = {
     body?: never;
@@ -98118,6 +100444,82 @@ export type ProposalProtectedCallsRoundsCloseResponses = {
 };
 
 export type ProposalProtectedCallsRoundsCloseResponse = ProposalProtectedCallsRoundsCloseResponses[keyof ProposalProtectedCallsRoundsCloseResponses];
+
+export type ProposalProtectedCallsRoundsCompleteData = {
+    body?: never;
+    path: {
+        obj_uuid: string;
+        uuid: string;
+    };
+    query?: never;
+    url: '/api/proposal-protected-calls/{uuid}/rounds/{obj_uuid}/complete/';
+};
+
+export type ProposalProtectedCallsRoundsCompleteErrors = {
+    400: CompleteRoundRefusal;
+};
+
+export type ProposalProtectedCallsRoundsCompleteError = ProposalProtectedCallsRoundsCompleteErrors[keyof ProposalProtectedCallsRoundsCompleteErrors];
+
+export type ProposalProtectedCallsRoundsCompleteResponses = {
+    200: CompleteRoundResponse;
+};
+
+export type ProposalProtectedCallsRoundsCompleteResponse = ProposalProtectedCallsRoundsCompleteResponses[keyof ProposalProtectedCallsRoundsCompleteResponses];
+
+export type ProposalProtectedCallsRoundsPublishResultsData = {
+    body?: PublishRoundResultsRequest;
+    path: {
+        obj_uuid: string;
+        uuid: string;
+    };
+    query?: never;
+    url: '/api/proposal-protected-calls/{uuid}/rounds/{obj_uuid}/publish_results/';
+};
+
+export type ProposalProtectedCallsRoundsPublishResultsErrors = {
+    400: PublishRoundResultsRefusal;
+};
+
+export type ProposalProtectedCallsRoundsPublishResultsError = ProposalProtectedCallsRoundsPublishResultsErrors[keyof ProposalProtectedCallsRoundsPublishResultsErrors];
+
+export type ProposalProtectedCallsRoundsPublishResultsResponses = {
+    200: PublishRoundResultsResponse;
+};
+
+export type ProposalProtectedCallsRoundsPublishResultsResponse = ProposalProtectedCallsRoundsPublishResultsResponses[keyof ProposalProtectedCallsRoundsPublishResultsResponses];
+
+export type ProposalProtectedCallsRoundsRecordAdoptionData = {
+    body: RoundAdoptionRequest;
+    path: {
+        obj_uuid: string;
+        uuid: string;
+    };
+    query?: never;
+    url: '/api/proposal-protected-calls/{uuid}/rounds/{obj_uuid}/record_adoption/';
+};
+
+export type ProposalProtectedCallsRoundsRecordAdoptionResponses = {
+    200: ProtectedRound;
+};
+
+export type ProposalProtectedCallsRoundsRecordAdoptionResponse = ProposalProtectedCallsRoundsRecordAdoptionResponses[keyof ProposalProtectedCallsRoundsRecordAdoptionResponses];
+
+export type ProposalProtectedCallsRoundsStartDecidingData = {
+    body?: never;
+    path: {
+        obj_uuid: string;
+        uuid: string;
+    };
+    query?: never;
+    url: '/api/proposal-protected-calls/{uuid}/rounds/{obj_uuid}/start_deciding/';
+};
+
+export type ProposalProtectedCallsRoundsStartDecidingResponses = {
+    200: ProtectedRound;
+};
+
+export type ProposalProtectedCallsRoundsStartDecidingResponse = ProposalProtectedCallsRoundsStartDecidingResponses[keyof ProposalProtectedCallsRoundsStartDecidingResponses];
 
 export type ProposalProtectedCallsSendAllAssignmentsData = {
     body?: SendAllAssignmentBatchesRequest;
