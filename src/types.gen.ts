@@ -4027,6 +4027,27 @@ export type CallExportResponse = {
     warnings: Array<string>;
 };
 
+export type CallFormFlow = {
+    readonly call_uuid: string;
+    flow: string | null;
+    readonly flow_key: string | null;
+    readonly flow_name: string | null;
+    /**
+     * True once the call has proposals: its flow can no longer change.
+     */
+    readonly locked: boolean;
+};
+
+export type CallFormFlowRequest = {
+    flow: string | null;
+};
+
+export type CallFormFlowSummary = {
+    uuid: string;
+    key: string;
+    name: string;
+};
+
 export type CallImportParametersRequest = {
     /**
      * Call managing organisation that will own the imported call.
@@ -10063,6 +10084,201 @@ export type ForceUnblockRequest = {
     override_reason: string;
 };
 
+export type FormFlow = {
+    readonly url: string;
+    readonly uuid: string;
+    /**
+     * Identifier calls refer to the flow by, e.g. 'airr-gw'.
+     */
+    key: string;
+    name: string;
+    description?: string;
+    steps: Array<FormFlowStep>;
+    readonly calls_count: number;
+    readonly created: string;
+    readonly modified: string;
+};
+
+export type FormFlowCheck = {
+    ok: boolean;
+    steps: Array<FormFlowCheckStep>;
+};
+
+export type FormFlowCheckStep = {
+    key: string;
+    survey_id: string;
+    ok: boolean;
+    problems: Array<string>;
+    /**
+     * What to set as the survey ending's 'Redirect to URL', so the applicant is taken on to the next step.
+     */
+    ending_url: string;
+};
+
+export type FormFlowRequest = {
+    /**
+     * Identifier calls refer to the flow by, e.g. 'airr-gw'.
+     */
+    key: string;
+    name: string;
+    description?: string;
+    steps: Array<FormFlowStepRequest>;
+};
+
+export type FormFlowResourceOption = {
+    /**
+     * The choice's text in the Formbricks question, exactly.
+     */
+    label: string;
+    /**
+     * Slug of the offering the call requests for this choice.
+     */
+    offering_slug: string;
+    /**
+     * Question id -> requested resource attribute, e.g. {'u3bp...': 'allocation'}.
+     */
+    attribute_map?: {
+        [key: string]: string;
+    };
+    default_attributes?: {
+        [key: string]: unknown;
+    };
+};
+
+export type FormFlowResourceOptionRequest = {
+    /**
+     * The choice's text in the Formbricks question, exactly.
+     */
+    label: string;
+    /**
+     * Slug of the offering the call requests for this choice.
+     */
+    offering_slug: string;
+    /**
+     * Question id -> requested resource attribute, e.g. {'u3bp...': 'allocation'}.
+     */
+    attribute_map?: {
+        [key: string]: string;
+    };
+    default_attributes?: {
+        [key: string]: unknown;
+    };
+};
+
+export type FormFlowResources = {
+    /**
+     * The multiple-choice question naming the resources wanted.
+     */
+    question_id: string;
+    options: Array<FormFlowResourceOption>;
+};
+
+export type FormFlowResourcesRequest = {
+    /**
+     * The multiple-choice question naming the resources wanted.
+     */
+    question_id: string;
+    options: Array<FormFlowResourceOptionRequest>;
+};
+
+export type FormFlowStep = {
+    /**
+     * Stable id of the step, e.g. 'team'.
+     */
+    key: string;
+    /**
+     * What applicants and reviewers see.
+     */
+    label: string;
+    /**
+     * The Formbricks survey id.
+     */
+    survey_id: string;
+    /**
+     * Whether reviewers may read this step's answers.
+     */
+    reviewer_visible?: boolean;
+    /**
+     * Question id -> proposal field the answer is copied onto.
+     */
+    field_map?: {
+        [key: string]: 'name' | 'description' | 'project_summary';
+    };
+    resources?: FormFlowResources | null;
+};
+
+export type FormFlowStepRequest = {
+    /**
+     * Stable id of the step, e.g. 'team'.
+     */
+    key: string;
+    /**
+     * What applicants and reviewers see.
+     */
+    label: string;
+    /**
+     * The Formbricks survey id.
+     */
+    survey_id: string;
+    /**
+     * Whether reviewers may read this step's answers.
+     */
+    reviewer_visible?: boolean;
+    /**
+     * Question id -> proposal field the answer is copied onto.
+     */
+    field_map?: {
+        [key: string]: 'name' | 'description' | 'project_summary';
+    };
+    resources?: FormFlowResourcesRequest | null;
+};
+
+export type FormResponseQuestion = {
+    question_id: string;
+    label: string;
+    /**
+     * As Formbricks sent it: text, a number, or a list for multiple choice.
+     */
+    answer: {
+        [key: string]: unknown;
+    };
+};
+
+export type FormStepResponse = {
+    step_key: string;
+    step_label: string;
+    submitted_at: string;
+    questions: Array<FormResponseQuestion>;
+};
+
+export type FormbricksConnection = {
+    /**
+     * Whether calls may take applications through Formbricks. Can only be switched on once the URL, API key and webhook secret are set.
+     */
+    enabled?: boolean;
+    /**
+     * Public URL of the Formbricks server, as applicants' browsers reach it. Survey links are built from it.
+     */
+    base_url?: string;
+    /**
+     * URL this server uses for the Formbricks Management API, if it differs from the public URL (for example an in-cluster service name). Blank means the public URL.
+     */
+    management_api_url?: string;
+    readonly api_key_set: boolean;
+    readonly webhook_secret_set: boolean;
+    readonly is_configured: boolean;
+    /**
+     * The URL to give Formbricks as the webhook endpoint.
+     */
+    readonly webhook_url: string;
+    readonly modified: string;
+};
+
+export type FormbricksConnectionTest = {
+    ok: boolean;
+    detail: string;
+};
+
 export type FreeipaProfile = {
     readonly uuid: string;
     /**
@@ -15306,6 +15522,7 @@ export type NestedRequestedOffering = {
     plan?: string | null;
     plan_details: BasePublicPlan;
     options: OfferingOptions;
+    resource_options: OfferingOptions;
     readonly components: Array<OfferingComponent>;
     /**
      * Whether a purchase order must accompany a resource request for this offering before the proposal can be submitted. Defaults to the offering's require_purchase_order_upload, and stays under the call manager's control afterwards.
@@ -21770,6 +21987,39 @@ export type PatchedFirecrestJobRequest = {
     runtime_state?: string;
 };
 
+export type PatchedFormFlowRequest = {
+    /**
+     * Identifier calls refer to the flow by, e.g. 'airr-gw'.
+     */
+    key?: string;
+    name?: string;
+    description?: string;
+    steps?: Array<FormFlowStepRequest>;
+};
+
+export type PatchedFormbricksConnectionRequest = {
+    /**
+     * Whether calls may take applications through Formbricks. Can only be switched on once the URL, API key and webhook secret are set.
+     */
+    enabled?: boolean;
+    /**
+     * Public URL of the Formbricks server, as applicants' browsers reach it. Survey links are built from it.
+     */
+    base_url?: string;
+    /**
+     * URL this server uses for the Formbricks Management API, if it differs from the public URL (for example an in-cluster service name). Blank means the public URL.
+     */
+    management_api_url?: string;
+    /**
+     * Formbricks Management API key, with read access to the surveys and responses of the flows' environment.
+     */
+    api_key?: string;
+    /**
+     * Signing secret Formbricks shows for the webhook, e.g. 'whsec_...'.
+     */
+    webhook_secret?: string;
+};
+
 export type PatchedGroupInvitationUpdateRequest = {
     /**
      * Allow non-authenticated users to see and accept this invitation. Only staff can create public invitations.
@@ -25317,7 +25567,7 @@ export type ProjectTemplate = {
     customer_data: BasicCustomer;
     shortname?: string | null;
     offerings: Array<string>;
-    readonly offerings_data: Array<ResourceOffering>;
+    readonly offerings_data: Array<ProjectTemplateOffering>;
     /**
      * The credit limit beyond which requests need to be approved by a local admin. If this is None, then no local approval is required. If this is set to 0, then all requests (including creating the project) need to be approved.
      */
@@ -25348,6 +25598,16 @@ export type ProjectTemplate = {
             [key: string]: string;
         };
     };
+};
+
+export type ProjectTemplateOffering = {
+    name: string;
+    readonly uuid: string;
+    readonly url: string;
+};
+
+export type ProjectTemplateOfferingRequest = {
+    name: string;
 };
 
 export type ProjectTemplateRequest = {
@@ -25644,6 +25904,46 @@ export type ProposalFieldMetadata = {
 
 export type ProposalFieldStateEnum = 'hidden' | 'optional' | 'required';
 
+export type ProposalForm = {
+    proposal_uuid: string;
+    flow_key: string;
+    flow_name: string;
+    /**
+     * Whether the viewer may fill in or edit steps now: a member of the proposal's team, while it is a draft.
+     */
+    can_fill_in: boolean;
+    steps: Array<ProposalFormStepStatus>;
+    /**
+     * The first step not yet answered, with a fresh survey link; null once all are answered or if the viewer cannot fill in.
+     */
+    next_step: ProposalFormSurveyLink | null;
+    responses: Array<FormStepResponse>;
+};
+
+export type ProposalFormStartRequest = {
+    round_uuid: string;
+};
+
+export type ProposalFormStartResponse = {
+    step_key: string;
+    step_label: string;
+    survey_url: string;
+    proposal_uuid: string;
+};
+
+export type ProposalFormStepStatus = {
+    key: string;
+    label: string;
+    completed: boolean;
+    submitted_at: string | null;
+};
+
+export type ProposalFormSurveyLink = {
+    step_key: string;
+    step_label: string;
+    survey_url: string;
+};
+
 export type ProposalProjectRoleMapping = {
     readonly url: string;
     readonly uuid: string;
@@ -25923,6 +26223,10 @@ export type ProtectedCall = {
      * What completing a round does with its proposals that still have no decision: refuse to complete the round, or reject them. A round may override it.
      */
     undecided_at_round_completion?: UndecidedAtRoundCompletionEnum;
+    /**
+     * The Formbricks flow applicants fill in; null for Waldur's own proposal form.
+     */
+    form_flow: CallFormFlowSummary | null;
 };
 
 export type ProtectedCallRequest = {
@@ -26583,6 +26887,7 @@ export type ProviderRequestedOffering = {
     readonly plan: string | null;
     plan_details: BasePublicPlan;
     options: OfferingOptions;
+    resource_options: OfferingOptions;
     readonly components: Array<OfferingComponent>;
     /**
      * Whether a purchase order must accompany a resource request for this offering before the proposal can be submitted. Defaults to the offering's require_purchase_order_upload, and stays under the call manager's control afterwards.
@@ -26962,6 +27267,10 @@ export type PublicCall = {
      * When applicants learn the allocation decision: as soon as it is made, or for every proposal of a round together when a call manager publishes the round's results. Cannot be changed while decisions are held.
      */
     publish_results?: PublishResultsEnum;
+    /**
+     * The Formbricks flow applicants fill in; null for Waldur's own proposal form.
+     */
+    form_flow: CallFormFlowSummary | null;
 };
 
 export type PublicInvitation = {
@@ -29389,6 +29698,7 @@ export type RequestedOffering = {
     plan?: string | null;
     plan_details: BasePublicPlan;
     options: OfferingOptions;
+    resource_options: OfferingOptions;
     readonly components: Array<OfferingComponent>;
     /**
      * Whether a purchase order must accompany a resource request for this offering before the proposal can be submitted. Defaults to the offering's require_purchase_order_upload, and stays under the call manager's control afterwards.
@@ -30025,10 +30335,6 @@ export type ResourceMissingUsage = {
 export type ResourceOffering = {
     name: string;
     readonly uuid: string;
-};
-
-export type ResourceOfferingRequest = {
-    name: string;
 };
 
 export type ResourceOptionsRequest = {
@@ -38695,13 +39001,13 @@ export type UserRequestedResourceOEnum = '-call__name' | '-created' | '-offering
 
 export type ProposalOEnum = '-created' | '-round__call__name' | '-round__cutoff_time' | '-round__start_time' | '-slug' | '-state' | 'created' | 'round__call__name' | 'round__cutoff_time' | 'round__start_time' | 'slug' | 'state';
 
-export type ProtectedCallFieldEnum = 'applicant_visibility_config' | 'backend_id' | 'carry_over_drafts' | 'compliance_checklist' | 'compliance_checklist_name' | 'created' | 'created_by' | 'customer_name' | 'customer_uuid' | 'description' | 'documents' | 'end_date' | 'evaluation_start' | 'external_url' | 'fixed_duration_in_days' | 'has_eligibility_restrictions' | 'has_proposals' | 'manager' | 'manager_uuid' | 'max_prepaid_duration_months' | 'name' | 'offerings' | 'order_author' | 'order_author_user' | 'order_author_user_name' | 'order_author_user_uuid' | 'panel_chair' | 'panel_chair_name' | 'panel_chair_uuid' | 'proposal_field_config' | 'proposal_field_metadata' | 'proposal_slug_template' | 'publish_results' | 'reference_code' | 'resource_templates' | 'reviewer_identity_visible_to_submitters' | 'reviews_visible_to_submitters' | 'rounds' | 'slug' | 'start_date' | 'state' | 'undecided_at_round_completion' | 'url' | 'user_affiliations' | 'user_assurance_levels' | 'user_email_patterns' | 'user_identity_sources' | 'user_nationalities' | 'user_organization_types' | 'uuid';
+export type ProtectedCallFieldEnum = 'applicant_visibility_config' | 'backend_id' | 'carry_over_drafts' | 'compliance_checklist' | 'compliance_checklist_name' | 'created' | 'created_by' | 'customer_name' | 'customer_uuid' | 'description' | 'documents' | 'end_date' | 'evaluation_start' | 'external_url' | 'fixed_duration_in_days' | 'form_flow' | 'has_eligibility_restrictions' | 'has_proposals' | 'manager' | 'manager_uuid' | 'max_prepaid_duration_months' | 'name' | 'offerings' | 'order_author' | 'order_author_user' | 'order_author_user_name' | 'order_author_user_uuid' | 'panel_chair' | 'panel_chair_name' | 'panel_chair_uuid' | 'proposal_field_config' | 'proposal_field_metadata' | 'proposal_slug_template' | 'publish_results' | 'reference_code' | 'resource_templates' | 'reviewer_identity_visible_to_submitters' | 'reviews_visible_to_submitters' | 'rounds' | 'slug' | 'start_date' | 'state' | 'undecided_at_round_completion' | 'url' | 'user_affiliations' | 'user_assurance_levels' | 'user_email_patterns' | 'user_identity_sources' | 'user_nationalities' | 'user_organization_types' | 'uuid';
 
 export type ProtectedCallOEnum = '-created' | '-manager__customer__name' | '-name' | 'created' | 'manager__customer__name' | 'name';
 
 export type AffinityMatrixResponseScopeEnum = 'all' | 'pool' | 'suggestions';
 
-export type PublicCallFieldEnum = 'backend_id' | 'created' | 'customer_name' | 'customer_uuid' | 'description' | 'documents' | 'end_date' | 'evaluation_start' | 'external_url' | 'fixed_duration_in_days' | 'has_eligibility_restrictions' | 'manager' | 'manager_uuid' | 'max_prepaid_duration_months' | 'name' | 'offerings' | 'proposal_field_config' | 'publish_results' | 'resource_templates' | 'reviewer_identity_visible_to_submitters' | 'reviews_visible_to_submitters' | 'rounds' | 'slug' | 'start_date' | 'state' | 'url' | 'uuid';
+export type PublicCallFieldEnum = 'backend_id' | 'created' | 'customer_name' | 'customer_uuid' | 'description' | 'documents' | 'end_date' | 'evaluation_start' | 'external_url' | 'fixed_duration_in_days' | 'form_flow' | 'has_eligibility_restrictions' | 'manager' | 'manager_uuid' | 'max_prepaid_duration_months' | 'name' | 'offerings' | 'proposal_field_config' | 'publish_results' | 'resource_templates' | 'reviewer_identity_visible_to_submitters' | 'reviews_visible_to_submitters' | 'rounds' | 'slug' | 'start_date' | 'state' | 'url' | 'uuid';
 
 export type ProviderRequestedOfferingOEnum = '-call__name' | '-created' | '-offering__name' | '-state' | 'call__name' | 'created' | 'offering__name' | 'state';
 
@@ -51343,6 +51649,181 @@ export type FinancialReportsRetrieveResponses = {
 };
 
 export type FinancialReportsRetrieveResponse = FinancialReportsRetrieveResponses[keyof FinancialReportsRetrieveResponses];
+
+export type FormFlowsListData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * A page number within the paginated result set.
+         */
+        page?: number;
+        /**
+         * Number of results to return per page.
+         */
+        page_size?: number;
+    };
+    url: '/api/form-flows/';
+};
+
+export type FormFlowsListResponses = {
+    200: Array<FormFlow>;
+};
+
+export type FormFlowsListResponse = FormFlowsListResponses[keyof FormFlowsListResponses];
+
+export type FormFlowsCountData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * A page number within the paginated result set.
+         */
+        page?: number;
+        /**
+         * Number of results to return per page.
+         */
+        page_size?: number;
+    };
+    url: '/api/form-flows/';
+};
+
+export type FormFlowsCountResponses = {
+    /**
+     * No response body
+     */
+    200: unknown;
+};
+
+export type FormFlowsCreateData = {
+    body: FormFlowRequest;
+    path?: never;
+    query?: never;
+    url: '/api/form-flows/';
+};
+
+export type FormFlowsCreateResponses = {
+    201: FormFlow;
+};
+
+export type FormFlowsCreateResponse = FormFlowsCreateResponses[keyof FormFlowsCreateResponses];
+
+export type FormFlowsDestroyData = {
+    body?: never;
+    path: {
+        uuid: string;
+    };
+    query?: never;
+    url: '/api/form-flows/{uuid}/';
+};
+
+export type FormFlowsDestroyResponses = {
+    /**
+     * No response body
+     */
+    204: void;
+};
+
+export type FormFlowsDestroyResponse = FormFlowsDestroyResponses[keyof FormFlowsDestroyResponses];
+
+export type FormFlowsRetrieveData = {
+    body?: never;
+    path: {
+        uuid: string;
+    };
+    query?: never;
+    url: '/api/form-flows/{uuid}/';
+};
+
+export type FormFlowsRetrieveResponses = {
+    200: FormFlow;
+};
+
+export type FormFlowsRetrieveResponse = FormFlowsRetrieveResponses[keyof FormFlowsRetrieveResponses];
+
+export type FormFlowsPartialUpdateData = {
+    body?: PatchedFormFlowRequest;
+    path: {
+        uuid: string;
+    };
+    query?: never;
+    url: '/api/form-flows/{uuid}/';
+};
+
+export type FormFlowsPartialUpdateResponses = {
+    200: FormFlow;
+};
+
+export type FormFlowsPartialUpdateResponse = FormFlowsPartialUpdateResponses[keyof FormFlowsPartialUpdateResponses];
+
+export type FormFlowsUpdateData = {
+    body: FormFlowRequest;
+    path: {
+        uuid: string;
+    };
+    query?: never;
+    url: '/api/form-flows/{uuid}/';
+};
+
+export type FormFlowsUpdateResponses = {
+    200: FormFlow;
+};
+
+export type FormFlowsUpdateResponse = FormFlowsUpdateResponses[keyof FormFlowsUpdateResponses];
+
+export type FormFlowsCheckData = {
+    body?: never;
+    path: {
+        uuid: string;
+    };
+    query?: never;
+    url: '/api/form-flows/{uuid}/check/';
+};
+
+export type FormFlowsCheckResponses = {
+    200: FormFlowCheck;
+};
+
+export type FormFlowsCheckResponse = FormFlowsCheckResponses[keyof FormFlowsCheckResponses];
+
+export type FormbricksConnectionRetrieveData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/formbricks-connection/';
+};
+
+export type FormbricksConnectionRetrieveResponses = {
+    200: FormbricksConnection;
+};
+
+export type FormbricksConnectionRetrieveResponse = FormbricksConnectionRetrieveResponses[keyof FormbricksConnectionRetrieveResponses];
+
+export type FormbricksConnectionPartialUpdateData = {
+    body?: PatchedFormbricksConnectionRequest;
+    path?: never;
+    query?: never;
+    url: '/api/formbricks-connection/';
+};
+
+export type FormbricksConnectionPartialUpdateResponses = {
+    200: FormbricksConnection;
+};
+
+export type FormbricksConnectionPartialUpdateResponse = FormbricksConnectionPartialUpdateResponses[keyof FormbricksConnectionPartialUpdateResponses];
+
+export type FormbricksConnectionTestData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/formbricks-connection/test/';
+};
+
+export type FormbricksConnectionTestResponses = {
+    200: FormbricksConnectionTest;
+};
+
+export type FormbricksConnectionTestResponse = FormbricksConnectionTestResponses[keyof FormbricksConnectionTestResponses];
 
 export type FreeipaProfilesListData = {
     body?: never;
@@ -97966,6 +98447,84 @@ export type ProposalArchiveRoundsRetrieveResponses = {
 };
 
 export type ProposalArchiveRoundsRetrieveResponse = ProposalArchiveRoundsRetrieveResponses[keyof ProposalArchiveRoundsRetrieveResponses];
+
+export type ProposalFormCallsRetrieveData = {
+    body?: never;
+    path: {
+        uuid: string;
+    };
+    query?: never;
+    url: '/api/proposal-form-calls/{uuid}/';
+};
+
+export type ProposalFormCallsRetrieveResponses = {
+    200: CallFormFlow;
+};
+
+export type ProposalFormCallsRetrieveResponse = ProposalFormCallsRetrieveResponses[keyof ProposalFormCallsRetrieveResponses];
+
+export type ProposalFormCallsUpdateData = {
+    body: CallFormFlowRequest;
+    path: {
+        uuid: string;
+    };
+    query?: never;
+    url: '/api/proposal-form-calls/{uuid}/';
+};
+
+export type ProposalFormCallsUpdateResponses = {
+    200: CallFormFlow;
+};
+
+export type ProposalFormCallsUpdateResponse = ProposalFormCallsUpdateResponses[keyof ProposalFormCallsUpdateResponses];
+
+export type ProposalFormsRetrieveData = {
+    body?: never;
+    path: {
+        uuid: string;
+    };
+    query?: never;
+    url: '/api/proposal-forms/{uuid}/';
+};
+
+export type ProposalFormsRetrieveResponses = {
+    200: ProposalForm;
+};
+
+export type ProposalFormsRetrieveResponse = ProposalFormsRetrieveResponses[keyof ProposalFormsRetrieveResponses];
+
+export type ProposalFormsEditLinkRetrieveData = {
+    body?: never;
+    path: {
+        uuid: string;
+    };
+    query: {
+        /**
+         * Key of the answered step to change.
+         */
+        step: string;
+    };
+    url: '/api/proposal-forms/{uuid}/edit-link/';
+};
+
+export type ProposalFormsEditLinkRetrieveResponses = {
+    200: ProposalFormSurveyLink;
+};
+
+export type ProposalFormsEditLinkRetrieveResponse = ProposalFormsEditLinkRetrieveResponses[keyof ProposalFormsEditLinkRetrieveResponses];
+
+export type ProposalFormsStartData = {
+    body: ProposalFormStartRequest;
+    path?: never;
+    query?: never;
+    url: '/api/proposal-forms/start/';
+};
+
+export type ProposalFormsStartResponses = {
+    201: ProposalFormStartResponse;
+};
+
+export type ProposalFormsStartResponse = ProposalFormsStartResponses[keyof ProposalFormsStartResponses];
 
 export type ProposalMyRequestedResourcesListData = {
     body?: never;

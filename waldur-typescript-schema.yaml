@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: Waldur API
-  version: 8.1.3-openportal.1
+  version: 8.1.3-openportal.3
 paths:
   /_matrix/app/v1/ping:
     post:
@@ -19558,6 +19558,245 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/FinancialReport'
+          description: ''
+  /api/form-flows/:
+    get:
+      operationId: form_flows_list
+      parameters:
+      - $ref: '#/components/parameters/Page'
+      - $ref: '#/components/parameters/PageSize'
+      tags:
+      - form-flows
+      security:
+      - waldurTokenAuth: []
+      - waldurPATAuth: []
+      - waldurOIDCAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FormFlow'
+                description: ''
+          description: ''
+          headers:
+            x-result-count:
+              $ref: '#/components/headers/XResultCount'
+    post:
+      operationId: form_flows_create
+      tags:
+      - form-flows
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FormFlowRequest'
+        required: true
+      security:
+      - waldurTokenAuth: []
+      - waldurPATAuth: []
+      - waldurOIDCAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FormFlow'
+          description: ''
+    head:
+      operationId: form_flows_count
+      parameters:
+      - $ref: '#/components/parameters/Page'
+      - $ref: '#/components/parameters/PageSize'
+      tags:
+      - form-flows
+      security:
+      - waldurTokenAuth: []
+      - waldurPATAuth: []
+      - waldurOIDCAuth: []
+      responses:
+        '200':
+          description: No response body
+      description: Get number of items in the collection matching the request parameters.
+  /api/form-flows/{uuid}/:
+    get:
+      operationId: form_flows_retrieve
+      parameters:
+      - in: path
+        name: uuid
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - form-flows
+      security:
+      - waldurTokenAuth: []
+      - waldurPATAuth: []
+      - waldurOIDCAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FormFlow'
+          description: ''
+    put:
+      operationId: form_flows_update
+      parameters:
+      - in: path
+        name: uuid
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - form-flows
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FormFlowRequest'
+        required: true
+      security:
+      - waldurTokenAuth: []
+      - waldurPATAuth: []
+      - waldurOIDCAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FormFlow'
+          description: ''
+    patch:
+      operationId: form_flows_partial_update
+      parameters:
+      - in: path
+        name: uuid
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - form-flows
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedFormFlowRequest'
+        required: false
+      security:
+      - waldurTokenAuth: []
+      - waldurPATAuth: []
+      - waldurOIDCAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FormFlow'
+          description: ''
+    delete:
+      operationId: form_flows_destroy
+      parameters:
+      - in: path
+        name: uuid
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - form-flows
+      security:
+      - waldurTokenAuth: []
+      - waldurPATAuth: []
+      - waldurOIDCAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/form-flows/{uuid}/check/:
+    post:
+      operationId: form_flows_check
+      description: 'Check each step against its survey in Formbricks: that it exists,
+        declares the hidden fields the flow needs, and has every question the step
+        maps.'
+      parameters:
+      - in: path
+        name: uuid
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - form-flows
+      security:
+      - waldurTokenAuth: []
+      - waldurPATAuth: []
+      - waldurOIDCAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FormFlowCheck'
+          description: ''
+  /api/formbricks-connection/:
+    get:
+      operationId: formbricks_connection_retrieve
+      tags:
+      - formbricks-connection
+      security:
+      - waldurTokenAuth: []
+      - waldurPATAuth: []
+      - waldurOIDCAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FormbricksConnection'
+          description: ''
+    patch:
+      operationId: formbricks_connection_partial_update
+      tags:
+      - formbricks-connection
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedFormbricksConnectionRequest'
+        required: false
+      security:
+      - waldurTokenAuth: []
+      - waldurPATAuth: []
+      - waldurOIDCAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FormbricksConnection'
+          description: ''
+  /api/formbricks-connection/test/:
+    post:
+      operationId: formbricks_connection_test
+      description: Check the Management API can be reached with the stored URL and
+        key.
+      tags:
+      - formbricks-connection
+      security:
+      - waldurTokenAuth: []
+      - waldurPATAuth: []
+      - waldurOIDCAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FormbricksConnectionTest'
           description: ''
   /api/freeipa-profiles/:
     get:
@@ -92362,6 +92601,137 @@ paths:
               schema:
                 $ref: '#/components/schemas/ArchivedRound'
           description: ''
+  /api/proposal-form-calls/{uuid}/:
+    get:
+      operationId: proposal_form_calls_retrieve
+      parameters:
+      - in: path
+        name: uuid
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - proposal-form-calls
+      security:
+      - waldurTokenAuth: []
+      - waldurPATAuth: []
+      - waldurOIDCAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CallFormFlow'
+          description: ''
+    put:
+      operationId: proposal_form_calls_update
+      parameters:
+      - in: path
+        name: uuid
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - proposal-form-calls
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CallFormFlowRequest'
+        required: true
+      security:
+      - waldurTokenAuth: []
+      - waldurPATAuth: []
+      - waldurOIDCAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CallFormFlow'
+          description: ''
+  /api/proposal-forms/{uuid}/:
+    get:
+      operationId: proposal_forms_retrieve
+      description: Progress through the flow and the answers given. Reviewers see
+        only the steps the flow makes reviewer-visible.
+      parameters:
+      - in: path
+        name: uuid
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - proposal-forms
+      security:
+      - waldurTokenAuth: []
+      - waldurPATAuth: []
+      - waldurOIDCAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProposalForm'
+          description: ''
+  /api/proposal-forms/{uuid}/edit-link/:
+    get:
+      operationId: proposal_forms_edit_link_retrieve
+      description: A survey link to change an answered step, prefilled with the answers
+        Formbricks holds now.
+      parameters:
+      - in: query
+        name: step
+        schema:
+          type: string
+        description: Key of the answered step to change.
+        required: true
+      - in: path
+        name: uuid
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - proposal-forms
+      security:
+      - waldurTokenAuth: []
+      - waldurPATAuth: []
+      - waldurOIDCAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProposalFormSurveyLink'
+          description: ''
+  /api/proposal-forms/start/:
+    post:
+      operationId: proposal_forms_start
+      description: 'Start an application: create a draft proposal in the round, with
+        the caller as its manager, and return the first survey.'
+      tags:
+      - proposal-forms
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProposalFormStartRequest'
+        required: true
+      security:
+      - waldurTokenAuth: []
+      - waldurPATAuth: []
+      - waldurOIDCAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProposalFormStartResponse'
+          description: ''
   /api/proposal-my-requested-resources/:
     get:
       operationId: proposal_my_requested_resources_list
@@ -129444,6 +129814,61 @@ components:
       - exported_sections
       - warnings
       description: ''
+    CallFormFlow:
+      type: object
+      description: ''
+      properties:
+        call_uuid:
+          type: string
+          format: uuid
+          readOnly: true
+        flow:
+          type: string
+          format: uuid
+          nullable: true
+        flow_key:
+          type: string
+          readOnly: true
+          nullable: true
+        flow_name:
+          type: string
+          readOnly: true
+          nullable: true
+        locked:
+          type: boolean
+          readOnly: true
+          description: 'True once the call has proposals: its flow can no longer change.'
+      required:
+      - call_uuid
+      - flow
+      - flow_key
+      - flow_name
+      - locked
+    CallFormFlowRequest:
+      type: object
+      description: ''
+      properties:
+        flow:
+          type: string
+          format: uuid
+          nullable: true
+      required:
+      - flow
+    CallFormFlowSummary:
+      type: object
+      properties:
+        uuid:
+          type: string
+          format: uuid
+        key:
+          type: string
+        name:
+          type: string
+      required:
+      - key
+      - name
+      - uuid
+      description: ''
     CallImportParametersRequest:
       type: object
       description: ''
@@ -144049,6 +144474,350 @@ components:
           minLength: 1
       required:
       - override_reason
+    FormFlow:
+      type: object
+      properties:
+        url:
+          type: string
+          format: uri
+          readOnly: true
+        uuid:
+          type: string
+          format: uuid
+          readOnly: true
+        key:
+          type: string
+          description: Identifier calls refer to the flow by, e.g. 'airr-gw'.
+          maxLength: 100
+          pattern: ^[-a-zA-Z0-9_]+$
+        name:
+          type: string
+          maxLength: 200
+        description:
+          type: string
+        steps:
+          type: array
+          items:
+            $ref: '#/components/schemas/FormFlowStep'
+        calls_count:
+          type: integer
+          readOnly: true
+        created:
+          type: string
+          format: date-time
+          readOnly: true
+        modified:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - calls_count
+      - created
+      - key
+      - modified
+      - name
+      - steps
+      - url
+      - uuid
+      description: ''
+    FormFlowCheck:
+      type: object
+      properties:
+        ok:
+          type: boolean
+        steps:
+          type: array
+          items:
+            $ref: '#/components/schemas/FormFlowCheckStep'
+      required:
+      - ok
+      - steps
+      description: ''
+    FormFlowCheckStep:
+      type: object
+      properties:
+        key:
+          type: string
+        survey_id:
+          type: string
+        ok:
+          type: boolean
+        problems:
+          type: array
+          items:
+            type: string
+        ending_url:
+          type: string
+          description: What to set as the survey ending's 'Redirect to URL', so the
+            applicant is taken on to the next step.
+      required:
+      - ending_url
+      - key
+      - ok
+      - problems
+      - survey_id
+      description: ''
+    FormFlowRequest:
+      type: object
+      properties:
+        key:
+          type: string
+          minLength: 1
+          description: Identifier calls refer to the flow by, e.g. 'airr-gw'.
+          maxLength: 100
+          pattern: ^[-a-zA-Z0-9_]+$
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
+        description:
+          type: string
+        steps:
+          type: array
+          items:
+            $ref: '#/components/schemas/FormFlowStepRequest'
+      required:
+      - key
+      - name
+      - steps
+      description: ''
+    FormFlowResourceOption:
+      type: object
+      properties:
+        label:
+          type: string
+          description: The choice's text in the Formbricks question, exactly.
+        offering_slug:
+          type: string
+          description: Slug of the offering the call requests for this choice.
+        attribute_map:
+          type: object
+          additionalProperties:
+            type: string
+          description: 'Question id -> requested resource attribute, e.g. {''u3bp...'':
+            ''allocation''}.'
+        default_attributes:
+          type: object
+          additionalProperties: {}
+      required:
+      - label
+      - offering_slug
+      description: ''
+    FormFlowResourceOptionRequest:
+      type: object
+      properties:
+        label:
+          type: string
+          minLength: 1
+          description: The choice's text in the Formbricks question, exactly.
+        offering_slug:
+          type: string
+          minLength: 1
+          description: Slug of the offering the call requests for this choice.
+        attribute_map:
+          type: object
+          additionalProperties:
+            type: string
+            minLength: 1
+          description: 'Question id -> requested resource attribute, e.g. {''u3bp...'':
+            ''allocation''}.'
+        default_attributes:
+          type: object
+          additionalProperties: {}
+      required:
+      - label
+      - offering_slug
+      description: ''
+    FormFlowResources:
+      type: object
+      properties:
+        question_id:
+          type: string
+          description: The multiple-choice question naming the resources wanted.
+        options:
+          type: array
+          items:
+            $ref: '#/components/schemas/FormFlowResourceOption'
+      required:
+      - options
+      - question_id
+      description: ''
+    FormFlowResourcesRequest:
+      type: object
+      properties:
+        question_id:
+          type: string
+          minLength: 1
+          description: The multiple-choice question naming the resources wanted.
+        options:
+          type: array
+          items:
+            $ref: '#/components/schemas/FormFlowResourceOptionRequest'
+      required:
+      - options
+      - question_id
+      description: ''
+    FormFlowStep:
+      type: object
+      properties:
+        key:
+          type: string
+          description: Stable id of the step, e.g. 'team'.
+          pattern: ^[-a-zA-Z0-9_]+$
+        label:
+          type: string
+          description: What applicants and reviewers see.
+        survey_id:
+          type: string
+          description: The Formbricks survey id.
+        reviewer_visible:
+          type: boolean
+          description: Whether reviewers may read this step's answers.
+        field_map:
+          type: object
+          additionalProperties:
+            enum:
+            - name
+            - description
+            - project_summary
+            type: string
+          description: Question id -> proposal field the answer is copied onto.
+        resources:
+          allOf:
+          - $ref: '#/components/schemas/FormFlowResources'
+          nullable: true
+      required:
+      - key
+      - label
+      - survey_id
+      description: ''
+    FormFlowStepRequest:
+      type: object
+      properties:
+        key:
+          type: string
+          minLength: 1
+          description: Stable id of the step, e.g. 'team'.
+          pattern: ^[-a-zA-Z0-9_]+$
+        label:
+          type: string
+          minLength: 1
+          description: What applicants and reviewers see.
+        survey_id:
+          type: string
+          minLength: 1
+          description: The Formbricks survey id.
+        reviewer_visible:
+          type: boolean
+          description: Whether reviewers may read this step's answers.
+        field_map:
+          type: object
+          additionalProperties:
+            enum:
+            - name
+            - description
+            - project_summary
+            type: string
+          description: Question id -> proposal field the answer is copied onto.
+        resources:
+          allOf:
+          - $ref: '#/components/schemas/FormFlowResourcesRequest'
+          nullable: true
+      required:
+      - key
+      - label
+      - survey_id
+      description: ''
+    FormResponseQuestion:
+      type: object
+      properties:
+        question_id:
+          type: string
+        label:
+          type: string
+        answer:
+          type: object
+          additionalProperties: true
+          description: 'As Formbricks sent it: text, a number, or a list for multiple
+            choice.'
+      required:
+      - answer
+      - label
+      - question_id
+      description: ''
+    FormStepResponse:
+      type: object
+      properties:
+        step_key:
+          type: string
+        step_label:
+          type: string
+        submitted_at:
+          type: string
+          format: date-time
+        questions:
+          type: array
+          items:
+            $ref: '#/components/schemas/FormResponseQuestion'
+      required:
+      - questions
+      - step_key
+      - step_label
+      - submitted_at
+      description: ''
+    FormbricksConnection:
+      type: object
+      description: ''
+      properties:
+        enabled:
+          type: boolean
+          description: Whether calls may take applications through Formbricks. Can
+            only be switched on once the URL, API key and webhook secret are set.
+        base_url:
+          type: string
+          description: Public URL of the Formbricks server, as applicants' browsers
+            reach it. Survey links are built from it.
+          maxLength: 500
+        management_api_url:
+          type: string
+          description: URL this server uses for the Formbricks Management API, if
+            it differs from the public URL (for example an in-cluster service name).
+            Blank means the public URL.
+          maxLength: 500
+        api_key_set:
+          type: boolean
+          readOnly: true
+        webhook_secret_set:
+          type: boolean
+          readOnly: true
+        is_configured:
+          type: boolean
+          readOnly: true
+        webhook_url:
+          type: string
+          readOnly: true
+          description: The URL to give Formbricks as the webhook endpoint.
+        modified:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - api_key_set
+      - is_configured
+      - modified
+      - webhook_secret_set
+      - webhook_url
+    FormbricksConnectionTest:
+      type: object
+      properties:
+        ok:
+          type: boolean
+        detail:
+          type: string
+      required:
+      - detail
+      - ok
+      description: ''
     FreeipaProfile:
       type: object
       description: ''
@@ -154340,6 +155109,10 @@ components:
           allOf:
           - $ref: '#/components/schemas/OfferingOptions'
           readOnly: true
+        resource_options:
+          allOf:
+          - $ref: '#/components/schemas/OfferingOptions'
+          readOnly: true
         components:
           type: array
           items:
@@ -154368,6 +155141,7 @@ components:
       - options
       - plan_details
       - provider_name
+      - resource_options
       - state
       - uuid
       description: ''
@@ -169070,6 +169844,54 @@ components:
         runtime_state:
           type: string
           maxLength: 100
+    PatchedFormFlowRequest:
+      type: object
+      properties:
+        key:
+          type: string
+          minLength: 1
+          description: Identifier calls refer to the flow by, e.g. 'airr-gw'.
+          maxLength: 100
+          pattern: ^[-a-zA-Z0-9_]+$
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
+        description:
+          type: string
+        steps:
+          type: array
+          items:
+            $ref: '#/components/schemas/FormFlowStepRequest'
+      description: ''
+    PatchedFormbricksConnectionRequest:
+      type: object
+      description: ''
+      properties:
+        enabled:
+          type: boolean
+          description: Whether calls may take applications through Formbricks. Can
+            only be switched on once the URL, API key and webhook secret are set.
+        base_url:
+          type: string
+          description: Public URL of the Formbricks server, as applicants' browsers
+            reach it. Survey links are built from it.
+          maxLength: 500
+        management_api_url:
+          type: string
+          description: URL this server uses for the Formbricks Management API, if
+            it differs from the public URL (for example an in-cluster service name).
+            Blank means the public URL.
+          maxLength: 500
+        api_key:
+          type: string
+          writeOnly: true
+          description: Formbricks Management API key, with read access to the surveys
+            and responses of the flows' environment.
+        webhook_secret:
+          type: string
+          writeOnly: true
+          description: Signing secret Formbricks shows for the webhook, e.g. 'whsec_...'.
     PatchedGroupInvitationUpdateRequest:
       type: object
       description: ''
@@ -176554,7 +177376,7 @@ components:
         offerings_data:
           type: array
           items:
-            $ref: '#/components/schemas/ResourceOffering'
+            $ref: '#/components/schemas/ProjectTemplateOffering'
           readOnly: true
         approval_limit:
           type: string
@@ -176604,6 +177426,35 @@ components:
       - provider_data
       - role_mapping_data
       - uuid
+    ProjectTemplateOffering:
+      type: object
+      description: ''
+      properties:
+        name:
+          type: string
+          maxLength: 150
+        uuid:
+          type: string
+          format: uuid
+          readOnly: true
+        url:
+          type: string
+          format: uri
+          readOnly: true
+      required:
+      - name
+      - url
+      - uuid
+    ProjectTemplateOfferingRequest:
+      type: object
+      description: ''
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 150
+      required:
+      - name
     ProjectTemplateRequest:
       type: object
       description: ''
@@ -177308,6 +178159,105 @@ components:
       - optional
       - required
       type: string
+      description: ''
+    ProposalForm:
+      type: object
+      description: ''
+      properties:
+        proposal_uuid:
+          type: string
+          format: uuid
+        flow_key:
+          type: string
+        flow_name:
+          type: string
+        can_fill_in:
+          type: boolean
+          description: 'Whether the viewer may fill in or edit steps now: a member
+            of the proposal''s team, while it is a draft.'
+        steps:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProposalFormStepStatus'
+        next_step:
+          allOf:
+          - $ref: '#/components/schemas/ProposalFormSurveyLink'
+          nullable: true
+          description: The first step not yet answered, with a fresh survey link;
+            null once all are answered or if the viewer cannot fill in.
+        responses:
+          type: array
+          items:
+            $ref: '#/components/schemas/FormStepResponse'
+      required:
+      - can_fill_in
+      - flow_key
+      - flow_name
+      - next_step
+      - proposal_uuid
+      - responses
+      - steps
+    ProposalFormStartRequest:
+      type: object
+      properties:
+        round_uuid:
+          type: string
+          format: uuid
+      required:
+      - round_uuid
+      description: ''
+    ProposalFormStartResponse:
+      type: object
+      properties:
+        step_key:
+          type: string
+        step_label:
+          type: string
+        survey_url:
+          type: string
+          format: uri
+        proposal_uuid:
+          type: string
+          format: uuid
+      required:
+      - proposal_uuid
+      - step_key
+      - step_label
+      - survey_url
+      description: ''
+    ProposalFormStepStatus:
+      type: object
+      properties:
+        key:
+          type: string
+        label:
+          type: string
+        completed:
+          type: boolean
+        submitted_at:
+          type: string
+          format: date-time
+          nullable: true
+      required:
+      - completed
+      - key
+      - label
+      - submitted_at
+      description: ''
+    ProposalFormSurveyLink:
+      type: object
+      properties:
+        step_key:
+          type: string
+        step_label:
+          type: string
+        survey_url:
+          type: string
+          format: uri
+      required:
+      - step_key
+      - step_label
+      - survey_url
       description: ''
     ProposalProjectRoleMapping:
       type: object
@@ -178071,6 +179021,13 @@ components:
           description: 'What completing a round does with its proposals that still
             have no decision: refuse to complete the round, or reject them. A round
             may override it.'
+        form_flow:
+          allOf:
+          - $ref: '#/components/schemas/CallFormFlowSummary'
+          nullable: true
+          readOnly: true
+          description: The Formbricks flow applicants fill in; null for Waldur's own
+            proposal form.
       required:
       - compliance_checklist_name
       - created
@@ -178078,6 +179035,7 @@ components:
       - customer_uuid
       - documents
       - end_date
+      - form_flow
       - has_eligibility_restrictions
       - has_proposals
       - manager
@@ -179696,6 +180654,10 @@ components:
           allOf:
           - $ref: '#/components/schemas/OfferingOptions'
           readOnly: true
+        resource_options:
+          allOf:
+          - $ref: '#/components/schemas/OfferingOptions'
+          readOnly: true
         components:
           type: array
           items:
@@ -179751,6 +180713,7 @@ components:
       - plan
       - plan_details
       - provider_name
+      - resource_options
       - state
       - url
       - uuid
@@ -180607,6 +181570,13 @@ components:
             it is made, or for every proposal of a round together when a call manager
             publishes the round''s results. Cannot be changed while decisions are
             held.'
+        form_flow:
+          allOf:
+          - $ref: '#/components/schemas/CallFormFlowSummary'
+          nullable: true
+          readOnly: true
+          description: The Formbricks flow applicants fill in; null for Waldur's own
+            proposal form.
       required:
       - created
       - customer_name
@@ -180614,6 +181584,7 @@ components:
       - documents
       - end_date
       - fixed_duration_in_days
+      - form_flow
       - has_eligibility_restrictions
       - manager
       - manager_uuid
@@ -187037,6 +188008,10 @@ components:
           allOf:
           - $ref: '#/components/schemas/OfferingOptions'
           readOnly: true
+        resource_options:
+          allOf:
+          - $ref: '#/components/schemas/OfferingOptions'
+          readOnly: true
         components:
           type: array
           items:
@@ -187093,6 +188068,7 @@ components:
       - plan_details
       - provider_name
       - require_purchase_order
+      - resource_options
       - state
       - url
       - uuid
@@ -188669,16 +189645,6 @@ components:
       required:
       - name
       - uuid
-      description: ''
-    ResourceOfferingRequest:
-      type: object
-      properties:
-        name:
-          type: string
-          minLength: 1
-          maxLength: 150
-      required:
-      - name
       description: ''
     ResourceOptionsRequest:
       type: object
@@ -210410,6 +211376,7 @@ components:
       - evaluation_start
       - external_url
       - fixed_duration_in_days
+      - form_flow
       - has_eligibility_restrictions
       - has_proposals
       - manager
@@ -210476,6 +211443,7 @@ components:
       - evaluation_start
       - external_url
       - fixed_duration_in_days
+      - form_flow
       - has_eligibility_restrictions
       - manager
       - manager_uuid
