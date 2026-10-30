@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: Waldur API
-  version: 8.1.3-openportal.4
+  version: 8.1.3-openportal.5
 paths:
   /_matrix/app/v1/ping:
     post:
@@ -93781,6 +93781,36 @@ paths:
       responses:
         '200':
           description: No response body
+  /api/proposal-proposals/{uuid}/extend_return/:
+    post:
+      operationId: proposal_proposals_extend_return
+      description: Move the resubmission deadline of a returned proposal.
+      parameters:
+      - in: path
+        name: uuid
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - proposal-proposals
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExtendReturnRequest'
+        required: true
+      security:
+      - waldurTokenAuth: []
+      - waldurPATAuth: []
+      - waldurOIDCAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProposalReturn'
+          description: ''
   /api/proposal-proposals/{uuid}/list_users/:
     get:
       operationId: proposal_proposals_list_users_list
@@ -94290,6 +94320,139 @@ paths:
       responses:
         '204':
           description: No response body
+  /api/proposal-proposals/{uuid}/return_to_applicant/:
+    post:
+      operationId: proposal_proposals_return_to_applicant
+      description: Return a submitted or in-review proposal to its applicant to fix
+        and resubmit, with a reason and a resubmission deadline. Open reviews are
+        cancelled and the workflow starts again on resubmission.
+      parameters:
+      - in: path
+        name: uuid
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - proposal-proposals
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReturnToApplicantRequest'
+        required: true
+      security:
+      - waldurTokenAuth: []
+      - waldurPATAuth: []
+      - waldurOIDCAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProposalReturn'
+          description: ''
+  /api/proposal-proposals/{uuid}/returns/:
+    get:
+      operationId: proposal_proposals_returns_list
+      description: The times the proposal was returned to its applicant, newest first.
+      parameters:
+      - in: query
+        name: as_role
+        schema:
+          $ref: '#/components/schemas/ResponsibleRoleEnum'
+        description: |+
+          Only proposals the current user holds this role on
+
+      - in: query
+        name: call_uuid
+        schema:
+          type: string
+          format: uuid
+        x-waldur-operation-id: proposal_public_calls_retrieve
+      - in: query
+        name: created_by_uuid
+        schema:
+          type: string
+          format: uuid
+        x-waldur-operation-id: users_retrieve
+      - in: query
+        name: my_proposals
+        schema:
+          type: boolean
+      - in: query
+        name: name
+        schema:
+          type: string
+      - in: query
+        name: o
+        schema:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProposalOEnum'
+        description: |+
+          Ordering
+
+        explode: false
+        style: form
+      - in: query
+        name: organization_uuid
+        schema:
+          type: string
+          format: uuid
+        x-waldur-operation-id: customers_retrieve
+      - $ref: '#/components/parameters/Page'
+      - $ref: '#/components/parameters/PageSize'
+      - in: query
+        name: round
+        schema:
+          type: string
+          format: uuid
+        x-waldur-operation-id: call_rounds_retrieve
+      - in: query
+        name: round_uuid
+        schema:
+          type: string
+          format: uuid
+        x-waldur-operation-id: call_rounds_retrieve
+      - in: query
+        name: slug
+        schema:
+          type: string
+        description: Slug
+      - in: query
+        name: state
+        schema:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProposalStates'
+        explode: true
+        style: form
+      - in: path
+        name: uuid
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - proposal-proposals
+      security:
+      - waldurTokenAuth: []
+      - waldurPATAuth: []
+      - waldurOIDCAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProposalReturn'
+                description: ''
+          description: ''
+          headers:
+            x-result-count:
+              $ref: '#/components/headers/XResultCount'
   /api/proposal-proposals/{uuid}/step-checklist/:
     get:
       operationId: proposal_proposals_step_checklist_retrieve
@@ -134742,6 +134905,10 @@ components:
           type: integer
         PROPOSAL_DASHBOARD_REVIEWS_DUE_WITHIN_DAYS:
           type: integer
+        PROPOSAL_STALE_DRAFT_REMINDER_DAYS:
+          type: integer
+        PROPOSAL_STALE_DRAFT_DELETION_DAYS:
+          type: integer
         ORCID_CLIENT_ID:
           type: string
         ORCID_CLIENT_SECRET:
@@ -135578,6 +135745,10 @@ components:
         PROPOSAL_REVIEW_DURATION:
           type: integer
         PROPOSAL_DASHBOARD_REVIEWS_DUE_WITHIN_DAYS:
+          type: integer
+        PROPOSAL_STALE_DRAFT_REMINDER_DAYS:
+          type: integer
+        PROPOSAL_STALE_DRAFT_DELETION_DAYS:
           type: integer
         ORCID_CLIENT_ID:
           type: string
@@ -142257,6 +142428,9 @@ components:
               - proposal_document_removed
               - proposal_decision_reopened
               - proposal_rejected_at_round_completion
+              - proposal_returned
+              - proposal_return_extended
+              - proposal_stale_deleted
               - proposal_workflow_advanced
               - round_closed
               - round_decision_started
@@ -142866,6 +143040,9 @@ components:
       - proposal_document_removed
       - proposal_decision_reopened
       - proposal_rejected_at_round_completion
+      - proposal_returned
+      - proposal_return_extended
+      - proposal_stale_deleted
       - proposal_workflow_advanced
       - round_closed
       - round_decision_started
@@ -143713,6 +143890,15 @@ components:
       required:
       - expires_at
       - status
+    ExtendReturnRequest:
+      type: object
+      properties:
+        resubmit_by:
+          type: string
+          format: date-time
+      required:
+      - resubmit_by
+      description: ''
     ExternalLink:
       type: object
       properties:
@@ -171839,6 +172025,12 @@ components:
           description: Whether a draft still open when its round's cut-off passes
             moves on to the call's next round instead of being cancelled. Without
             a later round the draft is cancelled either way.
+        cancel_drafts_at_cutoff:
+          type: boolean
+          description: 'Whether a draft still open when its round''s cut-off passes
+            (and not carried over) is cancelled. Off: it stays a draft, which can
+            no longer be submitted, until the stale-draft clean-up (site settings
+            PROPOSAL_STALE_DRAFT_*) warns its team and deletes it.'
         undecided_at_round_completion:
           allOf:
           - $ref: '#/components/schemas/UndecidedAtRoundCompletionEnum'
@@ -177942,7 +178134,19 @@ components:
         decision_held:
           type: boolean
           nullable: true
+          description: |-
+            Whether the allocation decision is made but held for the round.
+
+            Null for anyone but the call managers (and staff and support): to
+            everyone else a held decision is still being made, and a false here
+            would tell them apart.
           readOnly: true
+        open_return:
+          type: boolean
+          nullable: true
+          readOnly: true
+          description: 'Set while the proposal is back with its applicant after a
+            call manager returned it: why, and the deadline to resubmit.'
         workflow_step:
           readOnly: true
           nullable: true
@@ -177993,6 +178197,7 @@ components:
       - decision_held
       - name
       - oecd_fos_2007_label
+      - open_return
       - project
       - project_name
       - round
@@ -178366,6 +178571,61 @@ components:
       required:
       - name
       - round_uuid
+    ProposalReturn:
+      type: object
+      description: ''
+      properties:
+        uuid:
+          type: string
+          format: uuid
+          readOnly: true
+        created:
+          type: string
+          format: date-time
+          readOnly: true
+        returned_by_name:
+          type: string
+          readOnly: true
+        reason:
+          type: string
+          readOnly: true
+          description: Why, as the applicant is told.
+        resubmit_by:
+          type: string
+          format: date-time
+          readOnly: true
+          description: Resubmission is accepted until then; may be extended.
+        previous_state:
+          type: string
+          readOnly: true
+        resubmitted_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        is_open:
+          type: boolean
+          readOnly: true
+          description: Waiting for the applicant to resubmit.
+        workflow_history:
+          type: array
+          items:
+            type: object
+            additionalProperties: {}
+          nullable: true
+          readOnly: true
+          description: 'The workflow steps as they stood when it was returned, including
+            internal notes: only for those who may read internal notes.'
+      required:
+      - created
+      - is_open
+      - previous_state
+      - reason
+      - resubmit_by
+      - resubmitted_at
+      - returned_by_name
+      - uuid
+      - workflow_history
     ProposalReview:
       type: object
       description: ''
@@ -179041,6 +179301,12 @@ components:
           description: Whether a draft still open when its round's cut-off passes
             moves on to the call's next round instead of being cancelled. Without
             a later round the draft is cancelled either way.
+        cancel_drafts_at_cutoff:
+          type: boolean
+          description: 'Whether a draft still open when its round''s cut-off passes
+            (and not carried over) is cancelled. Off: it stays a draft, which can
+            no longer be submitted, until the stale-draft clean-up (site settings
+            PROPOSAL_STALE_DRAFT_*) warns its team and deletes it.'
         undecided_at_round_completion:
           allOf:
           - $ref: '#/components/schemas/UndecidedAtRoundCompletionEnum'
@@ -179211,6 +179477,12 @@ components:
           description: Whether a draft still open when its round's cut-off passes
             moves on to the call's next round instead of being cancelled. Without
             a later round the draft is cancelled either way.
+        cancel_drafts_at_cutoff:
+          type: boolean
+          description: 'Whether a draft still open when its round''s cut-off passes
+            (and not carried over) is cancelled. Off: it stays a draft, which can
+            no longer be submitted, until the stale-draft clean-up (site settings
+            PROPOSAL_STALE_DRAFT_*) warns its team and deletes it.'
         undecided_at_round_completion:
           allOf:
           - $ref: '#/components/schemas/UndecidedAtRoundCompletionEnum'
@@ -190482,6 +190754,22 @@ components:
           description: Empty keeps daily roll-ups forever.
       required:
       - name
+      description: ''
+    ReturnToApplicantRequest:
+      type: object
+      properties:
+        reason:
+          type: string
+          minLength: 1
+          description: 'Why the proposal is returned: sent to the applicant.'
+        resubmit_by:
+          type: string
+          format: date-time
+          description: Until when the applicant may resubmit, whatever the round's
+            cut-off.
+      required:
+      - reason
+      - resubmit_by
       description: ''
     ReviewCommentRequest:
       type: object
@@ -205599,6 +205887,10 @@ components:
           type: integer
         PROPOSAL_DASHBOARD_REVIEWS_DUE_WITHIN_DAYS:
           type: integer
+        PROPOSAL_STALE_DRAFT_REMINDER_DAYS:
+          type: integer
+        PROPOSAL_STALE_DRAFT_DELETION_DAYS:
+          type: integer
         ORCID_CLIENT_ID:
           type: string
         ORCID_CLIENT_SECRET:
@@ -206446,6 +206738,10 @@ components:
         PROPOSAL_REVIEW_DURATION:
           type: integer
         PROPOSAL_DASHBOARD_REVIEWS_DUE_WITHIN_DAYS:
+          type: integer
+        PROPOSAL_STALE_DRAFT_REMINDER_DAYS:
+          type: integer
+        PROPOSAL_STALE_DRAFT_DELETION_DAYS:
           type: integer
         ORCID_CLIENT_ID:
           type: string
@@ -211408,6 +211704,7 @@ components:
       enum:
       - applicant_visibility_config
       - backend_id
+      - cancel_drafts_at_cutoff
       - carry_over_drafts
       - compliance_checklist
       - compliance_checklist_name
