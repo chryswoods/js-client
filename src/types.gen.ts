@@ -4068,6 +4068,9 @@ export type CallExportResponse = {
 
 export type CallFormFlow = {
     readonly call_uuid: string;
+    /**
+     * An application flow.
+     */
     flow: string | null;
     readonly flow_key: string | null;
     readonly flow_name: string | null;
@@ -4075,10 +4078,35 @@ export type CallFormFlow = {
      * True once the call has proposals: its flow can no longer change.
      */
     readonly locked: boolean;
+    /**
+     * An end-of-project flow.
+     */
+    closing_flow?: string | null;
+    readonly closing_flow_key: string | null;
+    readonly closing_flow_name: string | null;
+    /**
+     * True once a project of the call has started its end-of-project forms: its end-of-project flow can no longer change.
+     */
+    readonly closing_locked: boolean;
+    /**
+     * How many days before a project's end date its end-of-project forms open. 0: on the end date. They stay open afterwards.
+     */
+    closing_forms_open_days_before_end?: number;
 };
 
 export type CallFormFlowRequest = {
+    /**
+     * An application flow.
+     */
     flow: string | null;
+    /**
+     * An end-of-project flow.
+     */
+    closing_flow?: string | null;
+    /**
+     * How many days before a project's end date its end-of-project forms open. 0: on the end date. They stay open afterwards.
+     */
+    closing_forms_open_days_before_end?: number;
 };
 
 export type CallFormFlowSummary = {
@@ -10140,7 +10168,14 @@ export type FormFlow = {
     key: string;
     name: string;
     description?: string;
+    /**
+     * What the flow is filled in for: a proposal (application) or a project at its end (closing). Decides the surveys' hidden fields and the page their endings return to.
+     */
+    purpose?: PurposeEnum;
     steps: Array<FormFlowStep>;
+    /**
+     * How many calls use the flow, for applications or at a project's end.
+     */
     readonly calls_count: number;
     readonly created: string;
     readonly modified: string;
@@ -10177,6 +10212,10 @@ export type FormFlowRequest = {
     key: string;
     name: string;
     description?: string;
+    /**
+     * What the flow is filled in for: a proposal (application) or a project at its end (closing). Decides the surveys' hidden fields and the page their endings return to.
+     */
+    purpose?: PurposeEnum;
     steps: Array<FormFlowStepRequest>;
 };
 
@@ -22000,6 +22039,10 @@ export type PatchedFormFlowRequest = {
     key?: string;
     name?: string;
     description?: string;
+    /**
+     * What the flow is filled in for: a proposal (application) or a project at its end (closing). Decides the surveys' hidden fields and the page their endings return to.
+     */
+    purpose?: PurposeEnum;
     steps?: Array<FormFlowStepRequest>;
 };
 
@@ -23878,6 +23921,21 @@ export type PatchedServiceProviderRequest = {
     account_options?: ProviderAccountOptionsRequest;
 };
 
+export type PatchedSiteClosingFormFlowRequest = {
+    /**
+     * An end-of-project flow; null for none.
+     */
+    flow?: string | null;
+    /**
+     * How many days before a project's end date its end-of-project forms open. 0: on the end date. They stay open afterwards.
+     */
+    closing_forms_open_days_before_end?: number;
+    /**
+     * Organisations whose projects use the flow; empty: every organisation.
+     */
+    customers?: Array<string>;
+};
+
 export type PatchedSlurmPeriodicUsagePolicyRequest = {
     scope?: string;
     actions?: string;
@@ -25257,6 +25315,66 @@ export type ProjectEstimatedCostPolicyRequest = {
     use_credit?: boolean;
 };
 
+export type ProjectForm = {
+    project_uuid: string;
+    flow_key: string;
+    flow_name: string;
+    /**
+     * Whether Formbricks forms are on for this site now.
+     */
+    available: boolean;
+    /**
+     * The day the forms open; null if the project has no end date.
+     */
+    opens_on: string | null;
+    /**
+     * Whether the forms are open now (from opens_on, for as long as the project exists).
+     */
+    is_open: boolean;
+    /**
+     * Whether the viewer may open and edit the forms now: the project's PI or an owner of its organisation, while they are open, with forms available.
+     */
+    can_fill_in: boolean;
+    steps: Array<ProposalFormStepStatus>;
+    /**
+     * Labels of the forms still to answer.
+     */
+    missing: Array<string>;
+    responses: Array<FormStepResponse>;
+};
+
+export type ProjectFormFetchResult = {
+    project_uuid: string;
+    flow_key: string;
+    flow_name: string;
+    /**
+     * Whether Formbricks forms are on for this site now.
+     */
+    available: boolean;
+    /**
+     * The day the forms open; null if the project has no end date.
+     */
+    opens_on: string | null;
+    /**
+     * Whether the forms are open now (from opens_on, for as long as the project exists).
+     */
+    is_open: boolean;
+    /**
+     * Whether the viewer may open and edit the forms now: the project's PI or an owner of its organisation, while they are open, with forms available.
+     */
+    can_fill_in: boolean;
+    steps: Array<ProposalFormStepStatus>;
+    /**
+     * Labels of the forms still to answer.
+     */
+    missing: Array<string>;
+    responses: Array<FormStepResponse>;
+    /**
+     * How many responses this fetch brought in or updated.
+     */
+    fetched: number;
+};
+
 export type ProjectGroupEntryRequest = {
     /**
      * Project UUID, or its slug when exactly one project with that slug has a resource or order at the service provider.
@@ -26364,6 +26482,10 @@ export type ProtectedCall = {
      * The Formbricks flow applicants fill in; null for Waldur's own proposal form.
      */
     form_flow: CallFormFlowSummary | null;
+    /**
+     * The Formbricks flow the PIs of the projects the call grants fill in when their project ends; null for none.
+     */
+    closing_form_flow: CallFormFlowSummary | null;
 };
 
 export type ProtectedCallRequest = {
@@ -27436,6 +27558,10 @@ export type PublicCall = {
      * The Formbricks flow applicants fill in; null for Waldur's own proposal form.
      */
     form_flow: CallFormFlowSummary | null;
+    /**
+     * The Formbricks flow the PIs of the projects the call grants fill in when their project ends; null for none.
+     */
+    closing_form_flow: CallFormFlowSummary | null;
 };
 
 export type PublicInvitation = {
@@ -27811,6 +27937,8 @@ export type PubsubOverview = {
 export type PullMarketplaceScriptResourceRequest = {
     resource_uuid: string;
 };
+
+export type PurposeEnum = 'application' | 'closing';
 
 export type QosStrategyEnum = 'threshold' | 'progressive';
 
@@ -33245,6 +33373,23 @@ export type SiteAgentLogCreateRequest = {
     level: LevelEnum;
     message: string;
     module: string;
+};
+
+export type SiteClosingFormFlow = {
+    /**
+     * An end-of-project flow; null for none.
+     */
+    flow?: string | null;
+    readonly flow_key: string | null;
+    readonly flow_name: string | null;
+    /**
+     * How many days before a project's end date its end-of-project forms open. 0: on the end date. They stay open afterwards.
+     */
+    closing_forms_open_days_before_end?: number;
+    /**
+     * Organisations whose projects use the flow; empty: every organisation.
+     */
+    customers?: Array<string>;
 };
 
 export type SkippedProposal = {
@@ -39240,7 +39385,7 @@ export type UserRequestedResourceOEnum = '-call__name' | '-created' | '-offering
 
 export type ProposalOEnum = '-created' | '-round__call__name' | '-round__cutoff_time' | '-round__start_time' | '-slug' | '-state' | 'created' | 'round__call__name' | 'round__cutoff_time' | 'round__start_time' | 'slug' | 'state';
 
-export type ProtectedCallFieldEnum = 'applicant_visibility_config' | 'backend_id' | 'cancel_drafts_at_cutoff' | 'carry_over_drafts' | 'compliance_checklist' | 'compliance_checklist_name' | 'copy_summary_to_project' | 'created' | 'created_by' | 'customer_name' | 'customer_uuid' | 'description' | 'documents' | 'end_date' | 'evaluation_start' | 'external_url' | 'fixed_duration_in_days' | 'form_flow' | 'has_eligibility_restrictions' | 'has_proposals' | 'manager' | 'manager_uuid' | 'max_prepaid_duration_months' | 'minimum_number_of_documents' | 'name' | 'offerings' | 'one_request_per_offering' | 'order_author' | 'order_author_user' | 'order_author_user_name' | 'order_author_user_uuid' | 'panel_chair' | 'panel_chair_name' | 'panel_chair_uuid' | 'proposal_field_config' | 'proposal_field_metadata' | 'proposal_slug_template' | 'publish_results' | 'reference_code' | 'resource_templates' | 'reviewer_identity_visible_to_submitters' | 'reviewers_see_assigned_only' | 'reviews_visible_to_submitters' | 'rounds' | 'single_proposal_manager' | 'slug' | 'start_date' | 'state' | 'undecided_at_round_completion' | 'url' | 'user_affiliations' | 'user_assurance_levels' | 'user_email_patterns' | 'user_identity_sources' | 'user_nationalities' | 'user_organization_types' | 'uuid' | 'withdraw_pending_reviews';
+export type ProtectedCallFieldEnum = 'applicant_visibility_config' | 'backend_id' | 'cancel_drafts_at_cutoff' | 'carry_over_drafts' | 'closing_form_flow' | 'compliance_checklist' | 'compliance_checklist_name' | 'copy_summary_to_project' | 'created' | 'created_by' | 'customer_name' | 'customer_uuid' | 'description' | 'documents' | 'end_date' | 'evaluation_start' | 'external_url' | 'fixed_duration_in_days' | 'form_flow' | 'has_eligibility_restrictions' | 'has_proposals' | 'manager' | 'manager_uuid' | 'max_prepaid_duration_months' | 'minimum_number_of_documents' | 'name' | 'offerings' | 'one_request_per_offering' | 'order_author' | 'order_author_user' | 'order_author_user_name' | 'order_author_user_uuid' | 'panel_chair' | 'panel_chair_name' | 'panel_chair_uuid' | 'proposal_field_config' | 'proposal_field_metadata' | 'proposal_slug_template' | 'publish_results' | 'reference_code' | 'resource_templates' | 'reviewer_identity_visible_to_submitters' | 'reviewers_see_assigned_only' | 'reviews_visible_to_submitters' | 'rounds' | 'single_proposal_manager' | 'slug' | 'start_date' | 'state' | 'undecided_at_round_completion' | 'url' | 'user_affiliations' | 'user_assurance_levels' | 'user_email_patterns' | 'user_identity_sources' | 'user_nationalities' | 'user_organization_types' | 'uuid' | 'withdraw_pending_reviews';
 
 export type ProtectedCallOEnum = '-created' | '-manager__customer__name' | '-name' | 'created' | 'manager__customer__name' | 'name';
 
@@ -39248,7 +39393,7 @@ export type AffinityMatrixResponseScopeEnum = 'all' | 'pool' | 'suggestions';
 
 export type QueryFileFormatEnum = 'csv' | 'xlsx';
 
-export type PublicCallFieldEnum = 'backend_id' | 'created' | 'customer_name' | 'customer_uuid' | 'description' | 'documents' | 'end_date' | 'evaluation_start' | 'external_url' | 'fixed_duration_in_days' | 'form_flow' | 'has_eligibility_restrictions' | 'manager' | 'manager_uuid' | 'max_prepaid_duration_months' | 'name' | 'offerings' | 'proposal_field_config' | 'publish_results' | 'resource_templates' | 'reviewer_identity_visible_to_submitters' | 'reviews_visible_to_submitters' | 'rounds' | 'slug' | 'start_date' | 'state' | 'url' | 'uuid';
+export type PublicCallFieldEnum = 'backend_id' | 'closing_form_flow' | 'created' | 'customer_name' | 'customer_uuid' | 'description' | 'documents' | 'end_date' | 'evaluation_start' | 'external_url' | 'fixed_duration_in_days' | 'form_flow' | 'has_eligibility_restrictions' | 'manager' | 'manager_uuid' | 'max_prepaid_duration_months' | 'name' | 'offerings' | 'proposal_field_config' | 'publish_results' | 'resource_templates' | 'reviewer_identity_visible_to_submitters' | 'reviews_visible_to_submitters' | 'rounds' | 'slug' | 'start_date' | 'state' | 'url' | 'uuid';
 
 export type ProviderRequestedOfferingOEnum = '-call__name' | '-created' | '-offering__name' | '-state' | 'call__name' | 'created' | 'offering__name' | 'state';
 
@@ -96819,6 +96964,51 @@ export type ProjectEndDateChangeRequestsRejectResponses = {
     200: unknown;
 };
 
+export type ProjectFormsRetrieveData = {
+    body?: never;
+    path: {
+        uuid: string;
+    };
+    query?: never;
+    url: '/api/project-forms/{uuid}/';
+};
+
+export type ProjectFormsRetrieveResponses = {
+    200: ProjectForm;
+};
+
+export type ProjectFormsRetrieveResponse = ProjectFormsRetrieveResponses[keyof ProjectFormsRetrieveResponses];
+
+export type ProjectFormsFetchData = {
+    body?: never;
+    path: {
+        uuid: string;
+    };
+    query?: never;
+    url: '/api/project-forms/{uuid}/fetch/';
+};
+
+export type ProjectFormsFetchResponses = {
+    200: ProjectFormFetchResult;
+};
+
+export type ProjectFormsFetchResponse = ProjectFormsFetchResponses[keyof ProjectFormsFetchResponses];
+
+export type ProjectFormsLinkData = {
+    body: ProposalFormLinkRequestRequest;
+    path: {
+        uuid: string;
+    };
+    query?: never;
+    url: '/api/project-forms/{uuid}/link/';
+};
+
+export type ProjectFormsLinkResponses = {
+    200: ProposalFormLink;
+};
+
+export type ProjectFormsLinkResponse = ProjectFormsLinkResponses[keyof ProjectFormsLinkResponses];
+
 export type ProjectPermissionsReviewsListData = {
     body?: never;
     path?: never;
@@ -108978,6 +109168,32 @@ export type ServiceSettingsRetrieveResponses = {
 };
 
 export type ServiceSettingsRetrieveResponse = ServiceSettingsRetrieveResponses[keyof ServiceSettingsRetrieveResponses];
+
+export type SiteClosingFormFlowRetrieveData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/site-closing-form-flow/';
+};
+
+export type SiteClosingFormFlowRetrieveResponses = {
+    200: SiteClosingFormFlow;
+};
+
+export type SiteClosingFormFlowRetrieveResponse = SiteClosingFormFlowRetrieveResponses[keyof SiteClosingFormFlowRetrieveResponses];
+
+export type SiteClosingFormFlowPartialUpdateData = {
+    body?: PatchedSiteClosingFormFlowRequest;
+    path?: never;
+    query?: never;
+    url: '/api/site-closing-form-flow/';
+};
+
+export type SiteClosingFormFlowPartialUpdateResponses = {
+    200: SiteClosingFormFlow;
+};
+
+export type SiteClosingFormFlowPartialUpdateResponse = SiteClosingFormFlowPartialUpdateResponses[keyof SiteClosingFormFlowPartialUpdateResponses];
 
 export type SlurmJobsListData = {
     body?: never;

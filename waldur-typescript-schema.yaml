@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: Waldur API
-  version: 8.1.3-openportal.7
+  version: 8.1.3-openportal.8
 paths:
   /_matrix/app/v1/ping:
     post:
@@ -89621,6 +89621,88 @@ paths:
       responses:
         '200':
           description: No response body
+  /api/project-forms/{uuid}/:
+    get:
+      operationId: project_forms_retrieve
+      description: The project's end-of-project forms, which are answered, and the
+        answers. 400 if the project has none.
+      parameters:
+      - in: path
+        name: uuid
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - project-forms
+      security:
+      - waldurTokenAuth: []
+      - waldurPATAuth: []
+      - waldurOIDCAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectForm'
+          description: ''
+  /api/project-forms/{uuid}/fetch/:
+    post:
+      operationId: project_forms_fetch
+      description: Bring the project's end-of-project answers up to date from Formbricks,
+        for when a response has not arrived on its own.
+      parameters:
+      - in: path
+        name: uuid
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - project-forms
+      security:
+      - waldurTokenAuth: []
+      - waldurPATAuth: []
+      - waldurOIDCAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectFormFetchResult'
+          description: ''
+  /api/project-forms/{uuid}/link/:
+    post:
+      operationId: project_forms_link
+      description: A single-use link to fill in, resume or edit one of the project's
+        end-of-project forms. For its PI and its organisation's owners, once the forms
+        are open.
+      parameters:
+      - in: path
+        name: uuid
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - project-forms
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProposalFormLinkRequestRequest'
+        required: true
+      security:
+      - waldurTokenAuth: []
+      - waldurPATAuth: []
+      - waldurOIDCAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProposalFormLink'
+          description: ''
   /api/project-permissions-reviews/:
     get:
       operationId: project_permissions_reviews_list
@@ -109417,6 +109499,43 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ServiceSettings'
+          description: ''
+  /api/site-closing-form-flow/:
+    get:
+      operationId: site_closing_form_flow_retrieve
+      tags:
+      - site-closing-form-flow
+      security:
+      - waldurTokenAuth: []
+      - waldurPATAuth: []
+      - waldurOIDCAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SiteClosingFormFlow'
+          description: ''
+    patch:
+      operationId: site_closing_form_flow_partial_update
+      tags:
+      - site-closing-form-flow
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedSiteClosingFormFlowRequest'
+        required: false
+      security:
+      - waldurTokenAuth: []
+      - waldurPATAuth: []
+      - waldurOIDCAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SiteClosingFormFlow'
           description: ''
   /api/slurm-jobs/:
     get:
@@ -130305,6 +130424,7 @@ components:
           type: string
           format: uuid
           nullable: true
+          description: An application flow.
         flow_key:
           type: string
           readOnly: true
@@ -130317,8 +130437,34 @@ components:
           type: boolean
           readOnly: true
           description: 'True once the call has proposals: its flow can no longer change.'
+        closing_flow:
+          type: string
+          format: uuid
+          nullable: true
+          description: An end-of-project flow.
+        closing_flow_key:
+          type: string
+          readOnly: true
+          nullable: true
+        closing_flow_name:
+          type: string
+          readOnly: true
+          nullable: true
+        closing_locked:
+          type: boolean
+          readOnly: true
+          description: 'True once a project of the call has started its end-of-project
+            forms: its end-of-project flow can no longer change.'
+        closing_forms_open_days_before_end:
+          type: integer
+          minimum: 0
+          description: 'How many days before a project''s end date its end-of-project
+            forms open. 0: on the end date. They stay open afterwards.'
       required:
       - call_uuid
+      - closing_flow_key
+      - closing_flow_name
+      - closing_locked
       - flow
       - flow_key
       - flow_name
@@ -130331,6 +130477,17 @@ components:
           type: string
           format: uuid
           nullable: true
+          description: An application flow.
+        closing_flow:
+          type: string
+          format: uuid
+          nullable: true
+          description: An end-of-project flow.
+        closing_forms_open_days_before_end:
+          type: integer
+          minimum: 0
+          description: 'How many days before a project''s end date its end-of-project
+            forms open. 0: on the end date. They stay open afterwards.'
       required:
       - flow
     CallFormFlowSummary:
@@ -144999,12 +145156,20 @@ components:
           maxLength: 200
         description:
           type: string
+        purpose:
+          allOf:
+          - $ref: '#/components/schemas/PurposeEnum'
+          description: 'What the flow is filled in for: a proposal (application) or
+            a project at its end (closing). Decides the surveys'' hidden fields and
+            the page their endings return to.'
         steps:
           type: array
           items:
             $ref: '#/components/schemas/FormFlowStep'
         calls_count:
           type: integer
+          description: How many calls use the flow, for applications or at a project's
+            end.
           readOnly: true
         created:
           type: string
@@ -145087,6 +145252,12 @@ components:
           maxLength: 200
         description:
           type: string
+        purpose:
+          allOf:
+          - $ref: '#/components/schemas/PurposeEnum'
+          description: 'What the flow is filled in for: a proposal (application) or
+            a project at its end (closing). Decides the surveys'' hidden fields and
+            the page their endings return to.'
         steps:
           type: array
           items:
@@ -170324,6 +170495,12 @@ components:
           maxLength: 200
         description:
           type: string
+        purpose:
+          allOf:
+          - $ref: '#/components/schemas/PurposeEnum'
+          description: 'What the flow is filled in for: a proposal (application) or
+            a project at its end (closing). Decides the surveys'' hidden fields and
+            the page their endings return to.'
         steps:
           type: array
           items:
@@ -173584,6 +173761,27 @@ components:
             that does not set its own; project_groups_enabled is the provider''s own.
             Updated key by key: an omitted key is kept, and a blank value removes
             it.'
+    PatchedSiteClosingFormFlowRequest:
+      type: object
+      description: ''
+      properties:
+        flow:
+          type: string
+          format: uuid
+          nullable: true
+          description: An end-of-project flow; null for none.
+        closing_forms_open_days_before_end:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          description: 'How many days before a project''s end date its end-of-project
+            forms open. 0: on the end date. They stay open afterwards.'
+        customers:
+          type: array
+          items:
+            type: string
+            format: uuid
+          description: 'Organisations whose projects use the flow; empty: every organisation.'
     PatchedSlurmPeriodicUsagePolicyRequest:
       type: object
       description: ''
@@ -177021,6 +177219,112 @@ components:
       - actions
       - limit_cost
       - scope
+    ProjectForm:
+      type: object
+      description: ''
+      properties:
+        project_uuid:
+          type: string
+          format: uuid
+        flow_key:
+          type: string
+        flow_name:
+          type: string
+        available:
+          type: boolean
+          description: Whether Formbricks forms are on for this site now.
+        opens_on:
+          type: string
+          format: date
+          nullable: true
+          description: The day the forms open; null if the project has no end date.
+        is_open:
+          type: boolean
+          description: Whether the forms are open now (from opens_on, for as long
+            as the project exists).
+        can_fill_in:
+          type: boolean
+          description: 'Whether the viewer may open and edit the forms now: the project''s
+            PI or an owner of its organisation, while they are open, with forms available.'
+        steps:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProposalFormStepStatus'
+        missing:
+          type: array
+          items:
+            type: string
+          description: Labels of the forms still to answer.
+        responses:
+          type: array
+          items:
+            $ref: '#/components/schemas/FormStepResponse'
+      required:
+      - available
+      - can_fill_in
+      - flow_key
+      - flow_name
+      - is_open
+      - missing
+      - opens_on
+      - project_uuid
+      - responses
+      - steps
+    ProjectFormFetchResult:
+      type: object
+      description: ''
+      properties:
+        project_uuid:
+          type: string
+          format: uuid
+        flow_key:
+          type: string
+        flow_name:
+          type: string
+        available:
+          type: boolean
+          description: Whether Formbricks forms are on for this site now.
+        opens_on:
+          type: string
+          format: date
+          nullable: true
+          description: The day the forms open; null if the project has no end date.
+        is_open:
+          type: boolean
+          description: Whether the forms are open now (from opens_on, for as long
+            as the project exists).
+        can_fill_in:
+          type: boolean
+          description: 'Whether the viewer may open and edit the forms now: the project''s
+            PI or an owner of its organisation, while they are open, with forms available.'
+        steps:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProposalFormStepStatus'
+        missing:
+          type: array
+          items:
+            type: string
+          description: Labels of the forms still to answer.
+        responses:
+          type: array
+          items:
+            $ref: '#/components/schemas/FormStepResponse'
+        fetched:
+          type: integer
+          description: How many responses this fetch brought in or updated.
+      required:
+      - available
+      - can_fill_in
+      - fetched
+      - flow_key
+      - flow_name
+      - is_open
+      - missing
+      - opens_on
+      - project_uuid
+      - responses
+      - steps
     ProjectGroupEntryRequest:
       type: object
       properties:
@@ -179702,7 +180006,15 @@ components:
           readOnly: true
           description: The Formbricks flow applicants fill in; null for Waldur's own
             proposal form.
+        closing_form_flow:
+          allOf:
+          - $ref: '#/components/schemas/CallFormFlowSummary'
+          nullable: true
+          readOnly: true
+          description: The Formbricks flow the PIs of the projects the call grants
+            fill in when their project ends; null for none.
       required:
+      - closing_form_flow
       - compliance_checklist_name
       - created
       - customer_name
@@ -182291,7 +182603,15 @@ components:
           readOnly: true
           description: The Formbricks flow applicants fill in; null for Waldur's own
             proposal form.
+        closing_form_flow:
+          allOf:
+          - $ref: '#/components/schemas/CallFormFlowSummary'
+          nullable: true
+          readOnly: true
+          description: The Formbricks flow the PIs of the projects the call grants
+            fill in when their project ends; null for none.
       required:
+      - closing_form_flow
       - created
       - customer_name
       - customer_uuid
@@ -183258,6 +183578,12 @@ components:
           format: uuid
       required:
       - resource_uuid
+      description: ''
+    PurposeEnum:
+      enum:
+      - application
+      - closing
+      type: string
       description: ''
     QosStrategyEnum:
       enum:
@@ -195959,6 +196285,38 @@ components:
       - message
       - module
       - timestamp
+    SiteClosingFormFlow:
+      type: object
+      description: ''
+      properties:
+        flow:
+          type: string
+          format: uuid
+          nullable: true
+          description: An end-of-project flow; null for none.
+        flow_key:
+          type: string
+          readOnly: true
+          nullable: true
+        flow_name:
+          type: string
+          readOnly: true
+          nullable: true
+        closing_forms_open_days_before_end:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          description: 'How many days before a project''s end date its end-of-project
+            forms open. 0: on the end date. They stay open afterwards.'
+        customers:
+          type: array
+          items:
+            type: string
+            format: uuid
+          description: 'Organisations whose projects use the flow; empty: every organisation.'
+      required:
+      - flow_key
+      - flow_name
     SkippedProposal:
       type: object
       properties:
@@ -212225,6 +212583,7 @@ components:
       - backend_id
       - cancel_drafts_at_cutoff
       - carry_over_drafts
+      - closing_form_flow
       - compliance_checklist
       - compliance_checklist_name
       - copy_summary_to_project
@@ -212307,6 +212666,7 @@ components:
       type: string
       enum:
       - backend_id
+      - closing_form_flow
       - created
       - customer_name
       - customer_uuid
