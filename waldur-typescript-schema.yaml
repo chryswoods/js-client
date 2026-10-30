@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: Waldur API
-  version: 8.1.3-openportal.6
+  version: 8.1.3-openportal.7
 paths:
   /_matrix/app/v1/ping:
     post:
@@ -19746,8 +19746,9 @@ paths:
     post:
       operationId: form_flows_sync
       description: 'Make each step''s survey ready in Formbricks: single-use links,
-        the proposal_uuid hidden field, endings back to the proposal. Only those settings
-        are written. Returns the check after the changes.'
+        the proposal_uuid, call_uuid and round_uuid hidden fields, endings back to
+        the proposal. Only those settings are written. Returns the check after the
+        changes.'
       parameters:
       - in: path
         name: uuid
@@ -93283,6 +93284,39 @@ paths:
         '400':
           description: Validation error, for example when trying to add a user to
             a terminated project.
+  /api/proposal-proposals/{uuid}/add_user_by_email/:
+    post:
+      operationId: proposal_proposals_add_user_by_email
+      description: Add someone to the proposal's team by email, creating their account
+        (the email is its username) if there is none, so they need not accept an invitation.
+        Checked exactly as add_user is; a refused grant creates no account. Only while
+        the site allows user creation (feature user.allow_user_creation).
+      parameters:
+      - in: path
+        name: uuid
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - proposal-proposals
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddUserByEmailRequest'
+        required: true
+      security:
+      - waldurTokenAuth: []
+      - waldurPATAuth: []
+      - waldurOIDCAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AddUserByEmailResult'
+          description: ''
   /api/proposal-proposals/{uuid}/advance_workflow_step/:
     post:
       operationId: proposal_proposals_advance_workflow_step
@@ -95872,6 +95906,12 @@ paths:
         description: Limit the export to one applicant.
         x-waldur-operation-id: users_list
       - in: query
+        name: file_format
+        schema:
+          $ref: '#/components/schemas/QueryFileFormatEnum'
+        description: csv (the default) or xlsx, an Excel workbook of the same rows.
+          Named file_format because a bare `format` is read by the API itself.
+      - in: query
         name: proposal_name
         schema:
           type: string
@@ -95911,6 +95951,10 @@ paths:
               schema:
                 type: string
                 format: binary
+            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+              schema:
+                type: string
+                format: binary
           description: ''
       x-permissions:
       - permission: CALL.UPDATE
@@ -95924,6 +95968,12 @@ paths:
         private comment is never included: the export is open to call managers, and
         the review API keeps that field from them.'
       parameters:
+      - in: query
+        name: file_format
+        schema:
+          $ref: '#/components/schemas/QueryFileFormatEnum'
+        description: csv (the default) or xlsx, an Excel workbook of the same rows.
+          Named file_format because a bare `format` is read by the API itself.
       - in: query
         name: proposal_name
         schema:
@@ -95975,6 +96025,10 @@ paths:
         '200':
           content:
             text/csv:
+              schema:
+                type: string
+                format: binary
+            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
               schema:
                 type: string
                 format: binary
@@ -96088,6 +96142,116 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/GenerateSuggestionsResponse'
+          description: ''
+      x-permissions:
+      - permission: PROPOSAL.MANAGE_REVIEW
+        scopes:
+        - '*'
+        - manager
+  /api/proposal-protected-calls/{uuid}/import-review-assignments/:
+    post:
+      operationId: proposal_protected_calls_import_review_assignments
+      description: Assign reviewers to a round's proposals from a CSV file of proposal
+        IDs and call reviewers' emails. First call it without apply to see what each
+        row would do; with apply, a review is created for every valid row. Rows already
+        assigned are skipped.
+      parameters:
+      - in: query
+        name: customer
+        schema:
+          type: string
+          format: uri
+        x-waldur-operation-id: customers_retrieve
+      - in: query
+        name: customer_keyword
+        schema:
+          type: string
+      - in: query
+        name: customer_uuid
+        schema:
+          type: string
+          format: uuid
+        x-waldur-operation-id: customers_retrieve
+      - in: query
+        name: has_active_round
+        schema:
+          type: boolean
+      - in: query
+        name: name
+        schema:
+          type: string
+      - in: query
+        name: o
+        schema:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProtectedCallOEnum'
+        description: |+
+          Ordering
+
+        explode: false
+        style: form
+      - in: query
+        name: offering_uuid
+        schema:
+          type: string
+          format: uuid
+        x-waldur-operation-id: marketplace_provider_offerings_retrieve
+      - in: query
+        name: offerings_provider_uuid
+        schema:
+          type: string
+          format: uuid
+        x-waldur-operation-id: customers_retrieve
+      - in: query
+        name: open_for_offering_uuid
+        schema:
+          type: string
+          format: uuid
+        description: Calls the offering can be requested through right now
+        x-waldur-operation-id: marketplace_provider_offerings_retrieve
+      - $ref: '#/components/parameters/Page'
+      - $ref: '#/components/parameters/PageSize'
+      - in: query
+        name: slug
+        schema:
+          type: string
+        description: Slug
+      - in: query
+        name: state
+        schema:
+          type: array
+          items:
+            $ref: '#/components/schemas/CallStates'
+        explode: true
+        style: form
+      - in: path
+        name: uuid
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - proposal-protected-calls
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ReviewAssignmentImportRequest'
+        required: true
+      security:
+      - waldurTokenAuth: []
+      - waldurPATAuth: []
+      - waldurOIDCAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ReviewAssignmentImportRow'
+                description: ''
           description: ''
       x-permissions:
       - permission: PROPOSAL.MANAGE_REVIEW
@@ -99459,7 +99623,8 @@ paths:
   /api/proposal-reviews/{uuid}/reject/:
     post:
       operationId: proposal_reviews_reject
-      description: Reject a review, changing its state to REJECTED.
+      description: Reject a review, changing its state to REJECTED. The reviewer may
+        say why; the reason is sent to the call's managers.
       parameters:
       - in: path
         name: uuid
@@ -99469,6 +99634,12 @@ paths:
         required: true
       tags:
       - proposal-reviews
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReviewRejectRequest'
+        required: false
       security:
       - waldurTokenAuth: []
       - waldurPATAuth: []
@@ -99476,6 +99647,38 @@ paths:
       responses:
         '200':
           description: No response body
+  /api/proposal-reviews/{uuid}/return_to_reviewer/:
+    post:
+      operationId: proposal_reviews_return_to_reviewer
+      description: Return a submitted review to its reviewer to change, while the
+        proposal is undecided. It is in review again, due afresh from now, and the
+        reviewer is emailed the reason. For those who may decide the call's proposals.
+      parameters:
+      - in: path
+        name: uuid
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - proposal-reviews
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReturnToReviewerRequest'
+        required: true
+      security:
+      - waldurTokenAuth: []
+      - waldurPATAuth: []
+      - waldurOIDCAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProposalReview'
+          description: ''
   /api/proposal-reviews/{uuid}/submit/:
     post:
       operationId: proposal_reviews_submit
@@ -121275,6 +121478,50 @@ components:
       required:
       - text
       description: ''
+    AddUserByEmailRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          minLength: 1
+        first_name:
+          type: string
+          description: Used only when the account is created.
+          maxLength: 100
+        last_name:
+          type: string
+          description: Used only when the account is created.
+          maxLength: 100
+        role:
+          type: string
+          minLength: 1
+        expiration_time:
+          type: string
+          format: date-time
+          nullable: true
+      required:
+      - email
+      - role
+      description: ''
+    AddUserByEmailResult:
+      type: object
+      properties:
+        user_uuid:
+          type: string
+          format: uuid
+        created:
+          type: boolean
+          description: Whether the account was created by this request.
+        expiration_time:
+          type: string
+          format: date-time
+          nullable: true
+      required:
+      - created
+      - expiration_time
+      - user_uuid
+      description: ''
     AdjustResourceDatesRequest:
       type: object
       properties:
@@ -129000,6 +129247,28 @@ components:
         all_users:
           type: boolean
           default: false
+        rounds:
+          type: array
+          items:
+            type: string
+            format: uuid
+          description: Proposal rounds whose applicants (and, optionally, reviewers)
+            receive the message.
+        proposal_states:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProposalStatesEnum'
+          description: Only the rounds' proposals in these states, e.g. draft to remind
+            those who have not submitted. All states if empty.
+        proposal_teams:
+          type: boolean
+          default: true
+          description: Whether the rounds' proposal teams receive the message.
+        reviewers:
+          type: boolean
+          default: false
+          description: Whether the reviewers of the rounds' proposals receive the
+            message.
       description: ''
     BroadcastMessageStateEnum:
       enum:
@@ -142532,6 +142801,7 @@ components:
               - resource_update_succeeded
               - restrict_members
               - review_canceled
+              - review_returned
               - reviewer_workload_limit_overridden
               - role_cloned
               - role_concealed
@@ -143144,6 +143414,7 @@ components:
       - resource_update_succeeded
       - restrict_members
       - review_canceled
+      - review_returned
       - reviewer_workload_limit_overridden
       - role_cloned
       - role_concealed
@@ -172051,6 +172322,40 @@ components:
             (and not carried over) is cancelled. Off: it stays a draft, which can
             no longer be submitted, until the stale-draft clean-up (site settings
             PROPOSAL_STALE_DRAFT_*) warns its team and deletes it.'
+        withdraw_pending_reviews:
+          type: boolean
+          description: 'Whether a proposal''s unfinished reviews and unanswered review
+            requests are deleted once they are no longer needed: when it is accepted,
+            rejected or cancelled, or returned to its applicant. Off: they stay, and
+            a returned proposal''s reviews are marked rejected.'
+        reviewers_see_assigned_only:
+          type: boolean
+          description: 'Whether a call reviewer (the CALL.REVIEWER role) reads only
+            the proposals they review. Off: they read every submitted proposal in
+            the call. Panel members read every submitted proposal either way; neither
+            reads drafts.'
+        one_request_per_offering:
+          type: boolean
+          description: 'Whether a proposal holds at most one resource request per
+            offering: a new request for an offering it already requests replaces the
+            earlier one. Off: it may request an offering more than once.'
+        minimum_number_of_documents:
+          type: integer
+          maximum: 32767
+          minimum: 0
+          description: 'How many supporting documents a proposal must have before
+            it can be submitted. 0: none is required by number (the call''s field
+            settings may still require supporting documentation).'
+        copy_summary_to_project:
+          type: boolean
+          description: Whether the project created for an accepted proposal takes
+            the proposal's summary as its description.
+        single_proposal_manager:
+          type: boolean
+          description: 'Whether each proposal has exactly one proposal manager, its
+            owner. Granting the manager role then hands the proposal over: the previous
+            manager becomes a proposal administrator and the new one its owner (created_by).
+            Off: a proposal may have several managers.'
         undecided_at_round_completion:
           allOf:
           - $ref: '#/components/schemas/UndecidedAtRoundCompletionEnum'
@@ -178710,6 +179015,21 @@ components:
           type: string
         summary_private_comment:
           type: string
+        rejection_reason:
+          type: string
+          readOnly: true
+          description: Why the reviewer declined the review, for the call's managers.
+        returned_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+          description: When the call's managers last returned the submitted review
+            to its reviewer. The review is then due afresh from this time.
+        return_reason:
+          type: string
+          readOnly: true
+          description: What the call's managers asked the reviewer to change.
         round_uuid:
           type: string
           format: uuid
@@ -178801,6 +179121,9 @@ components:
       - proposal_name
       - proposal_slug
       - proposal_uuid
+      - rejection_reason
+      - return_reason
+      - returned_at
       - review_end_date
       - reviewer_image
       - round_cutoff_time
@@ -178872,6 +179195,16 @@ components:
       type: string
       description: ''
     ProposalStates:
+      enum:
+      - draft
+      - submitted
+      - in_review
+      - accepted
+      - rejected
+      - canceled
+      type: string
+      description: ''
+    ProposalStatesEnum:
       enum:
       - draft
       - submitted
@@ -179322,6 +179655,40 @@ components:
             (and not carried over) is cancelled. Off: it stays a draft, which can
             no longer be submitted, until the stale-draft clean-up (site settings
             PROPOSAL_STALE_DRAFT_*) warns its team and deletes it.'
+        withdraw_pending_reviews:
+          type: boolean
+          description: 'Whether a proposal''s unfinished reviews and unanswered review
+            requests are deleted once they are no longer needed: when it is accepted,
+            rejected or cancelled, or returned to its applicant. Off: they stay, and
+            a returned proposal''s reviews are marked rejected.'
+        reviewers_see_assigned_only:
+          type: boolean
+          description: 'Whether a call reviewer (the CALL.REVIEWER role) reads only
+            the proposals they review. Off: they read every submitted proposal in
+            the call. Panel members read every submitted proposal either way; neither
+            reads drafts.'
+        one_request_per_offering:
+          type: boolean
+          description: 'Whether a proposal holds at most one resource request per
+            offering: a new request for an offering it already requests replaces the
+            earlier one. Off: it may request an offering more than once.'
+        minimum_number_of_documents:
+          type: integer
+          maximum: 32767
+          minimum: 0
+          description: 'How many supporting documents a proposal must have before
+            it can be submitted. 0: none is required by number (the call''s field
+            settings may still require supporting documentation).'
+        copy_summary_to_project:
+          type: boolean
+          description: Whether the project created for an accepted proposal takes
+            the proposal's summary as its description.
+        single_proposal_manager:
+          type: boolean
+          description: 'Whether each proposal has exactly one proposal manager, its
+            owner. Granting the manager role then hands the proposal over: the previous
+            manager becomes a proposal administrator and the new one its owner (created_by).
+            Off: a proposal may have several managers.'
         undecided_at_round_completion:
           allOf:
           - $ref: '#/components/schemas/UndecidedAtRoundCompletionEnum'
@@ -179498,6 +179865,40 @@ components:
             (and not carried over) is cancelled. Off: it stays a draft, which can
             no longer be submitted, until the stale-draft clean-up (site settings
             PROPOSAL_STALE_DRAFT_*) warns its team and deletes it.'
+        withdraw_pending_reviews:
+          type: boolean
+          description: 'Whether a proposal''s unfinished reviews and unanswered review
+            requests are deleted once they are no longer needed: when it is accepted,
+            rejected or cancelled, or returned to its applicant. Off: they stay, and
+            a returned proposal''s reviews are marked rejected.'
+        reviewers_see_assigned_only:
+          type: boolean
+          description: 'Whether a call reviewer (the CALL.REVIEWER role) reads only
+            the proposals they review. Off: they read every submitted proposal in
+            the call. Panel members read every submitted proposal either way; neither
+            reads drafts.'
+        one_request_per_offering:
+          type: boolean
+          description: 'Whether a proposal holds at most one resource request per
+            offering: a new request for an offering it already requests replaces the
+            earlier one. Off: it may request an offering more than once.'
+        minimum_number_of_documents:
+          type: integer
+          maximum: 32767
+          minimum: 0
+          description: 'How many supporting documents a proposal must have before
+            it can be submitted. 0: none is required by number (the call''s field
+            settings may still require supporting documentation).'
+        copy_summary_to_project:
+          type: boolean
+          description: Whether the project created for an accepted proposal takes
+            the proposal's summary as its description.
+        single_proposal_manager:
+          type: boolean
+          description: 'Whether each proposal has exactly one proposal manager, its
+            owner. Granting the manager role then hands the proposal over: the previous
+            manager becomes a proposal administrator and the new one its owner (created_by).
+            Off: a proposal may have several managers.'
         undecided_at_round_completion:
           allOf:
           - $ref: '#/components/schemas/UndecidedAtRoundCompletionEnum'
@@ -182877,6 +183278,18 @@ components:
             $ref: '#/components/schemas/IdNamePair'
         all_users:
           type: boolean
+        rounds:
+          type: array
+          items:
+            $ref: '#/components/schemas/IdNamePair'
+        proposal_states:
+          type: array
+          items:
+            type: string
+        proposal_teams:
+          type: boolean
+        reviewers:
+          type: boolean
       description: ''
     QueryOutputRequest:
       type: object
@@ -182890,6 +183303,19 @@ components:
           items:
             $ref: '#/components/schemas/IdNamePairRequest'
         all_users:
+          type: boolean
+        rounds:
+          type: array
+          items:
+            $ref: '#/components/schemas/IdNamePairRequest'
+        proposal_states:
+          type: array
+          items:
+            type: string
+            minLength: 1
+        proposal_teams:
+          type: boolean
+        reviewers:
           type: boolean
       description: ''
     QueryPerformance:
@@ -190786,6 +191212,76 @@ components:
       - reason
       - resubmit_by
       description: ''
+    ReturnToReviewerRequest:
+      type: object
+      properties:
+        reason:
+          type: string
+          minLength: 1
+          description: What the reviewer is asked to change; sent to them.
+          maxLength: 2000
+      required:
+      - reason
+      description: ''
+    ReviewAssignmentImportRequest:
+      type: object
+      properties:
+        round:
+          type: string
+          format: uuid
+          description: The round whose proposals the file assigns.
+        file:
+          type: string
+          format: binary
+          description: CSV with a proposal_id column (the proposal's ID, its slug)
+            and a reviewer_email column (a call reviewer's email).
+        apply:
+          type: boolean
+          default: false
+          description: 'False: only report what each row would do. True: create the
+            reviews for the valid rows; their reviewers are emailed as for any review
+            assigned by hand.'
+      required:
+      - file
+      - round
+      description: ''
+    ReviewAssignmentImportRow:
+      type: object
+      properties:
+        line:
+          type: integer
+        proposal_id:
+          type: string
+        reviewer_email:
+          type: string
+        proposal_name:
+          type: string
+        reviewer_name:
+          type: string
+        status:
+          allOf:
+          - $ref: '#/components/schemas/ReviewAssignmentImportRowStatusEnum'
+          description: 'created (applied), ready (dry run: would be created), skipped
+            (already assigned) or error.'
+        detail:
+          type: string
+      required:
+      - detail
+      - line
+      - proposal_id
+      - proposal_name
+      - reviewer_email
+      - reviewer_name
+      - status
+      description: ''
+    ReviewAssignmentImportRowStatusEnum:
+      enum:
+      - created
+      - ready
+      - skipped
+      - error
+      type: string
+      description: ''
     ReviewCommentRequest:
       type: object
       properties:
@@ -190849,6 +191345,14 @@ components:
       - reviewer_name
       - reviewer_uuid
       - total_assigned
+      description: ''
+    ReviewRejectRequest:
+      type: object
+      properties:
+        reason:
+          type: string
+          description: Why the reviewer declines; sent to the call's managers.
+          maxLength: 2000
       description: ''
     ReviewSubmitRequest:
       type: object
@@ -211723,6 +212227,7 @@ components:
       - carry_over_drafts
       - compliance_checklist
       - compliance_checklist_name
+      - copy_summary_to_project
       - created
       - created_by
       - customer_name
@@ -211739,8 +212244,10 @@ components:
       - manager
       - manager_uuid
       - max_prepaid_duration_months
+      - minimum_number_of_documents
       - name
       - offerings
+      - one_request_per_offering
       - order_author
       - order_author_user
       - order_author_user_name
@@ -211755,8 +212262,10 @@ components:
       - reference_code
       - resource_templates
       - reviewer_identity_visible_to_submitters
+      - reviewers_see_assigned_only
       - reviews_visible_to_submitters
       - rounds
+      - single_proposal_manager
       - slug
       - start_date
       - state
@@ -211769,6 +212278,7 @@ components:
       - user_nationalities
       - user_organization_types
       - uuid
+      - withdraw_pending_reviews
       description: ''
     ProtectedCallOEnum:
       type: string
@@ -211786,6 +212296,12 @@ components:
       - all
       - pool
       - suggestions
+      description: ''
+    QueryFileFormatEnum:
+      type: string
+      enum:
+      - csv
+      - xlsx
       description: ''
     PublicCallFieldEnum:
       type: string
