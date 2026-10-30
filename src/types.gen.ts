@@ -10100,19 +10100,27 @@ export type FormFlow = {
 };
 
 export type FormFlowCheck = {
-    ok: boolean;
+    in_sync: boolean;
     steps: Array<FormFlowCheckStep>;
 };
 
 export type FormFlowCheckStep = {
     key: string;
     survey_id: string;
-    ok: boolean;
-    problems: Array<string>;
+    survey_name: string;
     /**
-     * What to set as the survey ending's 'Redirect to URL', so the applicant is taken on to the next step.
+     * Nothing to change and nothing wrong: ready for applicants.
      */
-    ending_url: string;
+    in_sync: boolean;
+    /**
+     * What Sync would change in the survey (after a sync: empty).
+     */
+    changes: Array<string>;
+    /**
+     * What Waldur cannot fix itself, to be fixed in Formbricks.
+     */
+    problems: Array<string>;
+    questions: Array<SurveyQuestion>;
 };
 
 export type FormFlowRequest = {
@@ -10125,65 +10133,9 @@ export type FormFlowRequest = {
     steps: Array<FormFlowStepRequest>;
 };
 
-export type FormFlowResourceOption = {
-    /**
-     * The choice's text in the Formbricks question, exactly.
-     */
-    label: string;
-    /**
-     * Slug of the offering the call requests for this choice.
-     */
-    offering_slug: string;
-    /**
-     * Question id -> requested resource attribute, e.g. {'u3bp...': 'allocation'}.
-     */
-    attribute_map?: {
-        [key: string]: string;
-    };
-    default_attributes?: {
-        [key: string]: unknown;
-    };
-};
-
-export type FormFlowResourceOptionRequest = {
-    /**
-     * The choice's text in the Formbricks question, exactly.
-     */
-    label: string;
-    /**
-     * Slug of the offering the call requests for this choice.
-     */
-    offering_slug: string;
-    /**
-     * Question id -> requested resource attribute, e.g. {'u3bp...': 'allocation'}.
-     */
-    attribute_map?: {
-        [key: string]: string;
-    };
-    default_attributes?: {
-        [key: string]: unknown;
-    };
-};
-
-export type FormFlowResources = {
-    /**
-     * The multiple-choice question naming the resources wanted.
-     */
-    question_id: string;
-    options: Array<FormFlowResourceOption>;
-};
-
-export type FormFlowResourcesRequest = {
-    /**
-     * The multiple-choice question naming the resources wanted.
-     */
-    question_id: string;
-    options: Array<FormFlowResourceOptionRequest>;
-};
-
 export type FormFlowStep = {
     /**
-     * Stable id of the step, e.g. 'team'.
+     * Stable id of the step, e.g. 'compliance'.
      */
     key: string;
     /**
@@ -10198,18 +10150,11 @@ export type FormFlowStep = {
      * Whether reviewers may read this step's answers.
      */
     reviewer_visible?: boolean;
-    /**
-     * Question id -> proposal field the answer is copied onto.
-     */
-    field_map?: {
-        [key: string]: 'name' | 'description' | 'project_summary';
-    };
-    resources?: FormFlowResources | null;
 };
 
 export type FormFlowStepRequest = {
     /**
-     * Stable id of the step, e.g. 'team'.
+     * Stable id of the step, e.g. 'compliance'.
      */
     key: string;
     /**
@@ -10224,13 +10169,6 @@ export type FormFlowStepRequest = {
      * Whether reviewers may read this step's answers.
      */
     reviewer_visible?: boolean;
-    /**
-     * Question id -> proposal field the answer is copied onto.
-     */
-    field_map?: {
-        [key: string]: 'name' | 'description' | 'project_summary';
-    };
-    resources?: FormFlowResourcesRequest | null;
 };
 
 export type FormResponseQuestion = {
@@ -10277,6 +10215,20 @@ export type FormbricksConnection = {
 export type FormbricksConnectionTest = {
     ok: boolean;
     detail: string;
+};
+
+export type FormbricksSurvey = {
+    id: string;
+    name: string;
+    type: string;
+    status: string;
+    environment_id: string;
+    question_count: number;
+    updated_at: string;
+    /**
+     * Keys of the flows that use this survey as a step.
+     */
+    used_by_flows: Array<string>;
 };
 
 export type FreeipaProfile = {
@@ -25909,26 +25861,59 @@ export type ProposalForm = {
     flow_key: string;
     flow_name: string;
     /**
-     * Whether the viewer may fill in or edit steps now: a member of the proposal's team, while it is a draft.
+     * Whether Formbricks forms are on for this site now.
+     */
+    available: boolean;
+    /**
+     * Whether the viewer may open and edit the forms now: a member of the proposal's team, while it is a draft (including returned to the applicant), with forms available.
      */
     can_fill_in: boolean;
     steps: Array<ProposalFormStepStatus>;
     /**
-     * The first step not yet answered, with a fresh survey link; null once all are answered or if the viewer cannot fill in.
+     * Labels of the forms still to answer before submitting.
      */
-    next_step: ProposalFormSurveyLink | null;
+    missing: Array<string>;
     responses: Array<FormStepResponse>;
 };
 
-export type ProposalFormStartRequest = {
-    round_uuid: string;
+export type ProposalFormFetchResult = {
+    proposal_uuid: string;
+    flow_key: string;
+    flow_name: string;
+    /**
+     * Whether Formbricks forms are on for this site now.
+     */
+    available: boolean;
+    /**
+     * Whether the viewer may open and edit the forms now: a member of the proposal's team, while it is a draft (including returned to the applicant), with forms available.
+     */
+    can_fill_in: boolean;
+    steps: Array<ProposalFormStepStatus>;
+    /**
+     * Labels of the forms still to answer before submitting.
+     */
+    missing: Array<string>;
+    responses: Array<FormStepResponse>;
+    /**
+     * How many responses this fetch brought in or updated.
+     */
+    fetched: number;
 };
 
-export type ProposalFormStartResponse = {
+export type ProposalFormLink = {
     step_key: string;
     step_label: string;
+    /**
+     * A single-use link to the form. Reopening it resumes a form left half-done; for an answered form it is prefilled to edit.
+     */
     survey_url: string;
-    proposal_uuid: string;
+};
+
+export type ProposalFormLinkRequestRequest = {
+    /**
+     * Key of the form to open.
+     */
+    step: string;
 };
 
 export type ProposalFormStepStatus = {
@@ -25936,12 +25921,10 @@ export type ProposalFormStepStatus = {
     label: string;
     completed: boolean;
     submitted_at: string | null;
-};
-
-export type ProposalFormSurveyLink = {
-    step_key: string;
-    step_label: string;
-    survey_url: string;
+    /**
+     * A link to it was opened and its response has not arrived (still being filled in, or the webhook was missed: fetch).
+     */
+    in_progress: boolean;
 };
 
 export type ProposalProjectRoleMapping = {
@@ -33954,6 +33937,13 @@ export type SupportUserRequest = {
 
 export type SupportedCountriesResponse = {
     supported_countries: Array<string>;
+};
+
+export type SurveyQuestion = {
+    id: string;
+    type: string;
+    label: string;
+    choices: Array<string>;
 };
 
 export type SwitchBillingModeRequest = {
@@ -51771,7 +51761,7 @@ export type FormFlowsUpdateResponses = {
 
 export type FormFlowsUpdateResponse = FormFlowsUpdateResponses[keyof FormFlowsUpdateResponses];
 
-export type FormFlowsCheckData = {
+export type FormFlowsCheckRetrieveData = {
     body?: never;
     path: {
         uuid: string;
@@ -51780,11 +51770,26 @@ export type FormFlowsCheckData = {
     url: '/api/form-flows/{uuid}/check/';
 };
 
-export type FormFlowsCheckResponses = {
+export type FormFlowsCheckRetrieveResponses = {
     200: FormFlowCheck;
 };
 
-export type FormFlowsCheckResponse = FormFlowsCheckResponses[keyof FormFlowsCheckResponses];
+export type FormFlowsCheckRetrieveResponse = FormFlowsCheckRetrieveResponses[keyof FormFlowsCheckRetrieveResponses];
+
+export type FormFlowsSyncData = {
+    body?: never;
+    path: {
+        uuid: string;
+    };
+    query?: never;
+    url: '/api/form-flows/{uuid}/sync/';
+};
+
+export type FormFlowsSyncResponses = {
+    200: FormFlowCheck;
+};
+
+export type FormFlowsSyncResponse = FormFlowsSyncResponses[keyof FormFlowsSyncResponses];
 
 export type FormbricksConnectionRetrieveData = {
     body?: never;
@@ -51824,6 +51829,19 @@ export type FormbricksConnectionTestResponses = {
 };
 
 export type FormbricksConnectionTestResponse = FormbricksConnectionTestResponses[keyof FormbricksConnectionTestResponses];
+
+export type FormbricksSurveysListData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/formbricks-surveys/';
+};
+
+export type FormbricksSurveysListResponses = {
+    200: Array<FormbricksSurvey>;
+};
+
+export type FormbricksSurveysListResponse = FormbricksSurveysListResponses[keyof FormbricksSurveysListResponses];
 
 export type FreeipaProfilesListData = {
     body?: never;
@@ -98493,38 +98511,35 @@ export type ProposalFormsRetrieveResponses = {
 
 export type ProposalFormsRetrieveResponse = ProposalFormsRetrieveResponses[keyof ProposalFormsRetrieveResponses];
 
-export type ProposalFormsEditLinkRetrieveData = {
+export type ProposalFormsFetchData = {
     body?: never;
     path: {
         uuid: string;
     };
-    query: {
-        /**
-         * Key of the answered step to change.
-         */
-        step: string;
-    };
-    url: '/api/proposal-forms/{uuid}/edit-link/';
-};
-
-export type ProposalFormsEditLinkRetrieveResponses = {
-    200: ProposalFormSurveyLink;
-};
-
-export type ProposalFormsEditLinkRetrieveResponse = ProposalFormsEditLinkRetrieveResponses[keyof ProposalFormsEditLinkRetrieveResponses];
-
-export type ProposalFormsStartData = {
-    body: ProposalFormStartRequest;
-    path?: never;
     query?: never;
-    url: '/api/proposal-forms/start/';
+    url: '/api/proposal-forms/{uuid}/fetch/';
 };
 
-export type ProposalFormsStartResponses = {
-    201: ProposalFormStartResponse;
+export type ProposalFormsFetchResponses = {
+    200: ProposalFormFetchResult;
 };
 
-export type ProposalFormsStartResponse = ProposalFormsStartResponses[keyof ProposalFormsStartResponses];
+export type ProposalFormsFetchResponse = ProposalFormsFetchResponses[keyof ProposalFormsFetchResponses];
+
+export type ProposalFormsLinkData = {
+    body: ProposalFormLinkRequestRequest;
+    path: {
+        uuid: string;
+    };
+    query?: never;
+    url: '/api/proposal-forms/{uuid}/link/';
+};
+
+export type ProposalFormsLinkResponses = {
+    200: ProposalFormLink;
+};
+
+export type ProposalFormsLinkResponse = ProposalFormsLinkResponses[keyof ProposalFormsLinkResponses];
 
 export type ProposalMyRequestedResourcesListData = {
     body?: never;

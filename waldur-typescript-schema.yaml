@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: Waldur API
-  version: 8.1.3-openportal.3
+  version: 8.1.3-openportal.4
 paths:
   /_matrix/app/v1/ping:
     post:
@@ -19718,11 +19718,36 @@ paths:
         '204':
           description: No response body
   /api/form-flows/{uuid}/check/:
+    get:
+      operationId: form_flows_check_retrieve
+      description: Read each step's survey from Formbricks and report what Sync would
+        change, and anything Waldur cannot fix itself. Changes nothing.
+      parameters:
+      - in: path
+        name: uuid
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - form-flows
+      security:
+      - waldurTokenAuth: []
+      - waldurPATAuth: []
+      - waldurOIDCAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FormFlowCheck'
+          description: ''
+  /api/form-flows/{uuid}/sync/:
     post:
-      operationId: form_flows_check
-      description: 'Check each step against its survey in Formbricks: that it exists,
-        declares the hidden fields the flow needs, and has every question the step
-        maps.'
+      operationId: form_flows_sync
+      description: 'Make each step''s survey ready in Formbricks: single-use links,
+        the proposal_uuid hidden field, endings back to the proposal, anonymised responses.
+        Only those settings are written. Returns the check after the changes.'
       parameters:
       - in: path
         name: uuid
@@ -19798,6 +19823,27 @@ paths:
               schema:
                 $ref: '#/components/schemas/FormbricksConnectionTest'
           description: ''
+  /api/formbricks-surveys/:
+    get:
+      operationId: formbricks_surveys_list
+      tags:
+      - formbricks-surveys
+      security:
+      - waldurTokenAuth: []
+      - waldurPATAuth: []
+      - waldurOIDCAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FormbricksSurvey'
+          description: ''
+          headers:
+            x-result-count:
+              $ref: '#/components/headers/XResultCount'
   /api/freeipa-profiles/:
     get:
       operationId: freeipa_profiles_list
@@ -92655,8 +92701,8 @@ paths:
   /api/proposal-forms/{uuid}/:
     get:
       operationId: proposal_forms_retrieve
-      description: Progress through the flow and the answers given. Reviewers see
-        only the steps the flow makes reviewer-visible.
+      description: The proposal's forms, which are answered, and the answers. Reviewers
+        see only the forms the flow makes reviewer-visible.
       parameters:
       - in: path
         name: uuid
@@ -92677,18 +92723,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/ProposalForm'
           description: ''
-  /api/proposal-forms/{uuid}/edit-link/:
-    get:
-      operationId: proposal_forms_edit_link_retrieve
-      description: A survey link to change an answered step, prefilled with the answers
-        Formbricks holds now.
+  /api/proposal-forms/{uuid}/fetch/:
+    post:
+      operationId: proposal_forms_fetch
+      description: Bring the proposal's answers up to date from Formbricks, for when
+        a response has not arrived on its own.
       parameters:
-      - in: query
-        name: step
-        schema:
-          type: string
-        description: Key of the answered step to change.
-        required: true
       - in: path
         name: uuid
         schema:
@@ -92706,31 +92746,38 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProposalFormSurveyLink'
+                $ref: '#/components/schemas/ProposalFormFetchResult'
           description: ''
-  /api/proposal-forms/start/:
+  /api/proposal-forms/{uuid}/link/:
     post:
-      operationId: proposal_forms_start
-      description: 'Start an application: create a draft proposal in the round, with
-        the caller as its manager, and return the first survey.'
+      operationId: proposal_forms_link
+      description: A single-use link to fill in, resume or edit one of the proposal's
+        forms. For the proposal's team, while it is a draft.
+      parameters:
+      - in: path
+        name: uuid
+        schema:
+          type: string
+          format: uuid
+        required: true
       tags:
       - proposal-forms
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ProposalFormStartRequest'
+              $ref: '#/components/schemas/ProposalFormLinkRequestRequest'
         required: true
       security:
       - waldurTokenAuth: []
       - waldurPATAuth: []
       - waldurOIDCAuth: []
       responses:
-        '201':
+        '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProposalFormStartResponse'
+                $ref: '#/components/schemas/ProposalFormLink'
           description: ''
   /api/proposal-my-requested-resources/:
     get:
@@ -144523,14 +144570,14 @@ components:
     FormFlowCheck:
       type: object
       properties:
-        ok:
+        in_sync:
           type: boolean
         steps:
           type: array
           items:
             $ref: '#/components/schemas/FormFlowCheckStep'
       required:
-      - ok
+      - in_sync
       - steps
       description: ''
     FormFlowCheckStep:
@@ -144540,22 +144587,33 @@ components:
           type: string
         survey_id:
           type: string
-        ok:
+        survey_name:
+          type: string
+        in_sync:
           type: boolean
+          description: 'Nothing to change and nothing wrong: ready for applicants.'
+        changes:
+          type: array
+          items:
+            type: string
+          description: 'What Sync would change in the survey (after a sync: empty).'
         problems:
           type: array
           items:
             type: string
-        ending_url:
-          type: string
-          description: What to set as the survey ending's 'Redirect to URL', so the
-            applicant is taken on to the next step.
+          description: What Waldur cannot fix itself, to be fixed in Formbricks.
+        questions:
+          type: array
+          items:
+            $ref: '#/components/schemas/SurveyQuestion'
       required:
-      - ending_url
+      - changes
+      - in_sync
       - key
-      - ok
       - problems
+      - questions
       - survey_id
+      - survey_name
       description: ''
     FormFlowRequest:
       type: object
@@ -144581,88 +144639,12 @@ components:
       - name
       - steps
       description: ''
-    FormFlowResourceOption:
-      type: object
-      properties:
-        label:
-          type: string
-          description: The choice's text in the Formbricks question, exactly.
-        offering_slug:
-          type: string
-          description: Slug of the offering the call requests for this choice.
-        attribute_map:
-          type: object
-          additionalProperties:
-            type: string
-          description: 'Question id -> requested resource attribute, e.g. {''u3bp...'':
-            ''allocation''}.'
-        default_attributes:
-          type: object
-          additionalProperties: {}
-      required:
-      - label
-      - offering_slug
-      description: ''
-    FormFlowResourceOptionRequest:
-      type: object
-      properties:
-        label:
-          type: string
-          minLength: 1
-          description: The choice's text in the Formbricks question, exactly.
-        offering_slug:
-          type: string
-          minLength: 1
-          description: Slug of the offering the call requests for this choice.
-        attribute_map:
-          type: object
-          additionalProperties:
-            type: string
-            minLength: 1
-          description: 'Question id -> requested resource attribute, e.g. {''u3bp...'':
-            ''allocation''}.'
-        default_attributes:
-          type: object
-          additionalProperties: {}
-      required:
-      - label
-      - offering_slug
-      description: ''
-    FormFlowResources:
-      type: object
-      properties:
-        question_id:
-          type: string
-          description: The multiple-choice question naming the resources wanted.
-        options:
-          type: array
-          items:
-            $ref: '#/components/schemas/FormFlowResourceOption'
-      required:
-      - options
-      - question_id
-      description: ''
-    FormFlowResourcesRequest:
-      type: object
-      properties:
-        question_id:
-          type: string
-          minLength: 1
-          description: The multiple-choice question naming the resources wanted.
-        options:
-          type: array
-          items:
-            $ref: '#/components/schemas/FormFlowResourceOptionRequest'
-      required:
-      - options
-      - question_id
-      description: ''
     FormFlowStep:
       type: object
       properties:
         key:
           type: string
-          description: Stable id of the step, e.g. 'team'.
+          description: Stable id of the step, e.g. 'compliance'.
           pattern: ^[-a-zA-Z0-9_]+$
         label:
           type: string
@@ -144673,19 +144655,6 @@ components:
         reviewer_visible:
           type: boolean
           description: Whether reviewers may read this step's answers.
-        field_map:
-          type: object
-          additionalProperties:
-            enum:
-            - name
-            - description
-            - project_summary
-            type: string
-          description: Question id -> proposal field the answer is copied onto.
-        resources:
-          allOf:
-          - $ref: '#/components/schemas/FormFlowResources'
-          nullable: true
       required:
       - key
       - label
@@ -144697,7 +144666,7 @@ components:
         key:
           type: string
           minLength: 1
-          description: Stable id of the step, e.g. 'team'.
+          description: Stable id of the step, e.g. 'compliance'.
           pattern: ^[-a-zA-Z0-9_]+$
         label:
           type: string
@@ -144710,19 +144679,6 @@ components:
         reviewer_visible:
           type: boolean
           description: Whether reviewers may read this step's answers.
-        field_map:
-          type: object
-          additionalProperties:
-            enum:
-            - name
-            - description
-            - project_summary
-            type: string
-          description: Question id -> proposal field the answer is copied onto.
-        resources:
-          allOf:
-          - $ref: '#/components/schemas/FormFlowResourcesRequest'
-          nullable: true
       required:
       - key
       - label
@@ -144818,6 +144774,38 @@ components:
       - detail
       - ok
       description: ''
+    FormbricksSurvey:
+      type: object
+      description: ''
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        type:
+          type: string
+        status:
+          type: string
+        environment_id:
+          type: string
+        question_count:
+          type: integer
+        updated_at:
+          type: string
+        used_by_flows:
+          type: array
+          items:
+            type: string
+          description: Keys of the flows that use this survey as a step.
+      required:
+      - environment_id
+      - id
+      - name
+      - question_count
+      - status
+      - type
+      - updated_at
+      - used_by_flows
     FreeipaProfile:
       type: object
       description: ''
@@ -178171,42 +178159,82 @@ components:
           type: string
         flow_name:
           type: string
+        available:
+          type: boolean
+          description: Whether Formbricks forms are on for this site now.
         can_fill_in:
           type: boolean
-          description: 'Whether the viewer may fill in or edit steps now: a member
-            of the proposal''s team, while it is a draft.'
+          description: 'Whether the viewer may open and edit the forms now: a member
+            of the proposal''s team, while it is a draft (including returned to the
+            applicant), with forms available.'
         steps:
           type: array
           items:
             $ref: '#/components/schemas/ProposalFormStepStatus'
-        next_step:
-          allOf:
-          - $ref: '#/components/schemas/ProposalFormSurveyLink'
-          nullable: true
-          description: The first step not yet answered, with a fresh survey link;
-            null once all are answered or if the viewer cannot fill in.
+        missing:
+          type: array
+          items:
+            type: string
+          description: Labels of the forms still to answer before submitting.
         responses:
           type: array
           items:
             $ref: '#/components/schemas/FormStepResponse'
       required:
+      - available
       - can_fill_in
       - flow_key
       - flow_name
-      - next_step
+      - missing
       - proposal_uuid
       - responses
       - steps
-    ProposalFormStartRequest:
+    ProposalFormFetchResult:
       type: object
+      description: ''
       properties:
-        round_uuid:
+        proposal_uuid:
           type: string
           format: uuid
+        flow_key:
+          type: string
+        flow_name:
+          type: string
+        available:
+          type: boolean
+          description: Whether Formbricks forms are on for this site now.
+        can_fill_in:
+          type: boolean
+          description: 'Whether the viewer may open and edit the forms now: a member
+            of the proposal''s team, while it is a draft (including returned to the
+            applicant), with forms available.'
+        steps:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProposalFormStepStatus'
+        missing:
+          type: array
+          items:
+            type: string
+          description: Labels of the forms still to answer before submitting.
+        responses:
+          type: array
+          items:
+            $ref: '#/components/schemas/FormStepResponse'
+        fetched:
+          type: integer
+          description: How many responses this fetch brought in or updated.
       required:
-      - round_uuid
-      description: ''
-    ProposalFormStartResponse:
+      - available
+      - can_fill_in
+      - fetched
+      - flow_key
+      - flow_name
+      - missing
+      - proposal_uuid
+      - responses
+      - steps
+    ProposalFormLink:
       type: object
       properties:
         step_key:
@@ -178216,14 +178244,22 @@ components:
         survey_url:
           type: string
           format: uri
-        proposal_uuid:
-          type: string
-          format: uuid
+          description: A single-use link to the form. Reopening it resumes a form
+            left half-done; for an answered form it is prefilled to edit.
       required:
-      - proposal_uuid
       - step_key
       - step_label
       - survey_url
+      description: ''
+    ProposalFormLinkRequestRequest:
+      type: object
+      properties:
+        step:
+          type: string
+          minLength: 1
+          description: Key of the form to open.
+      required:
+      - step
       description: ''
     ProposalFormStepStatus:
       type: object
@@ -178238,26 +178274,16 @@ components:
           type: string
           format: date-time
           nullable: true
+        in_progress:
+          type: boolean
+          description: 'A link to it was opened and its response has not arrived (still
+            being filled in, or the webhook was missed: fetch).'
       required:
       - completed
+      - in_progress
       - key
       - label
       - submitted_at
-      description: ''
-    ProposalFormSurveyLink:
-      type: object
-      properties:
-        step_key:
-          type: string
-        step_label:
-          type: string
-        survey_url:
-          type: string
-          format: uri
-      required:
-      - step_key
-      - step_label
-      - survey_url
       description: ''
     ProposalProjectRoleMapping:
       type: object
@@ -197166,6 +197192,25 @@ components:
             type: string
       required:
       - supported_countries
+      description: ''
+    SurveyQuestion:
+      type: object
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+        label:
+          type: string
+        choices:
+          type: array
+          items:
+            type: string
+      required:
+      - choices
+      - id
+      - label
+      - type
       description: ''
     SwitchBillingModeRequest:
       type: object
