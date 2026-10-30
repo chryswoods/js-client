@@ -6694,7 +6694,7 @@ export const formFlowsCheckRetrieve = <ThrowOnError extends boolean = true>(opti
 });
 
 /**
- * Make each step's survey ready in Formbricks: single-use links, the proposal_uuid hidden field, endings back to the proposal, anonymised responses. Only those settings are written. Returns the check after the changes.
+ * Make each step's survey ready in Formbricks: single-use links, the proposal_uuid hidden field, endings back to the proposal. Only those settings are written. Returns the check after the changes.
  */
 export const formFlowsSync = <ThrowOnError extends boolean = true>(options: Options<FormFlowsSyncData, ThrowOnError>) => (options.client ?? client).post<FormFlowsSyncResponses, unknown, ThrowOnError>({
     security: [

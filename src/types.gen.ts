@@ -18412,6 +18412,13 @@ export type OpenPortalQuota = {
     usage?: string;
 };
 
+export type OpenReturn = {
+    uuid: string;
+    created: string;
+    reason: string;
+    resubmit_by: string;
+};
+
 export type OpenStackAllowedAddressPair = {
     ip_address?: string;
     mac_address?: string;
@@ -25805,18 +25812,11 @@ export type Proposal = {
     compliance_status: ProposalComplianceStatus | null;
     can_submit: ProposalCanSubmitResponse;
     readonly awaiting_manual_advance: boolean;
-    /**
-     * Whether the allocation decision is made but held for the round.
-     *
-     * Null for anyone but the call managers (and staff and support): to
-     * everyone else a held decision is still being made, and a false here
-     * would tell them apart.
-     */
     readonly decision_held: boolean | null;
     /**
      * Set while the proposal is back with its applicant after a call manager returned it: why, and the deadline to resubmit.
      */
-    readonly open_return: boolean | null;
+    open_return: OpenReturn | null;
     /**
      * Current active workflow step for this proposal.
      */

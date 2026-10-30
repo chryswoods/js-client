@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: Waldur API
-  version: 8.1.3-openportal.5
+  version: 8.1.3-openportal.6
 paths:
   /_matrix/app/v1/ping:
     post:
@@ -19746,8 +19746,8 @@ paths:
     post:
       operationId: form_flows_sync
       description: 'Make each step''s survey ready in Formbricks: single-use links,
-        the proposal_uuid hidden field, endings back to the proposal, anonymised responses.
-        Only those settings are written. Returns the check after the changes.'
+        the proposal_uuid hidden field, endings back to the proposal. Only those settings
+        are written. Returns the check after the changes.'
       parameters:
       - in: path
         name: uuid
@@ -161476,6 +161476,26 @@ components:
       required:
       - limit
       description: ''
+    OpenReturn:
+      type: object
+      properties:
+        uuid:
+          type: string
+          format: uuid
+        created:
+          type: string
+          format: date-time
+        reason:
+          type: string
+        resubmit_by:
+          type: string
+          format: date-time
+      required:
+      - created
+      - reason
+      - resubmit_by
+      - uuid
+      description: ''
     OpenStackAllowedAddressPair:
       type: object
       properties:
@@ -178134,15 +178154,10 @@ components:
         decision_held:
           type: boolean
           nullable: true
-          description: |-
-            Whether the allocation decision is made but held for the round.
-
-            Null for anyone but the call managers (and staff and support): to
-            everyone else a held decision is still being made, and a false here
-            would tell them apart.
           readOnly: true
         open_return:
-          type: boolean
+          allOf:
+          - $ref: '#/components/schemas/OpenReturn'
           nullable: true
           readOnly: true
           description: 'Set while the proposal is back with its applicant after a
