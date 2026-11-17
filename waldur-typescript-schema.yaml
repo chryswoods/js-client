@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: Waldur API
-  version: 8.1.3-openportal.8
+  version: 8.1.3-openportal.9
 paths:
   /_matrix/app/v1/ping:
     post:
@@ -178748,6 +178748,16 @@ components:
           type: string
           format: date-time
           readOnly: true
+        submitted_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+          description: 'When the proposal left draft. Null for proposals submitted
+            before this field existed: their submission was never recorded and the
+            only proxy, the first workflow step instance, was backfilled by migration
+            for the oldest of them — so it is left empty rather than filled with a
+            date that reads as fact.'
         compliance_status:
           allOf:
           - $ref: '#/components/schemas/ProposalComplianceStatus'
@@ -178830,6 +178840,7 @@ components:
       - science_sub_domain_name
       - slug
       - state
+      - submitted_at
       - supporting_documentation
       - url
       - uuid

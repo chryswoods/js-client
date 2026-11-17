@@ -25990,6 +25990,10 @@ export type Proposal = {
     readonly science_domain_name: string;
     readonly allocation_comment: string | null;
     readonly created: string;
+    /**
+     * When the proposal left draft. Null for proposals submitted before this field existed: their submission was never recorded and the only proxy, the first workflow step instance, was backfilled by migration for the oldest of them — so it is left empty rather than filled with a date that reads as fact.
+     */
+    readonly submitted_at: string | null;
     compliance_status: ProposalComplianceStatus | null;
     can_submit: ProposalCanSubmitResponse;
     readonly awaiting_manual_advance: boolean;
