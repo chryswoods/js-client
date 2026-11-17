@@ -10272,6 +10272,11 @@ export type FormStepResponse = {
     step_key: string;
     step_label: string;
     submitted_at: string;
+    /**
+     * Who gave these answers, as they were then: set for a project's end-of-project forms, which each person answers for themselves; null for a proposal's forms, which are the team's.
+     */
+    respondent_name?: string | null;
+    respondent_email?: string | null;
     questions: Array<FormResponseQuestion>;
 };
 
@@ -25335,11 +25340,17 @@ export type ProjectForm = {
      * Whether the viewer may open and edit the forms now: the project's PI or an owner of its organisation, while they are open, with forms available.
      */
     can_fill_in: boolean;
+    /**
+     * The forms as the viewer fills them in: each person who fills them in answers for themselves, so completed and in_progress are the viewer's own.
+     */
     steps: Array<ProposalFormStepStatus>;
     /**
-     * Labels of the forms still to answer.
+     * Labels of the forms the viewer has still to answer.
      */
     missing: Array<string>;
+    /**
+     * The answers, with who gave them: everyone's for the call's managers, staff and support; otherwise the viewer's own.
+     */
     responses: Array<FormStepResponse>;
 };
 
@@ -25363,11 +25374,17 @@ export type ProjectFormFetchResult = {
      * Whether the viewer may open and edit the forms now: the project's PI or an owner of its organisation, while they are open, with forms available.
      */
     can_fill_in: boolean;
+    /**
+     * The forms as the viewer fills them in: each person who fills them in answers for themselves, so completed and in_progress are the viewer's own.
+     */
     steps: Array<ProposalFormStepStatus>;
     /**
-     * Labels of the forms still to answer.
+     * Labels of the forms the viewer has still to answer.
      */
     missing: Array<string>;
+    /**
+     * The answers, with who gave them: everyone's for the call's managers, staff and support; otherwise the viewer's own.
+     */
     responses: Array<FormStepResponse>;
     /**
      * How many responses this fetch brought in or updated.
