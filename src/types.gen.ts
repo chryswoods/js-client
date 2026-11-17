@@ -23151,6 +23151,10 @@ export type PatchedProtectedCallRequest = {
      * When applicants learn the allocation decision: immediately, or for every proposal of a round together when a call manager publishes the round's results. Cannot be changed while decisions are held.
      */
     publish_results?: PublishResultsEnum;
+    /**
+     * Whether each proposal has exactly one proposal manager, its owner. Granting the manager role then hands the proposal over: the previous manager becomes a proposal administrator and the new one its owner (created_by). Off: a proposal may have several managers.
+     */
+    single_proposal_manager?: boolean;
     created_by?: string | null;
     reference_code?: string;
     /**
@@ -23223,10 +23227,6 @@ export type PatchedProtectedCallRequest = {
      * Whether the project created for an accepted proposal takes the proposal's summary as its description.
      */
     copy_summary_to_project?: boolean;
-    /**
-     * Whether each proposal has exactly one proposal manager, its owner. Granting the manager role then hands the proposal over: the previous manager becomes a proposal administrator and the new one its owner (created_by). Off: a proposal may have several managers.
-     */
-    single_proposal_manager?: boolean;
     /**
      * What completing a round does with its proposals that still have no decision: refuse to complete the round, or reject them. A round may override it.
      */
@@ -26406,6 +26406,10 @@ export type ProtectedCall = {
      * When applicants learn the allocation decision: immediately, or for every proposal of a round together when a call manager publishes the round's results. Cannot be changed while decisions are held.
      */
     publish_results?: PublishResultsEnum;
+    /**
+     * Whether each proposal has exactly one proposal manager, its owner. Granting the manager role then hands the proposal over: the previous manager becomes a proposal administrator and the new one its owner (created_by). Off: a proposal may have several managers.
+     */
+    single_proposal_manager?: boolean;
     created_by?: string | null;
     reference_code?: string;
     /**
@@ -26492,10 +26496,6 @@ export type ProtectedCall = {
      */
     copy_summary_to_project?: boolean;
     /**
-     * Whether each proposal has exactly one proposal manager, its owner. Granting the manager role then hands the proposal over: the previous manager becomes a proposal administrator and the new one its owner (created_by). Off: a proposal may have several managers.
-     */
-    single_proposal_manager?: boolean;
-    /**
      * What completing a round does with its proposals that still have no decision: refuse to complete the round, or reject them. A round may override it.
      */
     undecided_at_round_completion?: UndecidedAtRoundCompletionEnum;
@@ -26537,6 +26537,10 @@ export type ProtectedCallRequest = {
      * When applicants learn the allocation decision: immediately, or for every proposal of a round together when a call manager publishes the round's results. Cannot be changed while decisions are held.
      */
     publish_results?: PublishResultsEnum;
+    /**
+     * Whether each proposal has exactly one proposal manager, its owner. Granting the manager role then hands the proposal over: the previous manager becomes a proposal administrator and the new one its owner (created_by). Off: a proposal may have several managers.
+     */
+    single_proposal_manager?: boolean;
     created_by?: string | null;
     reference_code?: string;
     /**
@@ -26609,10 +26613,6 @@ export type ProtectedCallRequest = {
      * Whether the project created for an accepted proposal takes the proposal's summary as its description.
      */
     copy_summary_to_project?: boolean;
-    /**
-     * Whether each proposal has exactly one proposal manager, its owner. Granting the manager role then hands the proposal over: the previous manager becomes a proposal administrator and the new one its owner (created_by). Off: a proposal may have several managers.
-     */
-    single_proposal_manager?: boolean;
     /**
      * What completing a round does with its proposals that still have no decision: refuse to complete the round, or reject them. A round may override it.
      */
@@ -27575,6 +27575,10 @@ export type PublicCall = {
      * When applicants learn the allocation decision: as soon as it is made, or for every proposal of a round together when a call manager publishes the round's results. Cannot be changed while decisions are held.
      */
     publish_results?: PublishResultsEnum;
+    /**
+     * Whether each proposal has exactly one proposal manager, its owner. Granting the manager role then hands the proposal over: the previous manager becomes a proposal administrator and the new one its owner (created_by). Off: a proposal may have several managers.
+     */
+    single_proposal_manager?: boolean;
     /**
      * The Formbricks flow applicants fill in; null for Waldur's own proposal form.
      */
@@ -39414,7 +39418,7 @@ export type AffinityMatrixResponseScopeEnum = 'all' | 'pool' | 'suggestions';
 
 export type QueryFileFormatEnum = 'csv' | 'xlsx';
 
-export type PublicCallFieldEnum = 'backend_id' | 'closing_form_flow' | 'created' | 'customer_name' | 'customer_uuid' | 'description' | 'documents' | 'end_date' | 'evaluation_start' | 'external_url' | 'fixed_duration_in_days' | 'form_flow' | 'has_eligibility_restrictions' | 'manager' | 'manager_uuid' | 'max_prepaid_duration_months' | 'name' | 'offerings' | 'proposal_field_config' | 'publish_results' | 'resource_templates' | 'reviewer_identity_visible_to_submitters' | 'reviews_visible_to_submitters' | 'rounds' | 'slug' | 'start_date' | 'state' | 'url' | 'uuid';
+export type PublicCallFieldEnum = 'backend_id' | 'closing_form_flow' | 'created' | 'customer_name' | 'customer_uuid' | 'description' | 'documents' | 'end_date' | 'evaluation_start' | 'external_url' | 'fixed_duration_in_days' | 'form_flow' | 'has_eligibility_restrictions' | 'manager' | 'manager_uuid' | 'max_prepaid_duration_months' | 'name' | 'offerings' | 'proposal_field_config' | 'publish_results' | 'resource_templates' | 'reviewer_identity_visible_to_submitters' | 'reviews_visible_to_submitters' | 'rounds' | 'single_proposal_manager' | 'slug' | 'start_date' | 'state' | 'url' | 'uuid';
 
 export type ProviderRequestedOfferingOEnum = '-call__name' | '-created' | '-offering__name' | '-state' | 'call__name' | 'created' | 'offering__name' | 'state';
 

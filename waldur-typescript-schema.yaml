@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: Waldur API
-  version: 8.1.3-openportal.11
+  version: 8.1.3-openportal.12
 paths:
   /_matrix/app/v1/ping:
     post:
@@ -172422,6 +172422,12 @@ components:
           description: 'When applicants learn the allocation decision: immediately,
             or for every proposal of a round together when a call manager publishes
             the round''s results. Cannot be changed while decisions are held.'
+        single_proposal_manager:
+          type: boolean
+          description: 'Whether each proposal has exactly one proposal manager, its
+            owner. Granting the manager role then hands the proposal over: the previous
+            manager becomes a proposal administrator and the new one its owner (created_by).
+            Off: a proposal may have several managers.'
         created_by:
           type: string
           format: uri
@@ -172536,12 +172542,6 @@ components:
           type: boolean
           description: Whether the project created for an accepted proposal takes
             the proposal's summary as its description.
-        single_proposal_manager:
-          type: boolean
-          description: 'Whether each proposal has exactly one proposal manager, its
-            owner. Granting the manager role then hands the proposal over: the previous
-            manager becomes a proposal administrator and the new one its owner (created_by).
-            Off: a proposal may have several managers.'
         undecided_at_round_completion:
           allOf:
           - $ref: '#/components/schemas/UndecidedAtRoundCompletionEnum'
@@ -179879,6 +179879,12 @@ components:
           description: 'When applicants learn the allocation decision: immediately,
             or for every proposal of a round together when a call manager publishes
             the round''s results. Cannot be changed while decisions are held.'
+        single_proposal_manager:
+          type: boolean
+          description: 'Whether each proposal has exactly one proposal manager, its
+            owner. Granting the manager role then hands the proposal over: the previous
+            manager becomes a proposal administrator and the new one its owner (created_by).
+            Off: a proposal may have several managers.'
         created_by:
           type: string
           format: uri
@@ -180017,12 +180023,6 @@ components:
           type: boolean
           description: Whether the project created for an accepted proposal takes
             the proposal's summary as its description.
-        single_proposal_manager:
-          type: boolean
-          description: 'Whether each proposal has exactly one proposal manager, its
-            owner. Granting the manager role then hands the proposal over: the previous
-            manager becomes a proposal administrator and the new one its owner (created_by).
-            Off: a proposal may have several managers.'
         undecided_at_round_completion:
           allOf:
           - $ref: '#/components/schemas/UndecidedAtRoundCompletionEnum'
@@ -180121,6 +180121,12 @@ components:
           description: 'When applicants learn the allocation decision: immediately,
             or for every proposal of a round together when a call manager publishes
             the round''s results. Cannot be changed while decisions are held.'
+        single_proposal_manager:
+          type: boolean
+          description: 'Whether each proposal has exactly one proposal manager, its
+            owner. Granting the manager role then hands the proposal over: the previous
+            manager becomes a proposal administrator and the new one its owner (created_by).
+            Off: a proposal may have several managers.'
         created_by:
           type: string
           format: uri
@@ -180235,12 +180241,6 @@ components:
           type: boolean
           description: Whether the project created for an accepted proposal takes
             the proposal's summary as its description.
-        single_proposal_manager:
-          type: boolean
-          description: 'Whether each proposal has exactly one proposal manager, its
-            owner. Granting the manager role then hands the proposal over: the previous
-            manager becomes a proposal administrator and the new one its owner (created_by).
-            Off: a proposal may have several managers.'
         undecided_at_round_completion:
           allOf:
           - $ref: '#/components/schemas/UndecidedAtRoundCompletionEnum'
@@ -182626,6 +182626,12 @@ components:
             it is made, or for every proposal of a round together when a call manager
             publishes the round''s results. Cannot be changed while decisions are
             held.'
+        single_proposal_manager:
+          type: boolean
+          description: 'Whether each proposal has exactly one proposal manager, its
+            owner. Granting the manager role then hands the proposal over: the previous
+            manager becomes a proposal administrator and the new one its owner (created_by).
+            Off: a proposal may have several managers.'
         form_flow:
           allOf:
           - $ref: '#/components/schemas/CallFormFlowSummary'
@@ -212721,6 +212727,7 @@ components:
       - reviewer_identity_visible_to_submitters
       - reviews_visible_to_submitters
       - rounds
+      - single_proposal_manager
       - slug
       - start_date
       - state
