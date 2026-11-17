@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: Waldur API
-  version: 8.1.3-openportal.10
+  version: 8.1.3-openportal.11
 paths:
   /_matrix/app/v1/ping:
     post:
@@ -212599,12 +212599,14 @@ components:
       - -round__start_time
       - -slug
       - -state
+      - -submitted_at
       - created
       - round__call__name
       - round__cutoff_time
       - round__start_time
       - slug
       - state
+      - submitted_at
       description: ''
     ProtectedCallFieldEnum:
       type: string
