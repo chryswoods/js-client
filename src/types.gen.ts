@@ -6323,6 +6323,7 @@ export type ConstanceSettings = {
     ENABLE_STRICT_CHECK_ACCEPTING_INVITATION?: boolean;
     INVITATION_DISABLE_MULTIPLE_ROLES?: boolean;
     ONLY_ONE_PROJECT_MANAGER?: boolean;
+    PROJECT_MANAGER_ROLES?: Array<string>;
     DEFAULT_IDP?: DefaultidpEnum | BlankEnum;
     DOCS_URL?: string;
     SHORT_PAGE_TITLE?: string;
@@ -6678,6 +6679,7 @@ export type ConstanceSettingsRequest = {
     ENABLE_STRICT_CHECK_ACCEPTING_INVITATION?: boolean;
     INVITATION_DISABLE_MULTIPLE_ROLES?: boolean;
     ONLY_ONE_PROJECT_MANAGER?: boolean;
+    PROJECT_MANAGER_ROLES?: Array<string>;
     DEFAULT_IDP?: DefaultidpEnum | BlankEnum;
     DOCS_URL?: string;
     SHORT_PAGE_TITLE?: string;
@@ -37951,6 +37953,7 @@ export type ConstanceSettingsRequestForm = {
     ENABLE_STRICT_CHECK_ACCEPTING_INVITATION?: boolean;
     INVITATION_DISABLE_MULTIPLE_ROLES?: boolean;
     ONLY_ONE_PROJECT_MANAGER?: boolean;
+    PROJECT_MANAGER_ROLES?: Array<string>;
     DEFAULT_IDP?: DefaultidpEnum | BlankEnum;
     DOCS_URL?: string;
     SHORT_PAGE_TITLE?: string;
@@ -38306,6 +38309,7 @@ export type ConstanceSettingsRequestMultipart = {
     ENABLE_STRICT_CHECK_ACCEPTING_INVITATION?: boolean;
     INVITATION_DISABLE_MULTIPLE_ROLES?: boolean;
     ONLY_ONE_PROJECT_MANAGER?: boolean;
+    PROJECT_MANAGER_ROLES?: Array<string>;
     DEFAULT_IDP?: DefaultidpEnum | BlankEnum;
     DOCS_URL?: string;
     SHORT_PAGE_TITLE?: string;
