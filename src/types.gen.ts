@@ -36021,6 +36021,16 @@ export type UserResidenceCountryStats = {
     count: number;
 };
 
+export type UserRoleChangeRequest = {
+    role: string;
+    user: string;
+    expiration_time?: string | null;
+    /**
+     * The role the user holds now (name or UUID).
+     */
+    previous_role: string;
+};
+
 export type UserRoleCreateRequest = {
     role: string;
     user: string;
@@ -45101,6 +45111,21 @@ export type CallManagingOrganisationsAddUserResponses = {
 
 export type CallManagingOrganisationsAddUserResponse = CallManagingOrganisationsAddUserResponses[keyof CallManagingOrganisationsAddUserResponses];
 
+export type CallManagingOrganisationsChangeUserRoleData = {
+    body: UserRoleChangeRequest;
+    path: {
+        uuid: string;
+    };
+    query?: never;
+    url: '/api/call-managing-organisations/{uuid}/change_user_role/';
+};
+
+export type CallManagingOrganisationsChangeUserRoleResponses = {
+    200: UserRoleExpirationTime;
+};
+
+export type CallManagingOrganisationsChangeUserRoleResponse = CallManagingOrganisationsChangeUserRoleResponses[keyof CallManagingOrganisationsChangeUserRoleResponses];
+
 export type CallManagingOrganisationsDeleteUserData = {
     body: UserRoleDeleteRequest;
     path: {
@@ -49190,6 +49215,21 @@ export type CustomersAddUserResponses = {
 };
 
 export type CustomersAddUserResponse = CustomersAddUserResponses[keyof CustomersAddUserResponses];
+
+export type CustomersChangeUserRoleData = {
+    body: UserRoleChangeRequest;
+    path: {
+        uuid: string;
+    };
+    query?: never;
+    url: '/api/customers/{uuid}/change_user_role/';
+};
+
+export type CustomersChangeUserRoleResponses = {
+    200: UserRoleExpirationTime;
+};
+
+export type CustomersChangeUserRoleResponse = CustomersChangeUserRoleResponses[keyof CustomersChangeUserRoleResponses];
 
 export type CustomersContactData = {
     body?: CustomerContactUpdateRequest;
@@ -65036,6 +65076,21 @@ export type MarketplaceProviderOfferingsArchiveResponses = {
 
 export type MarketplaceProviderOfferingsArchiveResponse = MarketplaceProviderOfferingsArchiveResponses[keyof MarketplaceProviderOfferingsArchiveResponses];
 
+export type MarketplaceProviderOfferingsChangeUserRoleData = {
+    body: UserRoleChangeRequest;
+    path: {
+        uuid: string;
+    };
+    query?: never;
+    url: '/api/marketplace-provider-offerings/{uuid}/change_user_role/';
+};
+
+export type MarketplaceProviderOfferingsChangeUserRoleResponses = {
+    200: UserRoleExpirationTime;
+};
+
+export type MarketplaceProviderOfferingsChangeUserRoleResponse = MarketplaceProviderOfferingsChangeUserRoleResponses[keyof MarketplaceProviderOfferingsChangeUserRoleResponses];
+
 export type MarketplaceProviderOfferingsCheckUniqueBackendIdData = {
     body: CheckUniqueBackendIdRequest;
     path: {
@@ -68283,6 +68338,21 @@ export type MarketplaceProviderResourceProjectsAddUserResponses = {
 
 export type MarketplaceProviderResourceProjectsAddUserResponse = MarketplaceProviderResourceProjectsAddUserResponses[keyof MarketplaceProviderResourceProjectsAddUserResponses];
 
+export type MarketplaceProviderResourceProjectsChangeUserRoleData = {
+    body: UserRoleChangeRequest;
+    path: {
+        uuid: string;
+    };
+    query?: never;
+    url: '/api/marketplace-provider-resource-projects/{uuid}/change_user_role/';
+};
+
+export type MarketplaceProviderResourceProjectsChangeUserRoleResponses = {
+    200: UserRoleExpirationTime;
+};
+
+export type MarketplaceProviderResourceProjectsChangeUserRoleResponse = MarketplaceProviderResourceProjectsChangeUserRoleResponses[keyof MarketplaceProviderResourceProjectsChangeUserRoleResponses];
+
 export type MarketplaceProviderResourceProjectsDeleteUserData = {
     body: UserRoleDeleteRequest;
     path: {
@@ -68985,6 +69055,21 @@ export type MarketplaceProviderResourcesAdjustDatesResponses = {
 };
 
 export type MarketplaceProviderResourcesAdjustDatesResponse = MarketplaceProviderResourcesAdjustDatesResponses[keyof MarketplaceProviderResourcesAdjustDatesResponses];
+
+export type MarketplaceProviderResourcesChangeUserRoleData = {
+    body: UserRoleChangeRequest;
+    path: {
+        uuid: string;
+    };
+    query?: never;
+    url: '/api/marketplace-provider-resources/{uuid}/change_user_role/';
+};
+
+export type MarketplaceProviderResourcesChangeUserRoleResponses = {
+    200: UserRoleExpirationTime;
+};
+
+export type MarketplaceProviderResourcesChangeUserRoleResponse = MarketplaceProviderResourcesChangeUserRoleResponses[keyof MarketplaceProviderResourcesChangeUserRoleResponses];
 
 export type MarketplaceProviderResourcesDeleteUserData = {
     body: UserRoleDeleteRequest;
@@ -71525,6 +71610,21 @@ export type MarketplaceResourceProjectsAddUserResponses = {
 
 export type MarketplaceResourceProjectsAddUserResponse = MarketplaceResourceProjectsAddUserResponses[keyof MarketplaceResourceProjectsAddUserResponses];
 
+export type MarketplaceResourceProjectsChangeUserRoleData = {
+    body: UserRoleChangeRequest;
+    path: {
+        uuid: string;
+    };
+    query?: never;
+    url: '/api/marketplace-resource-projects/{uuid}/change_user_role/';
+};
+
+export type MarketplaceResourceProjectsChangeUserRoleResponses = {
+    200: UserRoleExpirationTime;
+};
+
+export type MarketplaceResourceProjectsChangeUserRoleResponse = MarketplaceResourceProjectsChangeUserRoleResponses[keyof MarketplaceResourceProjectsChangeUserRoleResponses];
+
 export type MarketplaceResourceProjectsDeleteUserData = {
     body: UserRoleDeleteRequest;
     path: {
@@ -72197,6 +72297,21 @@ export type MarketplaceResourcesAdjustDatesResponses = {
 };
 
 export type MarketplaceResourcesAdjustDatesResponse = MarketplaceResourcesAdjustDatesResponses[keyof MarketplaceResourcesAdjustDatesResponses];
+
+export type MarketplaceResourcesChangeUserRoleData = {
+    body: UserRoleChangeRequest;
+    path: {
+        uuid: string;
+    };
+    query?: never;
+    url: '/api/marketplace-resources/{uuid}/change_user_role/';
+};
+
+export type MarketplaceResourcesChangeUserRoleResponses = {
+    200: UserRoleExpirationTime;
+};
+
+export type MarketplaceResourcesChangeUserRoleResponse = MarketplaceResourcesChangeUserRoleResponses[keyof MarketplaceResourcesChangeUserRoleResponses];
 
 export type MarketplaceResourcesDeleteUserData = {
     body: UserRoleDeleteRequest;
@@ -77385,6 +77500,21 @@ export type ServiceProviderApiSecretCodeGenerateResponses = {
 };
 
 export type ServiceProviderApiSecretCodeGenerateResponse = ServiceProviderApiSecretCodeGenerateResponses[keyof ServiceProviderApiSecretCodeGenerateResponses];
+
+export type MarketplaceServiceProvidersChangeUserRoleData = {
+    body: UserRoleChangeRequest;
+    path: {
+        uuid: string;
+    };
+    query?: never;
+    url: '/api/marketplace-service-providers/{uuid}/change_user_role/';
+};
+
+export type MarketplaceServiceProvidersChangeUserRoleResponses = {
+    200: UserRoleExpirationTime;
+};
+
+export type MarketplaceServiceProvidersChangeUserRoleResponse = MarketplaceServiceProvidersChangeUserRoleResponses[keyof MarketplaceServiceProvidersChangeUserRoleResponses];
 
 export type MarketplaceServiceProvidersDeleteUserData = {
     body: UserRoleDeleteRequest;
@@ -87073,6 +87203,21 @@ export type OpenportalUnmanagedProjectsAddUserResponses = {
 };
 
 export type OpenportalUnmanagedProjectsAddUserResponse = OpenportalUnmanagedProjectsAddUserResponses[keyof OpenportalUnmanagedProjectsAddUserResponses];
+
+export type OpenportalUnmanagedProjectsChangeUserRoleData = {
+    body: UserRoleChangeRequest;
+    path: {
+        uuid: string;
+    };
+    query?: never;
+    url: '/api/openportal-unmanaged-projects/{uuid}/change_user_role/';
+};
+
+export type OpenportalUnmanagedProjectsChangeUserRoleResponses = {
+    200: UserRoleExpirationTime;
+};
+
+export type OpenportalUnmanagedProjectsChangeUserRoleResponse = OpenportalUnmanagedProjectsChangeUserRoleResponses[keyof OpenportalUnmanagedProjectsChangeUserRoleResponses];
 
 export type OpenportalUnmanagedProjectsChecklistRetrieveData = {
     body?: never;
@@ -97864,6 +98009,21 @@ export type ProjectsAddUserResponses = {
 
 export type ProjectsAddUserResponse = ProjectsAddUserResponses[keyof ProjectsAddUserResponses];
 
+export type ProjectsChangeUserRoleData = {
+    body: UserRoleChangeRequest;
+    path: {
+        uuid: string;
+    };
+    query?: never;
+    url: '/api/projects/{uuid}/change_user_role/';
+};
+
+export type ProjectsChangeUserRoleResponses = {
+    200: UserRoleExpirationTime;
+};
+
+export type ProjectsChangeUserRoleResponse = ProjectsChangeUserRoleResponses[keyof ProjectsChangeUserRoleResponses];
+
 export type ProjectsChecklistRetrieveData = {
     body?: never;
     path: {
@@ -99453,6 +99613,21 @@ export type ProposalProposalsAwardedResourcesUpdateResponses = {
 
 export type ProposalProposalsAwardedResourcesUpdateResponse = ProposalProposalsAwardedResourcesUpdateResponses[keyof ProposalProposalsAwardedResourcesUpdateResponses];
 
+export type ProposalProposalsChangeUserRoleData = {
+    body: UserRoleChangeRequest;
+    path: {
+        uuid: string;
+    };
+    query?: never;
+    url: '/api/proposal-proposals/{uuid}/change_user_role/';
+};
+
+export type ProposalProposalsChangeUserRoleResponses = {
+    200: UserRoleExpirationTime;
+};
+
+export type ProposalProposalsChangeUserRoleResponse = ProposalProposalsChangeUserRoleResponses[keyof ProposalProposalsChangeUserRoleResponses];
+
 export type ProposalProposalsChecklistRetrieveData = {
     body?: never;
     path: {
@@ -100538,6 +100713,21 @@ export type ProposalProtectedCallsAttachDocumentsResponses = {
      */
     200: unknown;
 };
+
+export type ProposalProtectedCallsChangeUserRoleData = {
+    body: UserRoleChangeRequest;
+    path: {
+        uuid: string;
+    };
+    query?: never;
+    url: '/api/proposal-protected-calls/{uuid}/change_user_role/';
+};
+
+export type ProposalProtectedCallsChangeUserRoleResponses = {
+    200: UserRoleExpirationTime;
+};
+
+export type ProposalProtectedCallsChangeUserRoleResponse = ProposalProtectedCallsChangeUserRoleResponses[keyof ProposalProtectedCallsChangeUserRoleResponses];
 
 export type ProposalProtectedCallsCoiConfigurationRetrieveData = {
     body?: never;
