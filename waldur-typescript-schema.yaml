@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: Waldur API
-  version: 8.1.3-openportal.14
+  version: 8.1.3-openportal.15
 paths:
   /_matrix/app/v1/ping:
     post:
@@ -8992,7 +8992,10 @@ paths:
   /api/call-managing-organisations/{uuid}/stats/:
     get:
       operationId: call_managing_organisations_stats_retrieve
-      description: Return statistics for call managing organisation.
+      description: 'Return statistics for call managing organisation, counted over
+        the active calls the caller may report on: a call manager''s figures cover
+        their own calls. For call organisers, the organisation''s call managers, staff
+        and support.'
       parameters:
       - in: path
         name: uuid
@@ -73696,6 +73699,32 @@ paths:
               schema:
                 $ref: '#/components/schemas/RemoteProject'
           description: ''
+  /api/openportal-remote-projects/{uuid}/refresh-site-features/:
+    post:
+      operationId: openportal_remote_projects_refresh_site_features
+      description: Ask the site what its portal supports for this award's offering
+        (e.g. award_spend_minimums, award_spend_maximums) and keep the answer in site_features.
+        A site that does not answer in time leaves the last answer.
+      parameters:
+      - in: path
+        name: uuid
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - openportal-remote-projects
+      security:
+      - waldurTokenAuth: []
+      - waldurPATAuth: []
+      - waldurOIDCAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RemoteProject'
+          description: ''
   /api/openportal-remote-projects/{uuid}/resend-request/:
     post:
       operationId: openportal_remote_projects_resend_request
@@ -73860,6 +73889,41 @@ paths:
       responses:
         '202':
           description: No response body
+  /api/openportal-remote-projects/{uuid}/set-spend-profile/:
+    post:
+      operationId: openportal_remote_projects_set_spend_profile
+      description: 'Replace the award''s spend profile: dated minimum and/or maximum
+        spends, in the award''s allocation units and within the award''s dates, enforced
+        by the site. A period that has begun keeps its date and cannot be removed;
+        one that has ended keeps its controls; new periods start today or later. []
+        removes the profile before any period has begun. The award is then re-sent
+        to the site.'
+      parameters:
+      - in: path
+        name: uuid
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - openportal-remote-projects
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SetSpendProfileRequest'
+        required: true
+      security:
+      - waldurTokenAuth: []
+      - waldurPATAuth: []
+      - waldurOIDCAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RemoteProject'
+          description: ''
   /api/openportal-remote-projects/{uuid}/storage-report/:
     get:
       operationId: openportal_remote_projects_storage_report_retrieve
@@ -151343,6 +151407,13 @@ components:
           format: double
           readOnly: true
           nullable: true
+        spend_profile:
+          allOf:
+          - $ref: '#/components/schemas/SpendProgress'
+          readOnly: true
+          nullable: true
+          description: The award's spend profile, period by period, with its spend
+            so far; null if the award has none.
       required:
       - allocation_credits
       - customer_name
@@ -151351,6 +151422,7 @@ components:
       - project_name
       - project_uuid
       - remaining_credits
+      - spend_profile
       - usage_credits
     ManagedProjectAuditEntry:
       type: object
@@ -151413,6 +151485,7 @@ components:
       - details_updated
       - project_attached
       - project_detached
+      - forfeit_charged
       type: string
       description: ''
     ManagedProjectHistoryEntry:
@@ -188635,6 +188708,27 @@ components:
           additionalProperties:
             type: string
           readOnly: true
+        spend_profile:
+          type: array
+          items:
+            $ref: '#/components/schemas/SpendProfileEntry'
+          readOnly: true
+          nullable: true
+          description: 'Dated minimum and/or maximum spends for the award, enforced
+            by the site. Null: none set.'
+        site_features:
+          type: array
+          items:
+            type: string
+          readOnly: true
+          nullable: true
+          description: 'What the site''s portal says it supports for this award''s
+            offering, e.g. award_spend_minimums and award_spend_maximums. Null: not
+            known.'
+        site_features_checked_at:
+          type: string
+          format: date-time
+          nullable: true
         last_sent_details:
           allOf:
           - $ref: '#/components/schemas/AwardDetails'
@@ -188722,6 +188816,8 @@ components:
       - pending_details
       - resource_name
       - resource_uuid
+      - site_features
+      - spend_profile
       - state_display
       - uuid
     RemoteProjectAllocationEntry:
@@ -196605,6 +196701,16 @@ components:
       required:
       - partition_uuid
       - qos_options
+    SetSpendProfileRequest:
+      type: object
+      description: ''
+      properties:
+        spend_profile:
+          type: array
+          items:
+            $ref: '#/components/schemas/SpendProfileEntryRequest'
+      required:
+      - spend_profile
     SetTokenQuotaRequest:
       type: object
       description: ''
@@ -198079,6 +198185,143 @@ components:
       - selected_proposals
       - custom_keywords
       type: string
+      description: ''
+    SpendPeriodProgress:
+      type: object
+      description: ''
+      properties:
+        from:
+          type: string
+          format: date
+        to:
+          type: string
+          format: date
+          nullable: true
+        minimum:
+          type: string
+          nullable: true
+        maximum:
+          type: string
+          nullable: true
+        status:
+          $ref: '#/components/schemas/SpendPeriodProgressStatusEnum'
+        spend:
+          type: number
+          format: double
+          nullable: true
+          description: Charged on the period's days so far; null if not begun.
+        cumulative_spend:
+          type: number
+          format: double
+          nullable: true
+          description: Charged from the award's start to the period's end (or today);
+            null if not begun.
+        cumulative_minimum:
+          type: number
+          format: double
+          nullable: true
+          description: The minimums so far; null if none.
+        cap:
+          type: number
+          format: double
+          nullable: true
+          description: 'The most the award may have been charged by the period''s
+            end: the maximums so far, or the whole award if it has no maximum.'
+        headroom:
+          type: number
+          format: double
+          nullable: true
+          description: cap less cumulative_spend; null if not begun.
+        forfeit:
+          type: number
+          format: double
+          nullable: true
+          description: Charged when the period ended for spending less than the minimums
+            so far; null if none.
+      required:
+      - cap
+      - cumulative_minimum
+      - cumulative_spend
+      - forfeit
+      - from
+      - headroom
+      - maximum
+      - minimum
+      - spend
+      - status
+      - to
+    SpendPeriodProgressStatusEnum:
+      enum:
+      - ended
+      - current
+      - upcoming
+      type: string
+      description: ''
+    SpendProfileEntry:
+      type: object
+      description: ''
+      properties:
+        from:
+          type: string
+          format: date
+          description: The date these controls apply from.
+        minimum:
+          type: string
+          nullable: true
+          description: 'The least to spend in this period, e.g. ''250 NHR'', in the
+            award''s allocation units. Left out: no minimum.'
+        maximum:
+          type: string
+          nullable: true
+          description: 'The most that may be spent in this period, e.g. ''250 NHR'',
+            in the award''s allocation units. Left out: no maximum.'
+      required:
+      - from
+    SpendProfileEntryRequest:
+      type: object
+      description: ''
+      properties:
+        from:
+          type: string
+          format: date
+          description: The date these controls apply from.
+        minimum:
+          type: string
+          nullable: true
+          minLength: 1
+          description: 'The least to spend in this period, e.g. ''250 NHR'', in the
+            award''s allocation units. Left out: no minimum.'
+        maximum:
+          type: string
+          nullable: true
+          minLength: 1
+          description: 'The most that may be spent in this period, e.g. ''250 NHR'',
+            in the award''s allocation units. Left out: no maximum.'
+      required:
+      - from
+    SpendProgress:
+      type: object
+      properties:
+        units:
+          type: string
+          nullable: true
+        allocation:
+          type: number
+          format: double
+          nullable: true
+        spend:
+          type: number
+          format: double
+          description: Charged to the award so far.
+        periods:
+          type: array
+          items:
+            $ref: '#/components/schemas/SpendPeriodProgress'
+      required:
+      - allocation
+      - periods
+      - spend
+      - units
       description: ''
     SramGroup:
       type: object

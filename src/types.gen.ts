@@ -12792,6 +12792,10 @@ export type ManagedProjectAccountingSummary = {
     readonly allocation_credits: number | null;
     readonly usage_credits: number;
     readonly remaining_credits: number | null;
+    /**
+     * The award's spend profile, period by period, with its spend so far; null if the award has none.
+     */
+    spend_profile: SpendProgress | null;
 };
 
 export type ManagedProjectAuditEntry = {
@@ -12816,7 +12820,7 @@ export type ManagedProjectAuditEntry = {
     note?: string;
 };
 
-export type ManagedProjectAuditEntryEventTypeEnum = 'created' | 'approved' | 'rejected' | 'deleted' | 'note_added' | 'details_updated' | 'project_attached' | 'project_detached';
+export type ManagedProjectAuditEntryEventTypeEnum = 'created' | 'approved' | 'rejected' | 'deleted' | 'note_added' | 'details_updated' | 'project_attached' | 'project_detached' | 'forfeit_charged';
 
 export type ManagedProjectHistoryEntry = {
     attached_at?: string;
@@ -29611,6 +29615,15 @@ export type RemoteProject = {
     readonly breakdown: {
         [key: string]: string;
     };
+    /**
+     * Dated minimum and/or maximum spends for the award, enforced by the site. Null: none set.
+     */
+    readonly spend_profile: Array<SpendProfileEntry> | null;
+    /**
+     * What the site's portal says it supports for this award's offering, e.g. award_spend_minimums and award_spend_maximums. Null: not known.
+     */
+    readonly site_features: Array<string> | null;
+    site_features_checked_at?: string | null;
     last_sent_details: AwardDetails | null;
     last_confirmed_details: AwardDetails | null;
     pending_details: AwardDetails | null;
@@ -33285,6 +33298,10 @@ export type SetPartitionQoSRequest = {
     qos_options: Array<PartitionQoSItemRequest>;
 };
 
+export type SetSpendProfileRequest = {
+    spend_profile: Array<SpendProfileEntryRequest>;
+};
+
 export type SetTokenQuotaRequest = {
     /**
      * UUID of the user to set quota for.
@@ -34025,6 +34042,80 @@ export type SoftwareVersion = {
 };
 
 export type SourceTypeEnum = 'call_description' | 'all_proposals' | 'selected_proposals' | 'custom_keywords';
+
+export type SpendPeriodProgress = {
+    from: string;
+    to: string | null;
+    minimum: string | null;
+    maximum: string | null;
+    status: SpendPeriodProgressStatusEnum;
+    /**
+     * Charged on the period's days so far; null if not begun.
+     */
+    spend: number | null;
+    /**
+     * Charged from the award's start to the period's end (or today); null if not begun.
+     */
+    cumulative_spend: number | null;
+    /**
+     * The minimums so far; null if none.
+     */
+    cumulative_minimum: number | null;
+    /**
+     * The most the award may have been charged by the period's end: the maximums so far, or the whole award if it has no maximum.
+     */
+    cap: number | null;
+    /**
+     * cap less cumulative_spend; null if not begun.
+     */
+    headroom: number | null;
+    /**
+     * Charged when the period ended for spending less than the minimums so far; null if none.
+     */
+    forfeit: number | null;
+};
+
+export type SpendPeriodProgressStatusEnum = 'ended' | 'current' | 'upcoming';
+
+export type SpendProfileEntry = {
+    /**
+     * The date these controls apply from.
+     */
+    from: string;
+    /**
+     * The least to spend in this period, e.g. '250 NHR', in the award's allocation units. Left out: no minimum.
+     */
+    minimum?: string | null;
+    /**
+     * The most that may be spent in this period, e.g. '250 NHR', in the award's allocation units. Left out: no maximum.
+     */
+    maximum?: string | null;
+};
+
+export type SpendProfileEntryRequest = {
+    /**
+     * The date these controls apply from.
+     */
+    from: string;
+    /**
+     * The least to spend in this period, e.g. '250 NHR', in the award's allocation units. Left out: no minimum.
+     */
+    minimum?: string | null;
+    /**
+     * The most that may be spent in this period, e.g. '250 NHR', in the award's allocation units. Left out: no maximum.
+     */
+    maximum?: string | null;
+};
+
+export type SpendProgress = {
+    units: string | null;
+    allocation: number | null;
+    /**
+     * Charged to the award so far.
+     */
+    spend: number;
+    periods: Array<SpendPeriodProgress>;
+};
 
 export type SramGroup = {
     readonly uuid: string;
@@ -86632,6 +86723,21 @@ export type OpenportalRemoteProjectsHoldIndefinitelyResponses = {
 
 export type OpenportalRemoteProjectsHoldIndefinitelyResponse = OpenportalRemoteProjectsHoldIndefinitelyResponses[keyof OpenportalRemoteProjectsHoldIndefinitelyResponses];
 
+export type OpenportalRemoteProjectsRefreshSiteFeaturesData = {
+    body?: never;
+    path: {
+        uuid: string;
+    };
+    query?: never;
+    url: '/api/openportal-remote-projects/{uuid}/refresh-site-features/';
+};
+
+export type OpenportalRemoteProjectsRefreshSiteFeaturesResponses = {
+    200: RemoteProject;
+};
+
+export type OpenportalRemoteProjectsRefreshSiteFeaturesResponse = OpenportalRemoteProjectsRefreshSiteFeaturesResponses[keyof OpenportalRemoteProjectsRefreshSiteFeaturesResponses];
+
 export type OpenportalRemoteProjectsResendRequestData = {
     body?: never;
     path: {
@@ -86722,6 +86828,21 @@ export type OpenportalRemoteProjectsSetMembershipControlResponses = {
      */
     202: unknown;
 };
+
+export type OpenportalRemoteProjectsSetSpendProfileData = {
+    body: SetSpendProfileRequest;
+    path: {
+        uuid: string;
+    };
+    query?: never;
+    url: '/api/openportal-remote-projects/{uuid}/set-spend-profile/';
+};
+
+export type OpenportalRemoteProjectsSetSpendProfileResponses = {
+    200: RemoteProject;
+};
+
+export type OpenportalRemoteProjectsSetSpendProfileResponse = OpenportalRemoteProjectsSetSpendProfileResponses[keyof OpenportalRemoteProjectsSetSpendProfileResponses];
 
 export type OpenportalRemoteProjectsStorageReportRetrieveData = {
     body?: never;
